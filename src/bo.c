@@ -1,49 +1,89 @@
 #include "bo.h"
 
+#include <stdio.h>
+
 GLenum to_gl_usage(bo_usage usage) {
     switch (usage) {
-    case STREAM_DRAW:
+    case BO_USAGE_STREAM_DRAW:
         return GL_STREAM_DRAW;
-    case STREAM_READ:
+    case BO_USAGE_STREAM_READ:
         return GL_STREAM_READ;
-    case STREAM_COPY:
+    case BO_USAGE_STREAM_COPY:
         return GL_STREAM_COPY;
-    case STATIC_DRAW:
+    case BO_USAGE_STATIC_DRAW:
         return GL_STATIC_DRAW;
-    case STATIC_READ:
+    case BO_USAGE_STATIC_READ:
         return GL_STATIC_READ;
-    case STATIC_COPY:
+    case BO_USAGE_STATIC_COPY:
         return GL_STATIC_COPY;
-    case DYNAMIC_DRAW:
+    case BO_USAGE_DYNAMIC_DRAW:
         return GL_DYNAMIC_DRAW;
-    case DYNAMIC_READ:
+    case BO_USAGE_DYNAMIC_READ:
         return GL_DYNAMIC_READ;
-    case DYNAMIC_COPY:
+    case BO_USAGE_DYNAMIC_COPY:
         return GL_DYNAMIC_COPY;
+    default:
+        fprintf(stderr, "unknown buffer object usage: %d\n", usage);
+        return GL_STATIC_DRAW;
     }
 }
 
 GLenum to_gl_type(bo_type type) {
     switch (type) {
-    case BUFFER_TYPE_VERTEX:
+    case BO_TYPE_VERTEX:
         return GL_ARRAY_BUFFER;
-    case BUFFER_TYPE_INDEX:
+    case BO_TYPE_INDEX:
         return GL_ELEMENT_ARRAY_BUFFER;
+    default:
+        fprintf(stderr, "unknown buffer object type: %d\n", type);
+        return GL_ARRAY_BUFFER;
     }
 }
 
-void init_bo(bo *bo, bo_type type) {
+void bo_init(bo *bo, bo_type type) {
+    if (bo == NULL) {
+        fprintf(stderr, "bo_init: buffer object is null");
+        return;
+    }
+
     bo->type = type;
+    glGenBuffers(1, &bo->gl_id);
 
-    glGenBuffers(1, &bo->bo_id);
+    GLenum gl_error = glGetError();
+
+    if (gl_error != GL_NO_ERROR) {
+        printf("bo_init: opengl error: %d\n", gl_error);
+    }
 }
 
-void bind_bo(bo *bo) {
+void bo_bind(bo *bo) {
+    if (bo == NULL) {
+        fprintf(stderr, "bo_bind: buffer object is null");
+        return;
+    }
+
     GLenum gl_type = to_gl_type(bo->type);
-    glBindBuffer(gl_type, bo->bo_id);
+    glBindBuffer(gl_type, bo->gl_id);
+
+    GLenum gl_error = glGetError();
+
+    if (gl_error != GL_NO_ERROR) {
+        printf("bo_bind: opengl error: %d\n", gl_error);
+    }
 }
 
-void upload_bo(bo *bo, size_t data_size, void *data, bo_usage usage) {
+void bo_upload(bo *bo, int data_size, void *data, bo_usage usage) {
+    if (bo == NULL) {
+        fprintf(stderr, "bo_upload: buffer object is null");
+        return;
+    }
+
     GLenum gl_type = to_gl_type(bo->type);
     glBufferData(gl_type, data_size, data, to_gl_usage(usage));
+
+    GLenum gl_error = glGetError();
+
+    if (gl_error != GL_NO_ERROR) {
+        printf("bo_upload: opengl error: %d\n", gl_error);
+    }
 }

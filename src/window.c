@@ -38,3 +38,8 @@ void window_destroy(window *window) {
 float window_get_aspect_ratio(window *window) {
     return (float)window->width / window->height;
 }
+
+void glfw_framebuffer_size_callback(GLFWwindow *window, int width, int height) {
+}
+
+void

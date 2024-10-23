@@ -13,22 +13,30 @@
 #include "window.h"
 #include "camera.h"
 
+camera *camera_pointer;
+double pxpos;
+double pypos;
+
 void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
     set_viewport(0, 0, width, height);
+}
+
+void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
+    camera_rotate(camera_pointer,
+                  (vector3){(pypos - ypos) * 0.1, (xpos - pxpos) * 0.1, 0.0});
+    pxpos = xpos;
+    pypos = ypos;
 }
 
 int main() {
     window window;
     init_window(&window, 400, 400, "minecraft!");
 
+    glfwSetInputMode(window.glfw_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
     init_renderer();
 
     set_viewport(0, 0, 800, 600);
-
-    // Make this better and create custom implementation so that can
-    // automatically update window width and height in callback
-    glfwSetFramebufferSizeCallback(window.glfw_window,
-                                   framebuffer_size_callback);
 
     set_clear_colour(0.7, 0.5, 0.3, 1.0);
 
@@ -43,6 +51,15 @@ int main() {
     camera camera;
     camera_init(&camera, initial_position, initial_rotation, 90,
                 window_get_aspect_ratio(&window), 0.1, 100.0);
+
+    camera_pointer = &camera;
+
+    // Make this better and create custom implementation so that can
+    // automatically update window width and height in callback
+    glfwSetFramebufferSizeCallback(window.glfw_window,
+                                   framebuffer_size_callback);
+
+    glfwSetCursorPosCallback(window.glfw_window, mouse_callback);
 
     while (!window_should_close(&window)) {
         glfwGetWindowSize(window.glfw_window, &window.width, &window.height);
@@ -90,11 +107,11 @@ int main() {
         }
 
         if (glfwGetKey(window.glfw_window, GLFW_KEY_UP)) {
-            rotation_delta.x += -1.0;
+            rotation_delta.x += 1.0;
         }
 
         if (glfwGetKey(window.glfw_window, GLFW_KEY_DOWN)) {
-            rotation_delta.x += 1.0;
+            rotation_delta.x += -1.0;
         }
 
         camera_rotate(&camera, rotation_delta);

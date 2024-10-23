@@ -3,7 +3,35 @@
 #include "glad/glad.h"
 #include "cglm/io.h"
 
-vector3 direction_from_rotation(vector3 rotation);
+vector3 direction_from_rotation(vector3 rotation) {
+    vector3 direction;
+
+    direction.x = cos(glm_rad(rotation.y)) * cos(glm_rad(rotation.x));
+    direction.y = sin(glm_rad(rotation.x));
+    direction.z = sin(glm_rad(rotation.y)) * cos(glm_rad(rotation.x));
+
+    vector3_normalise(&direction);
+
+    return direction;
+}
+
+void recalculate_perspective_matrix(camera *camera) {
+    glm_perspective(camera->fov, camera->aspect_ratio, camera->near_plane,
+                    camera->far_plane, camera->projection_matrix);
+}
+
+void recalculate_view_matrix(camera *camera) {
+    vector3 direction = direction_from_rotation(camera->rotation);
+
+    vec3 glm_direction;
+    vector3_to_glm(direction, &glm_direction);
+
+    vec3 glm_position;
+    vector3_to_glm(camera->position, &glm_position);
+
+    glm_look(glm_position, glm_direction, (vec3){0.0, 1.0, 0.0},
+             camera->view_matrix);
+}
 
 void camera_init(camera *camera, vector3 position, vector3 rotation, float fov,
                  float aspect_ratio, float near_plane, float far_plane) {
@@ -13,14 +41,12 @@ void camera_init(camera *camera, vector3 position, vector3 rotation, float fov,
     camera->position = position;
     camera->rotation = rotation;
 
-    glm_look(glm_position, (vec3){0.0, 0.0, 0.0}, (vec3){0.0, 1.0, 0.0},
-             camera->view_matrix);
-
     camera->fov = fov;
     camera->near_plane = near_plane;
     camera->far_plane = far_plane;
-    glm_perspective(fov, aspect_ratio, near_plane, far_plane,
-                    camera->projection_matrix);
+
+    recalculate_view_matrix(camera);
+    recalculate_perspective_matrix(camera);
 }
 
 void camera_translate(camera *camera, vector3 translation) {
@@ -49,20 +75,10 @@ void camera_translate(camera *camera, vector3 translation) {
 
     camera->position = vector3_add(camera->position, position_delta);
 
-    vec3 glm_direction;
-    vector3_to_glm(direction, &glm_direction);
-
-    glm_vec3_print(glm_direction, stdout);
-
-    vec3 glm_position;
-    vector3_to_glm(camera->position, &glm_position);
-
-    glm_look(glm_position, glm_direction, (vec3){0.0, 1.0, 0.0},
-             camera->view_matrix);
+    recalculate_view_matrix(camera);
 }
 
-// rename function
-void camera_update_matrices(camera *camera) {
+void camera_update_matrix_uniforms(camera *camera) {
     GLint shader_program_id;
     glGetIntegerv(GL_CURRENT_PROGRAM, &shader_program_id);
 
@@ -78,11 +94,7 @@ void camera_update_matrices(camera *camera) {
 void camera_set_aspect_ratio(camera *camera, float aspect_ratio) {
     camera->aspect_ratio = aspect_ratio;
 
-    // move into update perspective matrix function
-    glm_perspective(camera->fov, aspect_ratio, camera->near_plane,
-                    camera->far_plane, camera->projection_matrix);
-
-    /*camera_update_matrices(camera);*/
+    recalculate_perspective_matrix(camera);
 }
 
 void camera_set_rotation(camera *camera, vector3 rotation) {
@@ -91,37 +103,12 @@ void camera_set_rotation(camera *camera, vector3 rotation) {
 
     camera->rotation = rotation;
 
-    // make rotation to direction function
-    vector3 direction = direction_from_rotation(rotation);
-
-    vec3 glm_direction;
-    vector3_to_glm(direction, &glm_direction);
-
-    vec3 glm_position;
-    vector3_to_glm(camera->position, &glm_position);
-
-    glm_look(glm_position, glm_direction, (vec3){0.0, 1.0, 0.0},
-             camera->view_matrix);
-
-    glm_mat4_print(camera->view_matrix, stdout);
-
-    /*camera_update_matrices(camera);*/
+    recalculate_view_matrix(camera);
+    camera_update_matrix_uniforms(camera);
 }
 
 void camera_rotate(camera *camera, vector3 delta_rotation) {
     vector3 new_rotation = vector3_add(camera->rotation, delta_rotation);
 
     camera_set_rotation(camera, new_rotation);
-}
-
-vector3 direction_from_rotation(vector3 rotation) {
-    vector3 direction;
-
-    direction.x = cos(glm_rad(rotation.y)) * cos(glm_rad(rotation.x));
-    direction.y = sin(glm_rad(rotation.x));
-    direction.z = sin(glm_rad(rotation.y)) * cos(glm_rad(rotation.x));
-
-    vector3_normalise(&direction);
-
-    return direction;
 }
