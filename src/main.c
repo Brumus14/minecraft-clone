@@ -34,8 +34,14 @@ int main() {
 
     mat4 model_matrix = GLM_MAT4_IDENTITY;
 
+    vector3 initial_position;
+    vector3_init(&initial_position, 0.0, 0.0, 3.0);
+
+    vector3 initial_rotation;
+    vector3_init(&initial_rotation, 0.0, -90.0, 0.0);
+
     camera camera;
-    camera_init(&camera, (vec3){0.0, 0.0, -3.0}, (vec3){0.0, 0.0, 0.0}, 90,
+    camera_init(&camera, initial_position, initial_rotation, 90,
                 window_get_aspect_ratio(&window), 0.1, 100.0);
 
     while (!window_should_close(&window)) {
@@ -43,6 +49,63 @@ int main() {
         camera_set_aspect_ratio(&camera, (float)window.width / window.height);
 
         clear_colour();
+
+        float camera_speed = 0.01;
+        vector3 camera_delta;
+        vector3_init(&camera_delta, 0.0, 0.0, 0.0);
+
+        vector3 rotation_delta;
+        vector3_init(&rotation_delta, 0.0, 0.0, 0.0);
+
+        if (glfwGetKey(window.glfw_window, GLFW_KEY_S)) {
+            camera_delta.z += 1.0;
+        }
+
+        if (glfwGetKey(window.glfw_window, GLFW_KEY_W)) {
+            camera_delta.z += -1.0;
+        }
+
+        if (glfwGetKey(window.glfw_window, GLFW_KEY_A)) {
+            camera_delta.x += -1.0;
+        }
+
+        if (glfwGetKey(window.glfw_window, GLFW_KEY_D)) {
+            camera_delta.x += 1.0;
+        }
+
+        if (glfwGetKey(window.glfw_window, GLFW_KEY_SPACE)) {
+            camera_delta.y += 1.0;
+        }
+
+        if (glfwGetKey(window.glfw_window, GLFW_KEY_LEFT_SHIFT)) {
+            camera_delta.y += -1.0;
+        }
+
+        if (glfwGetKey(window.glfw_window, GLFW_KEY_LEFT)) {
+            rotation_delta.y += -1.0;
+        }
+
+        if (glfwGetKey(window.glfw_window, GLFW_KEY_RIGHT)) {
+            rotation_delta.y += 1.0;
+        }
+
+        if (glfwGetKey(window.glfw_window, GLFW_KEY_UP)) {
+            rotation_delta.x += -1.0;
+        }
+
+        if (glfwGetKey(window.glfw_window, GLFW_KEY_DOWN)) {
+            rotation_delta.x += 1.0;
+        }
+
+        camera_rotate(&camera, rotation_delta);
+
+        vector3_normalise(&camera_delta);
+
+        camera_delta.x *= camera_speed;
+        camera_delta.y *= camera_speed;
+        camera_delta.z *= camera_speed;
+
+        camera_translate(&camera, camera_delta);
 
         float data[3][3] = {
             {0.0, 1.0, 0.0},
@@ -117,8 +180,6 @@ int main() {
 
         window_swap_buffers(&window);
         glfwPollEvents();
-
-        camera_translate(&camera, (vec3){0.01, 0.01, 0.01});
     }
 
     window_destroy(&window);

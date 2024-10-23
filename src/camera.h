@@ -3,10 +3,11 @@
 
 #include "cglm/cglm.h"
 #include "cglm/cam.h"
+#include "vector3.h"
 
 typedef struct camera {
-    vec3 position;
-    vec3 rotation;
+    vector3 position;
+    vector3 rotation;
     float fov;
     float aspect_ratio;
     float near_plane;
@@ -15,10 +16,12 @@ typedef struct camera {
     mat4 projection_matrix;
 } camera;
 
-void camera_init(camera *camera, vec3 position, vec3 rotation, float fov,
+void camera_init(camera *camera, vector3 position, vector3 rotation, float fov,
                  float aspect_ratio, float near_plane, float far_plane);
-void camera_translate(camera *camera, vec3 translation);
+void camera_translate(camera *camera, vector3 translation);
 void camera_update_matrices(camera *camera);
 void camera_set_aspect_ratio(camera *camera, float aspect_ratio);
+void camera_set_rotation(camera *camera, vector3 rotation);
+void camera_rotate(camera *camera, vector3 delta_rotation);
 
 #endif
