@@ -34,3 +34,7 @@ void window_swap_buffers(window *window) {
 void window_destroy(window *window) {
     glfwDestroyWindow(window->glfw_window);
 }
+
+float window_get_aspect_ratio(window *window) {
+    return (float)window->width / window->height;
+}

@@ -8,6 +8,7 @@ typedef struct camera {
     vec3 position;
     vec3 rotation;
     float fov;
+    float aspect_ratio;
     float near_plane;
     float far_plane;
     mat4 view_matrix;
@@ -15,8 +16,9 @@ typedef struct camera {
 } camera;
 
 void camera_init(camera *camera, vec3 position, vec3 rotation, float fov,
-                 float near_plane, float far_plane);
+                 float aspect_ratio, float near_plane, float far_plane);
 void camera_translate(camera *camera, vec3 translation);
 void camera_update_matrices(camera *camera);
+void camera_set_aspect_ratio(camera *camera, float aspect_ratio);
 
 #endif

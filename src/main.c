@@ -25,7 +25,8 @@ int main() {
 
     set_viewport(0, 0, 800, 600);
 
-    // Make this better
+    // Make this better and create custom implementation so that can
+    // automatically update window width and height in callback
     glfwSetFramebufferSizeCallback(window.glfw_window,
                                    framebuffer_size_callback);
 
@@ -34,10 +35,13 @@ int main() {
     mat4 model_matrix = GLM_MAT4_IDENTITY;
 
     camera camera;
-    camera_init(&camera, (vec3){0.0, 0.0, -3.0}, (vec3){0.0, 0.0, 0.0}, 90, 0.1,
-                100.0);
+    camera_init(&camera, (vec3){0.0, 0.0, -3.0}, (vec3){0.0, 0.0, 0.0}, 90,
+                window_get_aspect_ratio(&window), 0.1, 100.0);
 
     while (!window_should_close(&window)) {
+        glfwGetWindowSize(window.glfw_window, &window.width, &window.height);
+        camera_set_aspect_ratio(&camera, (float)window.width / window.height);
+
         clear_colour();
 
         float data[3][3] = {
