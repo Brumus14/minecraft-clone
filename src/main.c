@@ -1,7 +1,6 @@
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
-#include "cglm/cglm.h"
-#include "cglm/io.h"
+#include "stb_image.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include "util.h"
@@ -13,16 +12,18 @@
 #include "window.h"
 #include "camera.h"
 
-camera *camera_pointer;
 double pxpos;
 double pypos;
 
-void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
-    set_viewport(0, 0, width, height);
+void framebuffer_size_callback(window *window, int width, int height) {
+    renderer_set_viewport(0, 0, width, height);
+    glfwGetWindowSize(window->glfw_window, &window->width, &window->height);
+    camera_set_aspect_ratio(window->camera,
+                            (float)window->width / window->height);
 }
 
-void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
-    camera_rotate(camera_pointer,
+void cursor_pos_callback(window *window, double xpos, double ypos) {
+    camera_rotate(window->camera,
                   (vector3){(pypos - ypos) * 0.1, (xpos - pxpos) * 0.1, 0.0});
     pxpos = xpos;
     pypos = ypos;
@@ -30,44 +31,45 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos) {
 
 int main() {
     window window;
-    init_window(&window, 400, 400, "minecraft!");
+    camera camera;
+
+    window_init(&window, 400, 400, "minecraft!", &camera);
+
+    camera_init(&camera, (vector3){0.0, 0.0, 3.0}, (vector3){0.0, -90.0, 0.0},
+                60.0, window_get_aspect_ratio(&window), 0.1, 100.0);
+
+    window_set_framebuffer_size_callback(&window, framebuffer_size_callback);
+    window_set_cursor_pos_callback(&window, cursor_pos_callback);
 
     glfwSetInputMode(window.glfw_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-    init_renderer();
+    renderer_init();
 
-    set_viewport(0, 0, 800, 600);
-
-    set_clear_colour(0.7, 0.5, 0.3, 1.0);
+    renderer_set_clear_colour(0.7, 0.5, 0.3, 1.0);
 
     mat4 model_matrix = GLM_MAT4_IDENTITY;
 
-    vector3 initial_position;
-    vector3_init(&initial_position, 0.0, 0.0, 3.0);
+    int width, height, nrChannels;
+    unsigned char *texture_data =
+        stbi_load("res/grass.jpg", &width, &height, &nrChannels, 0);
 
-    vector3 initial_rotation;
-    vector3_init(&initial_rotation, 0.0, -90.0, 0.0);
+    unsigned int texture;
 
-    camera camera;
-    camera_init(&camera, initial_position, initial_rotation, 90,
-                window_get_aspect_ratio(&window), 0.1, 100.0);
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
 
-    camera_pointer = &camera;
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB,
+                 GL_UNSIGNED_BYTE, texture_data);
 
-    // Make this better and create custom implementation so that can
-    // automatically update window width and height in callback
-    glfwSetFramebufferSizeCallback(window.glfw_window,
-                                   framebuffer_size_callback);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
-    glfwSetCursorPosCallback(window.glfw_window, mouse_callback);
+    stbi_image_free(texture_data);
 
     while (!window_should_close(&window)) {
-        glfwGetWindowSize(window.glfw_window, &window.width, &window.height);
-        camera_set_aspect_ratio(&camera, (float)window.width / window.height);
+        renderer_clear_colour();
 
-        clear_colour();
-
-        float camera_speed = 0.01;
+        float camera_speed = 0.03;
         vector3 camera_delta;
         vector3_init(&camera_delta, 0.0, 0.0, 0.0);
 
@@ -124,16 +126,11 @@ int main() {
 
         camera_translate(&camera, camera_delta);
 
-        float data[3][3] = {
-            {0.0, 1.0, 0.0},
-            {-1.0, -1.0, 0.0},
-            {1.0, -1.0, 0.0},
-        };
-
-        float cube[8][3] = {
-            {-1.0, -1.0, 1.0}, {1.0, -1.0, 1.0},   {1.0, 1.0, 1.0},
-            {-1.0, 1.0, 1.0},  {-1.0, -1.0, -1.0}, {1.0, -1.0, -1.0},
-            {1.0, 1.0, -1.0},  {-1.0, 1.0, -1.0},
+        float cube[8][5] = {
+            {-1.0, -1.0, 1.0, 0.0, 0.0},  {1.0, -1.0, 1.0, 1.0, 0.0},
+            {1.0, 1.0, 1.0, 1.0, 1.0},    {-1.0, 1.0, 1.0, 0.0, 1.0},
+            {-1.0, -1.0, -1.0, 0.0, 0.0}, {1.0, -1.0, -1.0, 0.0, 0.0},
+            {1.0, 1.0, -1.0, 0.0, 0.0},   {-1.0, 1.0, -1.0, 0.0, 0.0},
         };
 
         unsigned int indices[36] = {0, 1, 3, 1, 2, 3,
@@ -149,51 +146,45 @@ int main() {
                                     0, 4, 1, 1, 4, 5};
 
         bo vbo;
-        init_bo(&vbo, BUFFER_TYPE_VERTEX);
-        bind_bo(&vbo);
-        upload_bo(&vbo, sizeof(cube), cube, STATIC_DRAW);
+        bo_init(&vbo, BO_TYPE_VERTEX);
+        bo_bind(&vbo);
+        bo_upload(&vbo, sizeof(cube), cube, BO_USAGE_STATIC_DRAW);
 
         bo ibo;
-        init_bo(&ibo, BUFFER_TYPE_INDEX);
-        bind_bo(&ibo);
-        upload_bo(&ibo, sizeof(indices), indices, STATIC_DRAW);
+        bo_init(&ibo, BO_TYPE_INDEX);
+        bo_bind(&ibo);
+        bo_upload(&ibo, sizeof(indices), indices, BO_USAGE_STATIC_DRAW);
 
         vao vao;
-        init_vao(&vao);
-        bind_vao(&vao);
-        attrib_vao(&vao, 0, 3, FLOAT, false, 0, NULL);
-
-        char *vertex_source = read_file("src/vertex.vert");
-        char *fragment_source = read_file("src/fragment.frag");
-
-        shader vertex_shader;
-        init_shader(&vertex_shader, SHADER_TYPE_VERTEX);
-        source_shader(&vertex_shader, vertex_source);
-        compile_shader(&vertex_shader);
-
-        shader fragment_shader;
-        init_shader(&fragment_shader, SHADER_TYPE_FRAGMENT);
-        source_shader(&fragment_shader, fragment_source);
-        compile_shader(&fragment_shader);
+        vao_init(&vao);
+        vao_bind(&vao);
+        vao_attrib(&vao, 0, 3, VAO_TYPE_FLOAT, false, 5 * sizeof(float), 0);
+        vao_attrib(&vao, 1, 2, VAO_TYPE_FLOAT, false, 5 * sizeof(float),
+                   (void *)(3 * sizeof(float)));
 
         shader_program shader_program;
-        init_shader_program(&shader_program, &vertex_shader, &fragment_shader);
-        bind_attribute_shader_program(&shader_program, 0, "position");
-        link_shader_program(&shader_program);
-        use_shader_program(&shader_program);
+        shader_program_from_files(&shader_program, "src/vertex.vert",
+                                  "src/fragment.frag");
+        shader_program_bind_attribute(&shader_program, 0, "position");
+        shader_program_link(&shader_program);
+        shader_program_use(&shader_program);
 
-        GLint model_loc =
-            glGetUniformLocation(shader_program.shader_program_id, "model");
+        GLint model_loc = glGetUniformLocation(shader_program.gl_id, "model");
         glUniformMatrix4fv(model_loc, 1, GL_FALSE, (float *)model_matrix);
 
-        camera_update_matrices(&camera);
+        camera_update_matrix_uniforms(&camera);
 
-        delete_shader(&vertex_shader);
-        delete_shader(&fragment_shader);
+        /*glActiveTexture(GL_TEXTURE0);*/
+        /*glBindTexture(GL_TEXTURE_2D, texture);*/
+        /**/
+        /*GLint texture_loc = glGetUniformLocation(*/
+        /*    shader_program.shader_program_id, "ourTexture");*/
+        /*glUniform1i(texture_loc, 0);*/
 
-        bind_bo(&ibo);
+        bo_bind(&ibo);
+        bo_bind(&vbo);
 
-        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, NULL);
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
         window_swap_buffers(&window);
         glfwPollEvents();

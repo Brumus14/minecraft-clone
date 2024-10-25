@@ -1,8 +1,6 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include "cglm/cglm.h"
-#include "cglm/cam.h"
 #include "vector3.h"
 
 typedef struct camera {

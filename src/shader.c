@@ -1,4 +1,5 @@
 #include "shader.h"
+#include <stdio.h>
 
 GLenum to_shader_type_gl(shader_type type) {
     switch (type) {
@@ -9,21 +10,27 @@ GLenum to_shader_type_gl(shader_type type) {
     }
 }
 
-void init_shader(shader *shader, shader_type type) {
+void shader_init(shader *shader, shader_type type) {
     GLenum gl_type = to_shader_type_gl(type);
 
-    shader->shader_id = glCreateShader(gl_type);
+    shader->gl_id = glCreateShader(gl_type);
 }
 
-void source_shader(shader *shader, char *source) {
+void shader_source(shader *shader, char *source) {
     const GLchar *sources[] = {source};
-    glShaderSource(shader->shader_id, 1, sources, 0);
+    glShaderSource(shader->gl_id, 1, sources, 0);
 }
 
-void compile_shader(shader *shader) {
-    glCompileShader(shader->shader_id);
+void shader_compile(shader *shader) {
+    glCompileShader(shader->gl_id);
+
+    GLint val = GL_FALSE;
+    glGetShaderiv(shader->gl_id, GL_COMPILE_STATUS, &val);
+    if (val != GL_TRUE) {
+        printf("COMPILATION FAILED!!1");
+    }
 }
 
-void delete_shader(shader *shader) {
-    glDeleteShader(shader->shader_id);
+void shader_delete(shader *shader) {
+    glDeleteShader(shader->gl_id);
 }

@@ -3,13 +3,12 @@
 
 #include <glad/glad.h>
 
-typedef enum draw_mode { TRIANGLES } draw_mode;
+typedef enum draw_mode { DRAW_MODE_TRIANGLES } draw_mode;
 
-void init_renderer();
-void clear_colour();
-void set_clear_colour(float red, float green, float blue, float alpha);
-void set_viewport(int x, int y, int width, int height);
-GLenum to_gl_draw_mode(draw_mode mode);
-void draw_arrays(draw_mode mode, int first, int count);
+void renderer_init();
+void renderer_clear_colour();
+void renderer_set_clear_colour(float red, float green, float blue, float alpha);
+void renderer_set_viewport(int x, int y, int width, int height);
+void renderer_draw_arrays(draw_mode mode, int first, int count);
 
 #endif

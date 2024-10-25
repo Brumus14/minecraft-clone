@@ -1,7 +1,6 @@
 #include "camera.h"
 
 #include "glad/glad.h"
-#include "cglm/io.h"
 
 vector3 direction_from_rotation(vector3 rotation) {
     vector3 direction;
@@ -15,12 +14,13 @@ vector3 direction_from_rotation(vector3 rotation) {
     return direction;
 }
 
-void recalculate_perspective_matrix(camera *camera) {
-    glm_perspective(camera->fov, camera->aspect_ratio, camera->near_plane,
-                    camera->far_plane, camera->projection_matrix);
+void generate_perspective_matrix(camera *camera) {
+    glm_perspective(glm_rad(camera->fov), camera->aspect_ratio,
+                    camera->near_plane, camera->far_plane,
+                    camera->projection_matrix);
 }
 
-void recalculate_view_matrix(camera *camera) {
+void generate_view_matrix(camera *camera) {
     vector3 direction = direction_from_rotation(camera->rotation);
 
     vec3 glm_direction;
@@ -40,13 +40,12 @@ void camera_init(camera *camera, vector3 position, vector3 rotation, float fov,
 
     camera->position = position;
     camera->rotation = rotation;
-
     camera->fov = fov;
     camera->near_plane = near_plane;
     camera->far_plane = far_plane;
 
-    recalculate_view_matrix(camera);
-    recalculate_perspective_matrix(camera);
+    generate_view_matrix(camera);
+    generate_perspective_matrix(camera);
 }
 
 void camera_translate(camera *camera, vector3 translation) {
@@ -75,7 +74,7 @@ void camera_translate(camera *camera, vector3 translation) {
 
     camera->position = vector3_add(camera->position, position_delta);
 
-    recalculate_view_matrix(camera);
+    generate_view_matrix(camera);
 }
 
 void camera_update_matrix_uniforms(camera *camera) {
@@ -94,7 +93,7 @@ void camera_update_matrix_uniforms(camera *camera) {
 void camera_set_aspect_ratio(camera *camera, float aspect_ratio) {
     camera->aspect_ratio = aspect_ratio;
 
-    recalculate_perspective_matrix(camera);
+    generate_perspective_matrix(camera);
 }
 
 void camera_set_rotation(camera *camera, vector3 rotation) {
@@ -103,8 +102,7 @@ void camera_set_rotation(camera *camera, vector3 rotation) {
 
     camera->rotation = rotation;
 
-    recalculate_view_matrix(camera);
-    camera_update_matrix_uniforms(camera);
+    generate_view_matrix(camera);
 }
 
 void camera_rotate(camera *camera, vector3 delta_rotation) {

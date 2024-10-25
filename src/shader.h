@@ -4,7 +4,7 @@
 #include <glad/glad.h>
 
 typedef struct shader {
-    GLuint shader_id;
+    GLuint gl_id;
 } shader;
 
 typedef enum shader_type {
@@ -12,9 +12,9 @@ typedef enum shader_type {
     SHADER_TYPE_FRAGMENT
 } shader_type;
 
-void init_shader(shader *shader, shader_type type);
-void source_shader(shader *shader, char *source);
-void compile_shader(shader *shader);
-void delete_shader(shader *shader);
+void shader_init(shader *shader, shader_type type);
+void shader_source(shader *shader, char *source);
+void shader_compile(shader *shader);
+void shader_delete(shader *shader);
 
 #endif

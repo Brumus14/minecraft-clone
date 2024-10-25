@@ -1,8 +1,8 @@
 CC = clang
-src = lib/glad/src/glad.c src/main.c src/bo.c src/vao.c src/util.c src/shader.c src/shader_program.c src/renderer.c src/window.c src/camera.c src/vector3.c
+src = lib/glad/src/glad.c src/main.c src/bo.c src/vao.c src/util.c src/shader.c src/shader_program.c src/renderer.c src/window.c src/camera.c src/vector3.c src/stb_image.c
 lib = glfw3 GL m cglm
 lib_include = lib/glfw/lib lib/cglm/lib
-include = lib/glfw/include lib/glad/include lib/cglm/include
+include = lib/glfw/include lib/glad/include lib/cglm/include lib/stb/include
 additional_flags = -Wl,-rpath=./lib/cglm/lib
 
 all:
