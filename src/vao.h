@@ -6,7 +6,7 @@
 #include <stdbool.h>
 
 typedef struct vao {
-    GLuint vao_id;
+    GLuint gl_id;
 } vao;
 
 typedef enum array_type {

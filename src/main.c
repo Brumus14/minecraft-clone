@@ -11,6 +11,9 @@
 #include "renderer.h"
 #include "window.h"
 #include "camera.h"
+#include "texture.h"
+
+// REMMEMBER TO AUTO BIND IN FUNCTIONS THAT ITS REQUIRED
 
 double pxpos;
 double pypos;
@@ -49,22 +52,96 @@ int main() {
 
     mat4 model_matrix = GLM_MAT4_IDENTITY;
 
-    int width, height, nrChannels;
-    unsigned char *texture_data =
-        stbi_load("res/grass.jpg", &width, &height, &nrChannels, 0);
+    texture grass;
+    texture_init(&grass);
+    texture_bind(&grass);
 
-    unsigned int texture;
-
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB,
-                 GL_UNSIGNED_BYTE, texture_data);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glGenerateMipmap(GL_TEXTURE_2D);
 
-    stbi_image_free(texture_data);
+    texture_load(&grass, "res/textures/atlas.png");
+
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glFrontFace(GL_CCW);
+
+    /*stbi_image_free(grass_image);*/
+
+    float cube[][5] = {
+        // front
+        {-1.0, -1.0, 1.0, 0.0, 1.0},
+        {1.0, -1.0, 1.0, 1.0, 1.0},
+        {1.0, 1.0, 1.0, 1.0, 0.0},
+        {-1.0, 1.0, 1.0, 0.0, 0.0},
+
+        // top
+        {-1.0, 1.0, 1.0, 0.0, 1.0},
+        {1.0, 1.0, 1.0, 1.0, 1.0},
+        {1.0, 1.0, -1.0, 1.0, 0.0},
+        {-1.0, 1.0, -1.0, 0.0, 0.0},
+
+        // right
+        {1.0, -1.0, 1.0, 0.0, 1.0},
+        {1.0, -1.0, -1.0, 1.0, 1.0},
+        {1.0, 1.0, -1.0, 1.0, 0.0},
+        {1.0, 1.0, 1.0, 0.0, 0.0},
+
+        // bottom
+        {-1.0, -1.0, -1.0, 0.0, 1.0},
+        {1.0, -1.0, -1.0, 1.0, 1.0},
+        {1.0, -1.0, 1.0, 1.0, 0.0},
+        {-1.0, -1.0, 1.0, 0.0, 0.0},
+
+        // left
+        {-1.0, -1.0, -1.0, 0.0, 1.0},
+        {-1.0, -1.0, 1.0, 1.0, 1.0},
+        {-1.0, 1.0, 1.0, 1.0, 0.0},
+        {-1.0, 1.0, -1.0, 0.0, 0.0},
+
+        // back
+        {1.0, -1.0, -1.0, 0.0, 1.0},
+        {-1.0, -1.0, -1.0, 1.0, 1.0},
+        {-1.0, 1.0, -1.0, 1.0, 0.0},
+        {1.0, 1.0, -1.0, 0.0, 0.0},
+    };
+
+    unsigned int indices[] = {
+        0,  1,  2,  0,  2,  3,  // front
+        4,  5,  6,  4,  6,  7,  // top
+        8,  9,  10, 8,  10, 11, // right
+        12, 13, 14, 12, 14, 15, // bottom
+        16, 17, 18, 16, 18, 19, // left
+        20, 21, 22, 20, 22, 23, // back
+    };
+
+    bo vbo;
+    bo_init(&vbo, BO_TYPE_VERTEX);
+    bo_bind(&vbo);
+    bo_upload(&vbo, sizeof(cube), cube, BO_USAGE_STATIC_DRAW);
+
+    bo ibo;
+    bo_init(&ibo, BO_TYPE_INDEX);
+    bo_bind(&ibo);
+    bo_upload(&ibo, sizeof(indices), indices, BO_USAGE_STATIC_DRAW);
+
+    vao vao;
+    vao_init(&vao);
+    vao_bind(&vao);
+    vao_attrib(&vao, 0, 3, VAO_TYPE_FLOAT, false, 5 * sizeof(float), 0);
+    vao_attrib(&vao, 1, 2, VAO_TYPE_FLOAT, false, 5 * sizeof(float),
+               (void *)(3 * sizeof(float)));
+
+    shader_program shader_program;
+    shader_program_from_files(&shader_program, "src/vertex.vert",
+                              "src/fragment.frag");
+    shader_program_bind_attribute(&shader_program, 0, "position");
+    shader_program_link(&shader_program);
+    shader_program_use(&shader_program);
+
+    GLint texAttrib = glGetAttribLocation(shader_program.gl_id, "aTexCoord");
+    glEnableVertexAttribArray(texAttrib);
+    glEnableVertexAttribArray(texAttrib);
 
     while (!window_should_close(&window)) {
         renderer_clear_colour();
@@ -126,63 +203,18 @@ int main() {
 
         camera_translate(&camera, camera_delta);
 
-        float cube[8][5] = {
-            {-1.0, -1.0, 1.0, 0.0, 0.0},  {1.0, -1.0, 1.0, 1.0, 0.0},
-            {1.0, 1.0, 1.0, 1.0, 1.0},    {-1.0, 1.0, 1.0, 0.0, 1.0},
-            {-1.0, -1.0, -1.0, 0.0, 0.0}, {1.0, -1.0, -1.0, 0.0, 0.0},
-            {1.0, 1.0, -1.0, 0.0, 0.0},   {-1.0, 1.0, -1.0, 0.0, 0.0},
-        };
-
-        unsigned int indices[36] = {0, 1, 3, 1, 2, 3,
-
-                                    4, 5, 7, 5, 6, 7,
-
-                                    0, 3, 4, 3, 7, 4,
-
-                                    1, 5, 2, 5, 6, 2,
-
-                                    3, 2, 7, 2, 6, 7,
-
-                                    0, 4, 1, 1, 4, 5};
-
-        bo vbo;
-        bo_init(&vbo, BO_TYPE_VERTEX);
-        bo_bind(&vbo);
-        bo_upload(&vbo, sizeof(cube), cube, BO_USAGE_STATIC_DRAW);
-
-        bo ibo;
-        bo_init(&ibo, BO_TYPE_INDEX);
-        bo_bind(&ibo);
-        bo_upload(&ibo, sizeof(indices), indices, BO_USAGE_STATIC_DRAW);
-
-        vao vao;
-        vao_init(&vao);
-        vao_bind(&vao);
-        vao_attrib(&vao, 0, 3, VAO_TYPE_FLOAT, false, 5 * sizeof(float), 0);
-        vao_attrib(&vao, 1, 2, VAO_TYPE_FLOAT, false, 5 * sizeof(float),
-                   (void *)(3 * sizeof(float)));
-
-        shader_program shader_program;
-        shader_program_from_files(&shader_program, "src/vertex.vert",
-                                  "src/fragment.frag");
-        shader_program_bind_attribute(&shader_program, 0, "position");
-        shader_program_link(&shader_program);
-        shader_program_use(&shader_program);
-
         GLint model_loc = glGetUniformLocation(shader_program.gl_id, "model");
         glUniformMatrix4fv(model_loc, 1, GL_FALSE, (float *)model_matrix);
 
         camera_update_matrix_uniforms(&camera);
 
-        /*glActiveTexture(GL_TEXTURE0);*/
-        /*glBindTexture(GL_TEXTURE_2D, texture);*/
-        /**/
-        /*GLint texture_loc = glGetUniformLocation(*/
-        /*    shader_program.shader_program_id, "ourTexture");*/
+        /*GLint texture_loc =*/
+        /*    glGetUniformLocation(shader_program.gl_id, "ourTexture");*/
         /*glUniform1i(texture_loc, 0);*/
 
         bo_bind(&ibo);
         bo_bind(&vbo);
+        vao_bind(&vao);
 
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 

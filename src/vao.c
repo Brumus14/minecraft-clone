@@ -3,11 +3,11 @@
 #include <stdio.h>
 
 void vao_init(vao *vao) {
-    glGenVertexArrays(1, &vao->vao_id);
+    glGenVertexArrays(1, &vao->gl_id);
 }
 
 void vao_bind(vao *vao) {
-    glBindVertexArray(vao->vao_id);
+    glBindVertexArray(vao->gl_id);
 }
 
 GLenum to_gl_array_type(array_type type) {
