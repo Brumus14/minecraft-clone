@@ -1,5 +1,5 @@
 CC = clang
-src = lib/glad/src/glad.c src/main.c src/bo.c src/vao.c src/util.c src/shader.c src/shader_program.c src/renderer.c src/window.c src/camera.c src/vector3.c src/stb_image.c src/texture.c
+src = lib/glad/src/glad.c src/main.c src/graphics/bo.c src/graphics/vao.c src/util.c src/graphics/shader.c src/graphics/shader_program.c src/graphics/renderer.c src/graphics/window.c src/graphics/camera.c src/vector3.c src/graphics/stb_image.c src/graphics/texture.c
 lib = glfw3 GL m cglm
 lib_include = lib/glfw/lib lib/cglm/lib
 include = lib/glfw/include lib/glad/include lib/cglm/include lib/stb/include

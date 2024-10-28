@@ -4,14 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "util.h"
-#include "bo.h"
-#include "vao.h"
-#include "shader.h"
-#include "shader_program.h"
-#include "renderer.h"
-#include "window.h"
-#include "camera.h"
-#include "texture.h"
+#include "graphics/graphics.h"
 
 // REMMEMBER TO AUTO BIND IN FUNCTIONS THAT ITS REQUIRED
 
@@ -53,56 +46,44 @@ int main() {
     mat4 model_matrix = GLM_MAT4_IDENTITY;
 
     texture grass;
-    texture_init(&grass);
-    texture_bind(&grass);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glGenerateMipmap(GL_TEXTURE_2D);
-
+    texture_init(&grass, TEXTURE_FILTER_NEAREST);
     texture_load(&grass, "res/textures/atlas.png");
-
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
-    glFrontFace(GL_CCW);
-
-    /*stbi_image_free(grass_image);*/
 
     float cube[][5] = {
         // front
-        {-1.0, -1.0, 1.0, 0.0, 1.0},
-        {1.0, -1.0, 1.0, 1.0, 1.0},
-        {1.0, 1.0, 1.0, 1.0, 0.0},
+        {-1.0, -1.0, 1.0, 0.0, 0.0625},
+        {1.0, -1.0, 1.0, 0.0625, 0.0625},
+        {1.0, 1.0, 1.0, 0.0625, 0.0},
         {-1.0, 1.0, 1.0, 0.0, 0.0},
 
         // top
-        {-1.0, 1.0, 1.0, 0.0, 1.0},
-        {1.0, 1.0, 1.0, 1.0, 1.0},
-        {1.0, 1.0, -1.0, 1.0, 0.0},
+        {-1.0, 1.0, 1.0, 0.0, 0.0625},
+        {1.0, 1.0, 1.0, 0.0625, 0.0625},
+        {1.0, 1.0, -1.0, 0.0625, 0.0},
         {-1.0, 1.0, -1.0, 0.0, 0.0},
 
         // right
-        {1.0, -1.0, 1.0, 0.0, 1.0},
-        {1.0, -1.0, -1.0, 1.0, 1.0},
-        {1.0, 1.0, -1.0, 1.0, 0.0},
+        {1.0, -1.0, 1.0, 0.0, 0.0625},
+        {1.0, -1.0, -1.0, 0.0625, 0.0625},
+        {1.0, 1.0, -1.0, 0.0625, 0.0},
         {1.0, 1.0, 1.0, 0.0, 0.0},
 
         // bottom
-        {-1.0, -1.0, -1.0, 0.0, 1.0},
-        {1.0, -1.0, -1.0, 1.0, 1.0},
-        {1.0, -1.0, 1.0, 1.0, 0.0},
+        {-1.0, -1.0, -1.0, 0.0, 0.0625},
+        {1.0, -1.0, -1.0, 0.0625, 0.0625},
+        {1.0, -1.0, 1.0, 0.0625, 0.0},
         {-1.0, -1.0, 1.0, 0.0, 0.0},
 
         // left
-        {-1.0, -1.0, -1.0, 0.0, 1.0},
-        {-1.0, -1.0, 1.0, 1.0, 1.0},
-        {-1.0, 1.0, 1.0, 1.0, 0.0},
+        {-1.0, -1.0, -1.0, 0.0, 0.0625},
+        {-1.0, -1.0, 1.0, 0.0625, 0.0625},
+        {-1.0, 1.0, 1.0, 0.0625, 0.0},
         {-1.0, 1.0, -1.0, 0.0, 0.0},
 
         // back
-        {1.0, -1.0, -1.0, 0.0, 1.0},
-        {-1.0, -1.0, -1.0, 1.0, 1.0},
-        {-1.0, 1.0, -1.0, 1.0, 0.0},
+        {1.0, -1.0, -1.0, 0.0, 0.0625},
+        {-1.0, -1.0, -1.0, 0.0625, 0.0625},
+        {-1.0, 1.0, -1.0, 0.0625, 0.0},
         {1.0, 1.0, -1.0, 0.0, 0.0},
     };
 

@@ -1,6 +1,6 @@
 #include "shader_program.h"
 
-#include "util.h"
+#include "../util.h"
 
 void shader_program_init(shader_program *program, shader *vertex_shader,
                          shader *fragment_shader) {

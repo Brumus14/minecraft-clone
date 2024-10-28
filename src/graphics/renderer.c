@@ -4,6 +4,10 @@
 
 void renderer_init() {
     gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glFrontFace(GL_CCW);
 }
 
 void renderer_clear_colour() {

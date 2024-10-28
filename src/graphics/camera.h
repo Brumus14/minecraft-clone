@@ -1,7 +1,7 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include "vector3.h"
+#include "../vector3.h"
 
 typedef struct camera {
     vector3 position;
