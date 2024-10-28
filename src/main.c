@@ -5,11 +5,12 @@
 #include <stdlib.h>
 #include "util.h"
 #include "graphics/graphics.h"
+#include "world/block.h"
+#include "tilemap.h"
 
 // REMMEMBER TO AUTO BIND IN FUNCTIONS THAT ITS REQUIRED
 
-double pxpos;
-double pypos;
+const double SENSITIVITY = 0.1;
 
 void framebuffer_size_callback(window *window, int width, int height) {
     renderer_set_viewport(0, 0, width, height);
@@ -18,11 +19,15 @@ void framebuffer_size_callback(window *window, int width, int height) {
                             (float)window->width / window->height);
 }
 
-void cursor_pos_callback(window *window, double xpos, double ypos) {
+void cursor_pos_callback(window *window, double x_pos, double y_pos) {
+    static double previous_x_pos;
+    static double previous_y_pos;
+
     camera_rotate(window->camera,
-                  (vector3){(pypos - ypos) * 0.1, (xpos - pxpos) * 0.1, 0.0});
-    pxpos = xpos;
-    pypos = ypos;
+                  (vector3){(previous_y_pos - y_pos) * SENSITIVITY,
+                            (x_pos - previous_x_pos) * SENSITIVITY, 0.0});
+    previous_x_pos = x_pos;
+    previous_y_pos = y_pos;
 }
 
 int main() {
@@ -31,101 +36,39 @@ int main() {
 
     window_init(&window, 400, 400, "minecraft!", &camera);
 
-    camera_init(&camera, (vector3){0.0, 0.0, 3.0}, (vector3){0.0, -90.0, 0.0},
-                60.0, window_get_aspect_ratio(&window), 0.1, 100.0);
+    camera_init(&camera, (vector3){0.0, 0.0, 3.0}, VECTOR3_ZERO, 60.0,
+                window_get_aspect_ratio(&window), 0.1, 100.0);
 
     window_set_framebuffer_size_callback(&window, framebuffer_size_callback);
     window_set_cursor_pos_callback(&window, cursor_pos_callback);
 
     glfwSetInputMode(window.glfw_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
     renderer_init();
-
     renderer_set_clear_colour(0.7, 0.5, 0.3, 1.0);
-
     mat4 model_matrix = GLM_MAT4_IDENTITY;
 
-    texture grass;
-    texture_init(&grass, TEXTURE_FILTER_NEAREST);
-    texture_load(&grass, "res/textures/atlas.png");
+    tilemap tilemap;
+    tilemap_init(&tilemap, "res/textures/atlas.png", TEXTURE_FILTER_NEAREST, 16,
+                 16);
 
-    float cube[][5] = {
-        // front
-        {-1.0, -1.0, 1.0, 0.0, 0.0625},
-        {1.0, -1.0, 1.0, 0.0625, 0.0625},
-        {1.0, 1.0, 1.0, 0.0625, 0.0},
-        {-1.0, 1.0, 1.0, 0.0, 0.0},
+    block blocks[100];
 
-        // top
-        {-1.0, 1.0, 1.0, 0.0, 0.0625},
-        {1.0, 1.0, 1.0, 0.0625, 0.0625},
-        {1.0, 1.0, -1.0, 0.0625, 0.0},
-        {-1.0, 1.0, -1.0, 0.0, 0.0},
-
-        // right
-        {1.0, -1.0, 1.0, 0.0, 0.0625},
-        {1.0, -1.0, -1.0, 0.0625, 0.0625},
-        {1.0, 1.0, -1.0, 0.0625, 0.0},
-        {1.0, 1.0, 1.0, 0.0, 0.0},
-
-        // bottom
-        {-1.0, -1.0, -1.0, 0.0, 0.0625},
-        {1.0, -1.0, -1.0, 0.0625, 0.0625},
-        {1.0, -1.0, 1.0, 0.0625, 0.0},
-        {-1.0, -1.0, 1.0, 0.0, 0.0},
-
-        // left
-        {-1.0, -1.0, -1.0, 0.0, 0.0625},
-        {-1.0, -1.0, 1.0, 0.0625, 0.0625},
-        {-1.0, 1.0, 1.0, 0.0625, 0.0},
-        {-1.0, 1.0, -1.0, 0.0, 0.0},
-
-        // back
-        {1.0, -1.0, -1.0, 0.0, 0.0625},
-        {-1.0, -1.0, -1.0, 0.0625, 0.0625},
-        {-1.0, 1.0, -1.0, 0.0625, 0.0},
-        {1.0, 1.0, -1.0, 0.0, 0.0},
-    };
-
-    unsigned int indices[] = {
-        0,  1,  2,  0,  2,  3,  // front
-        4,  5,  6,  4,  6,  7,  // top
-        8,  9,  10, 8,  10, 11, // right
-        12, 13, 14, 12, 14, 15, // bottom
-        16, 17, 18, 16, 18, 19, // left
-        20, 21, 22, 20, 22, 23, // back
-    };
-
-    bo vbo;
-    bo_init(&vbo, BO_TYPE_VERTEX);
-    bo_bind(&vbo);
-    bo_upload(&vbo, sizeof(cube), cube, BO_USAGE_STATIC_DRAW);
-
-    bo ibo;
-    bo_init(&ibo, BO_TYPE_INDEX);
-    bo_bind(&ibo);
-    bo_upload(&ibo, sizeof(indices), indices, BO_USAGE_STATIC_DRAW);
-
-    vao vao;
-    vao_init(&vao);
-    vao_bind(&vao);
-    vao_attrib(&vao, 0, 3, VAO_TYPE_FLOAT, false, 5 * sizeof(float), 0);
-    vao_attrib(&vao, 1, 2, VAO_TYPE_FLOAT, false, 5 * sizeof(float),
-               (void *)(3 * sizeof(float)));
+    for (int y = 0; y < 10; y++) {
+        for (int x = 0; x < 10; x++) {
+            block_init(&blocks[y * 10 + x], (vector3){x, 0.0, y},
+                       BLOCK_TYPE_GRASS, tilemap);
+        }
+    }
 
     shader_program shader_program;
-    shader_program_from_files(&shader_program, "src/vertex.vert",
-                              "src/fragment.frag");
+    shader_program_from_files(&shader_program, "res/shaders/vertex.vert",
+                              "res/shaders/fragment.frag");
     shader_program_bind_attribute(&shader_program, 0, "position");
     shader_program_link(&shader_program);
     shader_program_use(&shader_program);
 
-    GLint texAttrib = glGetAttribLocation(shader_program.gl_id, "aTexCoord");
-    glEnableVertexAttribArray(texAttrib);
-    glEnableVertexAttribArray(texAttrib);
-
     while (!window_should_close(&window)) {
-        renderer_clear_colour();
+        renderer_clear_buffers();
 
         float camera_speed = 0.03;
         vector3 camera_delta;
@@ -189,15 +132,9 @@ int main() {
 
         camera_update_matrix_uniforms(&camera);
 
-        /*GLint texture_loc =*/
-        /*    glGetUniformLocation(shader_program.gl_id, "ourTexture");*/
-        /*glUniform1i(texture_loc, 0);*/
-
-        bo_bind(&ibo);
-        bo_bind(&vbo);
-        vao_bind(&vao);
-
-        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+        for (int i = 0; i < 100; i++) {
+            block_draw(&blocks[i]);
+        }
 
         window_swap_buffers(&window);
         glfwPollEvents();

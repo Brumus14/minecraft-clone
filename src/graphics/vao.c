@@ -8,6 +8,12 @@ void vao_init(vao *vao) {
 
 void vao_bind(vao *vao) {
     glBindVertexArray(vao->gl_id);
+
+    GLenum gl_error = glGetError();
+
+    if (gl_error != GL_NO_ERROR) {
+        printf("vao_bind: opengl error: %d\n", gl_error);
+    }
 }
 
 GLenum to_gl_array_type(array_type type) {
@@ -29,5 +35,5 @@ void vao_attrib(vao *vao, int index, int size, array_type type, bool normalised,
     GLenum gl_type = to_gl_array_type(type);
 
     glVertexAttribPointer(index, size, gl_type, normalised, stride, pointer);
-    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(index);
 }

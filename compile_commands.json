@@ -7,6 +7,7 @@
       "-Ilib/glad/include",
       "-Ilib/cglm/include",
       "-Ilib/stb/include",
+      "-Isrc",
       "-I",
       "/usr/include",
       "-o",
@@ -25,6 +26,7 @@
       "-Ilib/glad/include",
       "-Ilib/cglm/include",
       "-Ilib/stb/include",
+      "-Isrc",
       "-I",
       "/usr/include",
       "-o",
@@ -43,14 +45,15 @@
       "-Ilib/glad/include",
       "-Ilib/cglm/include",
       "-Ilib/stb/include",
+      "-Isrc",
       "-I",
       "/usr/include",
       "-o",
       "build/minecraft",
-      "src/bo.c"
+      "src/graphics/bo.c"
     ],
     "directory": "/home/brumus/Documents/Code/C/opengl/minecraft",
-    "file": "/home/brumus/Documents/Code/C/opengl/minecraft/src/bo.c",
+    "file": "/home/brumus/Documents/Code/C/opengl/minecraft/src/graphics/bo.c",
     "output": "/home/brumus/Documents/Code/C/opengl/minecraft/build/minecraft"
   },
   {
@@ -61,14 +64,15 @@
       "-Ilib/glad/include",
       "-Ilib/cglm/include",
       "-Ilib/stb/include",
+      "-Isrc",
       "-I",
       "/usr/include",
       "-o",
       "build/minecraft",
-      "src/vao.c"
+      "src/graphics/vao.c"
     ],
     "directory": "/home/brumus/Documents/Code/C/opengl/minecraft",
-    "file": "/home/brumus/Documents/Code/C/opengl/minecraft/src/vao.c",
+    "file": "/home/brumus/Documents/Code/C/opengl/minecraft/src/graphics/vao.c",
     "output": "/home/brumus/Documents/Code/C/opengl/minecraft/build/minecraft"
   },
   {
@@ -79,6 +83,7 @@
       "-Ilib/glad/include",
       "-Ilib/cglm/include",
       "-Ilib/stb/include",
+      "-Isrc",
       "-I",
       "/usr/include",
       "-o",
@@ -97,14 +102,15 @@
       "-Ilib/glad/include",
       "-Ilib/cglm/include",
       "-Ilib/stb/include",
+      "-Isrc",
       "-I",
       "/usr/include",
       "-o",
       "build/minecraft",
-      "src/shader.c"
+      "src/graphics/shader.c"
     ],
     "directory": "/home/brumus/Documents/Code/C/opengl/minecraft",
-    "file": "/home/brumus/Documents/Code/C/opengl/minecraft/src/shader.c",
+    "file": "/home/brumus/Documents/Code/C/opengl/minecraft/src/graphics/shader.c",
     "output": "/home/brumus/Documents/Code/C/opengl/minecraft/build/minecraft"
   },
   {
@@ -115,14 +121,15 @@
       "-Ilib/glad/include",
       "-Ilib/cglm/include",
       "-Ilib/stb/include",
+      "-Isrc",
       "-I",
       "/usr/include",
       "-o",
       "build/minecraft",
-      "src/shader_program.c"
+      "src/graphics/shader_program.c"
     ],
     "directory": "/home/brumus/Documents/Code/C/opengl/minecraft",
-    "file": "/home/brumus/Documents/Code/C/opengl/minecraft/src/shader_program.c",
+    "file": "/home/brumus/Documents/Code/C/opengl/minecraft/src/graphics/shader_program.c",
     "output": "/home/brumus/Documents/Code/C/opengl/minecraft/build/minecraft"
   },
   {
@@ -133,14 +140,15 @@
       "-Ilib/glad/include",
       "-Ilib/cglm/include",
       "-Ilib/stb/include",
+      "-Isrc",
       "-I",
       "/usr/include",
       "-o",
       "build/minecraft",
-      "src/renderer.c"
+      "src/graphics/renderer.c"
     ],
     "directory": "/home/brumus/Documents/Code/C/opengl/minecraft",
-    "file": "/home/brumus/Documents/Code/C/opengl/minecraft/src/renderer.c",
+    "file": "/home/brumus/Documents/Code/C/opengl/minecraft/src/graphics/renderer.c",
     "output": "/home/brumus/Documents/Code/C/opengl/minecraft/build/minecraft"
   },
   {
@@ -151,14 +159,15 @@
       "-Ilib/glad/include",
       "-Ilib/cglm/include",
       "-Ilib/stb/include",
+      "-Isrc",
       "-I",
       "/usr/include",
       "-o",
       "build/minecraft",
-      "src/window.c"
+      "src/graphics/window.c"
     ],
     "directory": "/home/brumus/Documents/Code/C/opengl/minecraft",
-    "file": "/home/brumus/Documents/Code/C/opengl/minecraft/src/window.c",
+    "file": "/home/brumus/Documents/Code/C/opengl/minecraft/src/graphics/window.c",
     "output": "/home/brumus/Documents/Code/C/opengl/minecraft/build/minecraft"
   },
   {
@@ -169,14 +178,15 @@
       "-Ilib/glad/include",
       "-Ilib/cglm/include",
       "-Ilib/stb/include",
+      "-Isrc",
       "-I",
       "/usr/include",
       "-o",
       "build/minecraft",
-      "src/camera.c"
+      "src/graphics/camera.c"
     ],
     "directory": "/home/brumus/Documents/Code/C/opengl/minecraft",
-    "file": "/home/brumus/Documents/Code/C/opengl/minecraft/src/camera.c",
+    "file": "/home/brumus/Documents/Code/C/opengl/minecraft/src/graphics/camera.c",
     "output": "/home/brumus/Documents/Code/C/opengl/minecraft/build/minecraft"
   },
   {
@@ -187,14 +197,53 @@
       "-Ilib/glad/include",
       "-Ilib/cglm/include",
       "-Ilib/stb/include",
+      "-Isrc",
       "-I",
       "/usr/include",
       "-o",
       "build/minecraft",
-      "src/vector3.c"
+      "src/math/vector3.c"
     ],
     "directory": "/home/brumus/Documents/Code/C/opengl/minecraft",
-    "file": "/home/brumus/Documents/Code/C/opengl/minecraft/src/vector3.c",
+    "file": "/home/brumus/Documents/Code/C/opengl/minecraft/src/math/vector3.c",
+    "output": "/home/brumus/Documents/Code/C/opengl/minecraft/build/minecraft"
+  },
+  {
+    "arguments": [
+      "/usr/bin/clang",
+      "-c",
+      "-Ilib/glfw/include",
+      "-Ilib/glad/include",
+      "-Ilib/cglm/include",
+      "-Ilib/stb/include",
+      "-Isrc",
+      "-I",
+      "/usr/include",
+      "-o",
+      "build/minecraft",
+      "src/graphics/stb_image.c"
+    ],
+    "directory": "/home/brumus/Documents/Code/C/opengl/minecraft",
+    "file": "/home/brumus/Documents/Code/C/opengl/minecraft/src/graphics/stb_image.c",
+    "output": "/home/brumus/Documents/Code/C/opengl/minecraft/build/minecraft"
+  },
+  {
+    "arguments": [
+      "/usr/bin/clang",
+      "-c",
+      "-Ilib/glfw/include",
+      "-Ilib/glad/include",
+      "-Ilib/cglm/include",
+      "-Ilib/stb/include",
+      "-Isrc",
+      "-I",
+      "/usr/include",
+      "-o",
+      "build/minecraft",
+      "src/graphics/texture.c"
+    ],
+    "directory": "/home/brumus/Documents/Code/C/opengl/minecraft",
+    "file": "/home/brumus/Documents/Code/C/opengl/minecraft/src/graphics/texture.c",
     "output": "/home/brumus/Documents/Code/C/opengl/minecraft/build/minecraft"
   },
   {
@@ -240,6 +289,8 @@
       "lib/cglm/include",
       "-I",
       "lib/stb/include",
+      "-I",
+      "src",
       "-cxx-isystem",
       "/usr/include",
       "-internal-isystem",
@@ -266,12 +317,12 @@
       "-I",
       "/usr/include",
       "-o",
-      "/tmp/glad-e0015c.o",
+      "/tmp/glad-222028.o",
       "lib/glad/src/glad.c"
     ],
     "directory": "/home/brumus/Documents/Code/C/opengl/minecraft",
     "file": "/home/brumus/Documents/Code/C/opengl/minecraft/lib/glad/src/glad.c",
-    "output": "/tmp/glad-e0015c.o"
+    "output": "/tmp/glad-222028.o"
   },
   {
     "arguments": [
@@ -316,6 +367,8 @@
       "lib/cglm/include",
       "-I",
       "lib/stb/include",
+      "-I",
+      "src",
       "-cxx-isystem",
       "/usr/include",
       "-internal-isystem",
@@ -342,12 +395,12 @@
       "-I",
       "/usr/include",
       "-o",
-      "/tmp/main-02f50c.o",
+      "/tmp/main-405d60.o",
       "src/main.c"
     ],
     "directory": "/home/brumus/Documents/Code/C/opengl/minecraft",
     "file": "/home/brumus/Documents/Code/C/opengl/minecraft/src/main.c",
-    "output": "/tmp/main-02f50c.o"
+    "output": "/tmp/main-405d60.o"
   },
   {
     "arguments": [
@@ -392,6 +445,8 @@
       "lib/cglm/include",
       "-I",
       "lib/stb/include",
+      "-I",
+      "src",
       "-cxx-isystem",
       "/usr/include",
       "-internal-isystem",
@@ -418,12 +473,12 @@
       "-I",
       "/usr/include",
       "-o",
-      "/tmp/bo-202f02.o",
-      "src/bo.c"
+      "/tmp/bo-c21465.o",
+      "src/graphics/bo.c"
     ],
     "directory": "/home/brumus/Documents/Code/C/opengl/minecraft",
-    "file": "/home/brumus/Documents/Code/C/opengl/minecraft/src/bo.c",
-    "output": "/tmp/bo-202f02.o"
+    "file": "/home/brumus/Documents/Code/C/opengl/minecraft/src/graphics/bo.c",
+    "output": "/tmp/bo-c21465.o"
   },
   {
     "arguments": [
@@ -468,6 +523,8 @@
       "lib/cglm/include",
       "-I",
       "lib/stb/include",
+      "-I",
+      "src",
       "-cxx-isystem",
       "/usr/include",
       "-internal-isystem",
@@ -494,12 +551,12 @@
       "-I",
       "/usr/include",
       "-o",
-      "/tmp/vao-94d52e.o",
-      "src/vao.c"
+      "/tmp/vao-ba4ae6.o",
+      "src/graphics/vao.c"
     ],
     "directory": "/home/brumus/Documents/Code/C/opengl/minecraft",
-    "file": "/home/brumus/Documents/Code/C/opengl/minecraft/src/vao.c",
-    "output": "/tmp/vao-94d52e.o"
+    "file": "/home/brumus/Documents/Code/C/opengl/minecraft/src/graphics/vao.c",
+    "output": "/tmp/vao-ba4ae6.o"
   },
   {
     "arguments": [
@@ -544,6 +601,8 @@
       "lib/cglm/include",
       "-I",
       "lib/stb/include",
+      "-I",
+      "src",
       "-cxx-isystem",
       "/usr/include",
       "-internal-isystem",
@@ -570,12 +629,12 @@
       "-I",
       "/usr/include",
       "-o",
-      "/tmp/util-9c2e51.o",
+      "/tmp/util-2d0657.o",
       "src/util.c"
     ],
     "directory": "/home/brumus/Documents/Code/C/opengl/minecraft",
     "file": "/home/brumus/Documents/Code/C/opengl/minecraft/src/util.c",
-    "output": "/tmp/util-9c2e51.o"
+    "output": "/tmp/util-2d0657.o"
   },
   {
     "arguments": [
@@ -620,6 +679,8 @@
       "lib/cglm/include",
       "-I",
       "lib/stb/include",
+      "-I",
+      "src",
       "-cxx-isystem",
       "/usr/include",
       "-internal-isystem",
@@ -646,12 +707,12 @@
       "-I",
       "/usr/include",
       "-o",
-      "/tmp/shader-7f57c5.o",
-      "src/shader.c"
+      "/tmp/shader-4edd52.o",
+      "src/graphics/shader.c"
     ],
     "directory": "/home/brumus/Documents/Code/C/opengl/minecraft",
-    "file": "/home/brumus/Documents/Code/C/opengl/minecraft/src/shader.c",
-    "output": "/tmp/shader-7f57c5.o"
+    "file": "/home/brumus/Documents/Code/C/opengl/minecraft/src/graphics/shader.c",
+    "output": "/tmp/shader-4edd52.o"
   },
   {
     "arguments": [
@@ -696,6 +757,8 @@
       "lib/cglm/include",
       "-I",
       "lib/stb/include",
+      "-I",
+      "src",
       "-cxx-isystem",
       "/usr/include",
       "-internal-isystem",
@@ -722,12 +785,12 @@
       "-I",
       "/usr/include",
       "-o",
-      "/tmp/shader_program-2d4c7f.o",
-      "src/shader_program.c"
+      "/tmp/shader_program-b9aea9.o",
+      "src/graphics/shader_program.c"
     ],
     "directory": "/home/brumus/Documents/Code/C/opengl/minecraft",
-    "file": "/home/brumus/Documents/Code/C/opengl/minecraft/src/shader_program.c",
-    "output": "/tmp/shader_program-2d4c7f.o"
+    "file": "/home/brumus/Documents/Code/C/opengl/minecraft/src/graphics/shader_program.c",
+    "output": "/tmp/shader_program-b9aea9.o"
   },
   {
     "arguments": [
@@ -772,6 +835,8 @@
       "lib/cglm/include",
       "-I",
       "lib/stb/include",
+      "-I",
+      "src",
       "-cxx-isystem",
       "/usr/include",
       "-internal-isystem",
@@ -798,12 +863,12 @@
       "-I",
       "/usr/include",
       "-o",
-      "/tmp/renderer-61a216.o",
-      "src/renderer.c"
+      "/tmp/renderer-f16a94.o",
+      "src/graphics/renderer.c"
     ],
     "directory": "/home/brumus/Documents/Code/C/opengl/minecraft",
-    "file": "/home/brumus/Documents/Code/C/opengl/minecraft/src/renderer.c",
-    "output": "/tmp/renderer-61a216.o"
+    "file": "/home/brumus/Documents/Code/C/opengl/minecraft/src/graphics/renderer.c",
+    "output": "/tmp/renderer-f16a94.o"
   },
   {
     "arguments": [
@@ -848,6 +913,8 @@
       "lib/cglm/include",
       "-I",
       "lib/stb/include",
+      "-I",
+      "src",
       "-cxx-isystem",
       "/usr/include",
       "-internal-isystem",
@@ -874,12 +941,12 @@
       "-I",
       "/usr/include",
       "-o",
-      "/tmp/window-67a42f.o",
-      "src/window.c"
+      "/tmp/window-d55b19.o",
+      "src/graphics/window.c"
     ],
     "directory": "/home/brumus/Documents/Code/C/opengl/minecraft",
-    "file": "/home/brumus/Documents/Code/C/opengl/minecraft/src/window.c",
-    "output": "/tmp/window-67a42f.o"
+    "file": "/home/brumus/Documents/Code/C/opengl/minecraft/src/graphics/window.c",
+    "output": "/tmp/window-d55b19.o"
   },
   {
     "arguments": [
@@ -924,6 +991,8 @@
       "lib/cglm/include",
       "-I",
       "lib/stb/include",
+      "-I",
+      "src",
       "-cxx-isystem",
       "/usr/include",
       "-internal-isystem",
@@ -950,12 +1019,12 @@
       "-I",
       "/usr/include",
       "-o",
-      "/tmp/camera-47aaed.o",
-      "src/camera.c"
+      "/tmp/camera-eeb8d3.o",
+      "src/graphics/camera.c"
     ],
     "directory": "/home/brumus/Documents/Code/C/opengl/minecraft",
-    "file": "/home/brumus/Documents/Code/C/opengl/minecraft/src/camera.c",
-    "output": "/tmp/camera-47aaed.o"
+    "file": "/home/brumus/Documents/Code/C/opengl/minecraft/src/graphics/camera.c",
+    "output": "/tmp/camera-eeb8d3.o"
   },
   {
     "arguments": [
@@ -1000,6 +1069,8 @@
       "lib/cglm/include",
       "-I",
       "lib/stb/include",
+      "-I",
+      "src",
       "-cxx-isystem",
       "/usr/include",
       "-internal-isystem",
@@ -1026,11 +1097,167 @@
       "-I",
       "/usr/include",
       "-o",
-      "/tmp/vector3-882df2.o",
-      "src/vector3.c"
+      "/tmp/vector3-5033fe.o",
+      "src/math/vector3.c"
     ],
     "directory": "/home/brumus/Documents/Code/C/opengl/minecraft",
-    "file": "/home/brumus/Documents/Code/C/opengl/minecraft/src/vector3.c",
-    "output": "/tmp/vector3-882df2.o"
+    "file": "/home/brumus/Documents/Code/C/opengl/minecraft/src/math/vector3.c",
+    "output": "/tmp/vector3-5033fe.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/clang-18",
+      "-cc1",
+      "-triple",
+      "x86_64-pc-linux-gnu",
+      "-emit-obj",
+      "-mrelax-all",
+      "-dumpdir",
+      "build/minecraft-",
+      "-disable-free",
+      "-clear-ast-before-backend",
+      "-disable-llvm-verifier",
+      "-discard-value-names",
+      "-main-file-name",
+      "-mrelocation-model",
+      "pic",
+      "-pic-level",
+      "2",
+      "-pic-is-pie",
+      "-mframe-pointer=all",
+      "-fmath-errno",
+      "-ffp-contract=on",
+      "-fno-rounding-math",
+      "-mconstructor-aliases",
+      "-funwind-tables=2",
+      "-target-cpu",
+      "x86-64",
+      "-tune-cpu",
+      "generic",
+      "-debugger-tuning=gdb",
+      "-fdebug-compilation-dir=/home/brumus/Documents/Code/C/opengl/minecraft",
+      "-fcoverage-compilation-dir=/home/brumus/Documents/Code/C/opengl/minecraft",
+      "-resource-dir",
+      "/usr/lib/clang/18",
+      "-I",
+      "lib/glfw/include",
+      "-I",
+      "lib/glad/include",
+      "-I",
+      "lib/cglm/include",
+      "-I",
+      "lib/stb/include",
+      "-I",
+      "src",
+      "-cxx-isystem",
+      "/usr/include",
+      "-internal-isystem",
+      "/usr/lib/clang/18/include",
+      "-internal-isystem",
+      "/usr/local/include",
+      "-internal-isystem",
+      "/usr/bin/../lib64/gcc/x86_64-pc-linux-gnu/14.2.1/../../../../x86_64-pc-linux-gnu/include",
+      "-internal-externc-isystem",
+      "/include",
+      "-internal-externc-isystem",
+      "/usr/include",
+      "-ferror-limit",
+      "19",
+      "-stack-protector",
+      "2",
+      "-fgnuc-version=4.2.1",
+      "-fskip-odr-check-in-gmf",
+      "-fcolor-diagnostics",
+      "-faddrsig",
+      "-D__GCC_HAVE_DWARF2_CFI_ASM=1",
+      "-x",
+      "c",
+      "-I",
+      "/usr/include",
+      "-o",
+      "/tmp/stb_image-a6a24e.o",
+      "src/graphics/stb_image.c"
+    ],
+    "directory": "/home/brumus/Documents/Code/C/opengl/minecraft",
+    "file": "/home/brumus/Documents/Code/C/opengl/minecraft/src/graphics/stb_image.c",
+    "output": "/tmp/stb_image-a6a24e.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/clang-18",
+      "-cc1",
+      "-triple",
+      "x86_64-pc-linux-gnu",
+      "-emit-obj",
+      "-mrelax-all",
+      "-dumpdir",
+      "build/minecraft-",
+      "-disable-free",
+      "-clear-ast-before-backend",
+      "-disable-llvm-verifier",
+      "-discard-value-names",
+      "-main-file-name",
+      "-mrelocation-model",
+      "pic",
+      "-pic-level",
+      "2",
+      "-pic-is-pie",
+      "-mframe-pointer=all",
+      "-fmath-errno",
+      "-ffp-contract=on",
+      "-fno-rounding-math",
+      "-mconstructor-aliases",
+      "-funwind-tables=2",
+      "-target-cpu",
+      "x86-64",
+      "-tune-cpu",
+      "generic",
+      "-debugger-tuning=gdb",
+      "-fdebug-compilation-dir=/home/brumus/Documents/Code/C/opengl/minecraft",
+      "-fcoverage-compilation-dir=/home/brumus/Documents/Code/C/opengl/minecraft",
+      "-resource-dir",
+      "/usr/lib/clang/18",
+      "-I",
+      "lib/glfw/include",
+      "-I",
+      "lib/glad/include",
+      "-I",
+      "lib/cglm/include",
+      "-I",
+      "lib/stb/include",
+      "-I",
+      "src",
+      "-cxx-isystem",
+      "/usr/include",
+      "-internal-isystem",
+      "/usr/lib/clang/18/include",
+      "-internal-isystem",
+      "/usr/local/include",
+      "-internal-isystem",
+      "/usr/bin/../lib64/gcc/x86_64-pc-linux-gnu/14.2.1/../../../../x86_64-pc-linux-gnu/include",
+      "-internal-externc-isystem",
+      "/include",
+      "-internal-externc-isystem",
+      "/usr/include",
+      "-ferror-limit",
+      "19",
+      "-stack-protector",
+      "2",
+      "-fgnuc-version=4.2.1",
+      "-fskip-odr-check-in-gmf",
+      "-fcolor-diagnostics",
+      "-faddrsig",
+      "-D__GCC_HAVE_DWARF2_CFI_ASM=1",
+      "-x",
+      "c",
+      "-I",
+      "/usr/include",
+      "-o",
+      "/tmp/texture-f9f754.o",
+      "src/graphics/texture.c"
+    ],
+    "directory": "/home/brumus/Documents/Code/C/opengl/minecraft",
+    "file": "/home/brumus/Documents/Code/C/opengl/minecraft/src/graphics/texture.c",
+    "output": "/tmp/texture-f9f754.o"
   }
 ]

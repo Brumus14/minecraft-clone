@@ -53,6 +53,16 @@ vector3 vector3_add(vector3 v1, vector3 v2) {
     return result;
 }
 
+vector3 vector3_sub(vector3 v1, vector3 v2) {
+    vector3 result;
+
+    result.x = v1.x - v2.x;
+    result.y = v1.y - v2.y;
+    result.z = v1.z - v2.z;
+
+    return result;
+}
+
 vector3 vector3_scalar_multiply(vector3 vector, float scalar) {
     vector3 result;
 

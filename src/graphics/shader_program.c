@@ -1,6 +1,8 @@
 #include "shader_program.h"
 
-#include "../util.h"
+#include <stdio.h>
+
+#include "util.h"
 
 void shader_program_init(shader_program *program, shader *vertex_shader,
                          shader *fragment_shader) {
@@ -23,6 +25,18 @@ void shader_program_from_files(shader_program *program, char *vertex_path,
                                char *fragment_path) {
     char *vertex_source = read_file(vertex_path);
     char *fragment_source = read_file(fragment_path);
+
+    if (!vertex_source) {
+        printf("shader_program_from_files: vertex source is null\n");
+
+        return;
+    }
+
+    if (!fragment_source) {
+        printf("shader_program_from_files: fragment source is null\n");
+
+        return;
+    }
 
     shader vertex_shader;
     shader_init(&vertex_shader, SHADER_TYPE_VERTEX);

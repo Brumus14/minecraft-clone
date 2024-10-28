@@ -8,10 +8,12 @@ void renderer_init() {
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
     glFrontFace(GL_CCW);
+
+    glEnable(GL_DEPTH_TEST);
 }
 
-void renderer_clear_colour() {
-    glClear(GL_COLOR_BUFFER_BIT);
+void renderer_clear_buffers() {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void renderer_set_clear_colour(float red, float green, float blue,

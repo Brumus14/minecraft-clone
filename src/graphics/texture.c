@@ -4,10 +4,10 @@
 
 GLenum to_gl_filter(texture_filter filter) {
     switch (filter) {
-        case TEXTURE_FILTER_LINEAR:
-            return GL_LINEAR;
-        case TEXTURE_FILTER_NEAREST:
-            return GL_NEAREST;
+    case TEXTURE_FILTER_LINEAR:
+        return GL_LINEAR;
+    case TEXTURE_FILTER_NEAREST:
+        return GL_NEAREST;
     }
 }
 
@@ -19,8 +19,12 @@ void texture_init(texture *texture, texture_filter filter) {
 void texture_bind(texture *texture) {
     glBindTexture(GL_TEXTURE_2D, texture->gl_id);
 
-    GLenum gl_filter = to_gl_filter(texture->filter);
+    GLenum error = glGetError();
+    if (error != 0) {
+        printf("texture_bind: %d\n", error);
+    }
 
+    GLenum gl_filter = GL_NEAREST;
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter);
 }
@@ -30,8 +34,7 @@ void texture_load(texture *texture, char *path) {
     int height;
     int channels;
 
-    unsigned char *stb_texture =
-        stbi_load(path, &width, &height, &channels, 0);
+    unsigned char *stb_texture = stbi_load(path, &width, &height, &channels, 0);
 
     GLenum gl_format;
 

@@ -2,12 +2,15 @@
 
 #include "glad/glad.h"
 
+const vector3 rotation_offset = (vector3){0.0, -90.0, 0.0};
+
 vector3 direction_from_rotation(vector3 rotation) {
     vector3 direction;
+    vector3 offset_rotation = vector3_add(rotation, rotation_offset);
 
-    direction.x = cos(glm_rad(rotation.y)) * cos(glm_rad(rotation.x));
-    direction.y = sin(glm_rad(rotation.x));
-    direction.z = sin(glm_rad(rotation.y)) * cos(glm_rad(rotation.x));
+    direction.x = cos(glm_rad(offset_rotation.y)) * cos(glm_rad(offset_rotation.x));
+    direction.y = sin(glm_rad(offset_rotation.x));
+    direction.z = sin(glm_rad(offset_rotation.y)) * cos(glm_rad(offset_rotation.x));
 
     vector3_normalise(&direction);
 
@@ -97,16 +100,19 @@ void camera_set_aspect_ratio(camera *camera, float aspect_ratio) {
 }
 
 void camera_set_rotation(camera *camera, vector3 rotation) {
-    vec3 glm_rotation;
-    vector3_to_glm(rotation, &glm_rotation);
+    vector3 offset_rotation = vector3_add(rotation, rotation_offset);
 
-    camera->rotation = rotation;
+    vec3 glm_rotation;
+    vector3_to_glm(offset_rotation, &glm_rotation);
+
+    camera->rotation = offset_rotation;
 
     generate_view_matrix(camera);
 }
 
 void camera_rotate(camera *camera, vector3 delta_rotation) {
     vector3 new_rotation = vector3_add(camera->rotation, delta_rotation);
+    new_rotation = vector3_sub(new_rotation, rotation_offset);
 
     camera_set_rotation(camera, new_rotation);
 }

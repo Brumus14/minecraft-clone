@@ -26,9 +26,6 @@ void shader_compile(shader *shader) {
 
     GLint val = GL_FALSE;
     glGetShaderiv(shader->gl_id, GL_COMPILE_STATUS, &val);
-    if (val != GL_TRUE) {
-        printf("COMPILATION FAILED!!1");
-    }
 }
 
 void shader_delete(shader *shader) {
