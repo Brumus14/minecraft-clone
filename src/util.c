@@ -5,7 +5,7 @@ char *read_file(char *path) {
     FILE *file = fopen(path, "r");
 
     if (!file) {
-        printf("read_file: could not open file at %s\n", path);
+        fprintf(stderr, "read_file: could not open file at %s\n", path);
 
         return NULL;
     }

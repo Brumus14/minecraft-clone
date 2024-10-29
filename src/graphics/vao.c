@@ -1,19 +1,14 @@
 #include "vao.h"
 
 #include <stdio.h>
+#include "gl_util.h"
 
 void vao_init(vao *vao) {
-    glGenVertexArrays(1, &vao->gl_id);
+    GL_CALL(glGenVertexArrays(1, &vao->gl_id));
 }
 
 void vao_bind(vao *vao) {
-    glBindVertexArray(vao->gl_id);
-
-    GLenum gl_error = glGetError();
-
-    if (gl_error != GL_NO_ERROR) {
-        printf("vao_bind: opengl error: %d\n", gl_error);
-    }
+    GL_CALL(glBindVertexArray(vao->gl_id));
 }
 
 GLenum to_gl_array_type(array_type type) {
@@ -34,6 +29,7 @@ void vao_attrib(vao *vao, int index, int size, array_type type, bool normalised,
                 size_t stride, void *pointer) {
     GLenum gl_type = to_gl_array_type(type);
 
-    glVertexAttribPointer(index, size, gl_type, normalised, stride, pointer);
-    glEnableVertexAttribArray(index);
+    GL_CALL(glVertexAttribPointer(index, size, gl_type, normalised, stride,
+                                  pointer));
+    GL_CALL(glEnableVertexAttribArray(index));
 }

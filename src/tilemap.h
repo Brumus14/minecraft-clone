@@ -6,7 +6,6 @@
 
 typedef struct tilemap {
     texture texture;
-    texture_filter texture_filter;
     int width;
     int height;
 } tilemap;

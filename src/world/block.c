@@ -88,7 +88,6 @@ void block_init(block *block, vector3 position, block_type type,
 }
 
 void block_draw(block *block) {
-    glActiveTexture(GL_TEXTURE0);
     tilemap_bind(&block->tilemap);
     bo_bind(&block->vbo);
     bo_bind(&block->ibo);

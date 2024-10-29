@@ -1,6 +1,7 @@
 #include "bo.h"
 
 #include <stdio.h>
+#include "gl_util.h"
 
 GLenum to_gl_usage(bo_usage usage) {
     switch (usage) {
@@ -47,13 +48,7 @@ void bo_init(bo *bo, bo_type type) {
     }
 
     bo->type = type;
-    glGenBuffers(1, &bo->gl_id);
-
-    GLenum gl_error = glGetError();
-
-    if (gl_error != GL_NO_ERROR) {
-        printf("bo_init: opengl error: %d\n", gl_error);
-    }
+    GL_CALL(glGenBuffers(1, &bo->gl_id));
 }
 
 void bo_bind(bo *bo) {
@@ -63,13 +58,7 @@ void bo_bind(bo *bo) {
     }
 
     GLenum gl_type = to_gl_type(bo->type);
-    glBindBuffer(gl_type, bo->gl_id);
-
-    GLenum gl_error = glGetError();
-
-    if (gl_error != GL_NO_ERROR) {
-        printf("bo_bind: opengl error: %d\n", gl_error);
-    }
+    GL_CALL(glBindBuffer(gl_type, bo->gl_id));
 }
 
 void bo_upload(bo *bo, int data_size, void *data, bo_usage usage) {
@@ -79,11 +68,5 @@ void bo_upload(bo *bo, int data_size, void *data, bo_usage usage) {
     }
 
     GLenum gl_type = to_gl_type(bo->type);
-    glBufferData(gl_type, data_size, data, to_gl_usage(usage));
-
-    GLenum gl_error = glGetError();
-
-    if (gl_error != GL_NO_ERROR) {
-        printf("bo_upload: opengl error: %d\n", gl_error);
-    }
+    GL_CALL(glBufferData(gl_type, data_size, data, to_gl_usage(usage)));
 }

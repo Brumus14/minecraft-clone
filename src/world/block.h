@@ -1,11 +1,11 @@
 #ifndef BLOCK_H
 #define BLOCK_H
 
-#include "graphics/bo.h"
-#include "graphics/vao.h"
-#include "math/vector3.h"
-#include "graphics/texture.h"
-#include "tilemap.h"
+#include "../graphics/bo.h"
+#include "../graphics/vao.h"
+#include "../math/vector3.h"
+#include "../graphics/texture.h"
+#include "../tilemap.h"
 
 typedef enum block_type { BLOCK_TYPE_GRASS } block_type;
 

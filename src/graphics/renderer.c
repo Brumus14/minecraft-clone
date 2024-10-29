@@ -1,28 +1,29 @@
 #include "renderer.h"
 
 #include "GLFW/glfw3.h"
+#include "gl_util.h"
 
 void renderer_init() {
     gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
-    glFrontFace(GL_CCW);
+    GL_CALL(glEnable(GL_CULL_FACE));
+    GL_CALL(glCullFace(GL_BACK));
+    GL_CALL(glFrontFace(GL_CCW));
 
-    glEnable(GL_DEPTH_TEST);
+    GL_CALL(glEnable(GL_DEPTH_TEST));
 }
 
 void renderer_clear_buffers() {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    GL_CALL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 }
 
 void renderer_set_clear_colour(float red, float green, float blue,
                                float alpha) {
-    glClearColor(red, green, blue, alpha);
+    GL_CALL(glClearColor(red, green, blue, alpha));
 }
 
 void renderer_set_viewport(int x, int y, int width, int height) {
-    glViewport(x, y, width, height);
+    GL_CALL(glViewport(x, y, width, height));
 }
 
 GLenum to_gl_draw_mode(draw_mode mode) {
@@ -34,5 +35,5 @@ GLenum to_gl_draw_mode(draw_mode mode) {
 
 void renderer_draw_arrays(draw_mode mode, int first, int count) {
     GLenum gl_mode = to_gl_draw_mode(mode);
-    glDrawArrays(gl_mode, first, count);
+    GL_CALL(glDrawArrays(gl_mode, first, count));
 }

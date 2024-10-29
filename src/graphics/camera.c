@@ -1,6 +1,7 @@
 #include "camera.h"
 
 #include "glad/glad.h"
+#include "gl_util.h"
 
 const vector3 rotation_offset = (vector3){0.0, -90.0, 0.0};
 
@@ -8,9 +9,11 @@ vector3 direction_from_rotation(vector3 rotation) {
     vector3 direction;
     vector3 offset_rotation = vector3_add(rotation, rotation_offset);
 
-    direction.x = cos(glm_rad(offset_rotation.y)) * cos(glm_rad(offset_rotation.x));
+    direction.x =
+        cos(glm_rad(offset_rotation.y)) * cos(glm_rad(offset_rotation.x));
     direction.y = sin(glm_rad(offset_rotation.x));
-    direction.z = sin(glm_rad(offset_rotation.y)) * cos(glm_rad(offset_rotation.x));
+    direction.z =
+        sin(glm_rad(offset_rotation.y)) * cos(glm_rad(offset_rotation.x));
 
     vector3_normalise(&direction);
 
@@ -82,15 +85,19 @@ void camera_translate(camera *camera, vector3 translation) {
 
 void camera_update_matrix_uniforms(camera *camera) {
     GLint shader_program_id;
-    glGetIntegerv(GL_CURRENT_PROGRAM, &shader_program_id);
+    GL_CALL(glGetIntegerv(GL_CURRENT_PROGRAM, &shader_program_id));
 
-    GLint view_loc = glGetUniformLocation(shader_program_id, "view");
-    glUniformMatrix4fv(view_loc, 1, GL_FALSE, (float *)camera->view_matrix);
+    GLint view_loc =
+        GL_CALL_R(glGetUniformLocation(shader_program_id, "view"), GLint);
+
+    GL_CALL(glUniformMatrix4fv(view_loc, 1, GL_FALSE,
+                               (float *)camera->view_matrix));
 
     GLint projection_loc =
-        glGetUniformLocation(shader_program_id, "projection");
-    glUniformMatrix4fv(projection_loc, 1, GL_FALSE,
-                       (float *)camera->projection_matrix);
+        GL_CALL_R(glGetUniformLocation(shader_program_id, "projection"), GLint);
+
+    GL_CALL(glUniformMatrix4fv(projection_loc, 1, GL_FALSE,
+                               (float *)camera->projection_matrix));
 }
 
 void camera_set_aspect_ratio(camera *camera, float aspect_ratio) {

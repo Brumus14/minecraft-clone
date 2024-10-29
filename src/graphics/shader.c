@@ -1,6 +1,8 @@
 #include "shader.h"
 #include <stdio.h>
 
+#include "gl_util.h"
+
 GLenum to_shader_type_gl(shader_type type) {
     switch (type) {
     case SHADER_TYPE_VERTEX:
@@ -13,21 +15,21 @@ GLenum to_shader_type_gl(shader_type type) {
 void shader_init(shader *shader, shader_type type) {
     GLenum gl_type = to_shader_type_gl(type);
 
-    shader->gl_id = glCreateShader(gl_type);
+    shader->gl_id = GL_CALL_R(glCreateShader(gl_type), GLuint);
 }
 
 void shader_source(shader *shader, char *source) {
     const GLchar *sources[] = {source};
-    glShaderSource(shader->gl_id, 1, sources, 0);
+    GL_CALL(glShaderSource(shader->gl_id, 1, sources, 0));
 }
 
 void shader_compile(shader *shader) {
-    glCompileShader(shader->gl_id);
+    GL_CALL(glCompileShader(shader->gl_id));
 
     GLint val = GL_FALSE;
-    glGetShaderiv(shader->gl_id, GL_COMPILE_STATUS, &val);
+    GL_CALL(glGetShaderiv(shader->gl_id, GL_COMPILE_STATUS, &val));
 }
 
 void shader_delete(shader *shader) {
-    glDeleteShader(shader->gl_id);
+    GL_CALL(glDeleteShader(shader->gl_id));
 }
