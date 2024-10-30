@@ -1,7 +1,7 @@
 #ifndef VBO_H
 #define VBO_H
 
-#include <glad/glad.h>
+#include "glad/glad.h"
 
 typedef enum bo_type { BO_TYPE_VERTEX, BO_TYPE_INDEX } bo_type;
 
@@ -26,6 +26,7 @@ GLenum to_gl_usage(bo_usage usage);
 GLenum to_gl_type(bo_type type);
 void bo_init(bo *bo, bo_type type);
 void bo_bind(bo *bo);
+void bo_unbind(bo *bo);
 void bo_upload(bo *bo, int data_size, void *data, bo_usage usage);
 
 #endif

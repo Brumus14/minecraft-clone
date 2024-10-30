@@ -17,6 +17,7 @@ typedef enum array_type {
 
 void vao_init(vao *vao);
 void vao_bind(vao *vao);
+void vao_unbind();
 void vao_attrib(vao *vao, int index, int size, array_type type, bool normalised,
                 size_t stride, void *pointer);
 

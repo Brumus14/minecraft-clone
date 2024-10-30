@@ -3,6 +3,7 @@
 
 #include "../math/vector3.h"
 
+// create custom matrix4 implementation
 typedef struct camera {
     vector3 position;
     vector3 rotation;

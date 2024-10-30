@@ -44,19 +44,19 @@ int main() {
 
     glfwSetInputMode(window.glfw_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     renderer_init();
-    renderer_set_clear_colour(0.7, 0.5, 0.3, 1.0);
+    renderer_set_clear_colour(0.53, 0.81, 0.92, 1.0);
     mat4 model_matrix = GLM_MAT4_IDENTITY;
 
     tilemap tilemap;
     tilemap_init(&tilemap, "res/textures/atlas.png", TEXTURE_FILTER_NEAREST, 16,
                  16);
 
-    block blocks[100];
+    block blocks[10000];
 
-    for (int y = 0; y < 10; y++) {
-        for (int x = 0; x < 10; x++) {
-            block_init(&blocks[y * 10 + x], (vector3){x, 0.0, y},
-                       BLOCK_TYPE_GRASS, tilemap);
+    for (int y = 0; y < 100; y++) {
+        for (int x = 0; x < 100; x++) {
+            block_init(&blocks[y * 100 + x], (vector3){x, 0.0, y},
+                       BLOCK_TYPE_GRASS, &tilemap);
         }
     }
 
@@ -132,7 +132,7 @@ int main() {
 
         camera_update_matrix_uniforms(&camera);
 
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 10000; i++) {
             block_draw(&blocks[i]);
         }
 

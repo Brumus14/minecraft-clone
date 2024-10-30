@@ -43,7 +43,7 @@ GLenum to_gl_type(bo_type type) {
 
 void bo_init(bo *bo, bo_type type) {
     if (bo == NULL) {
-        fprintf(stderr, "bo_init: buffer object is null");
+        fprintf(stderr, "bo_init: buffer object is null\n");
         return;
     }
 
@@ -53,7 +53,7 @@ void bo_init(bo *bo, bo_type type) {
 
 void bo_bind(bo *bo) {
     if (bo == NULL) {
-        fprintf(stderr, "bo_bind: buffer object is null");
+        fprintf(stderr, "bo_bind: buffer object is null\n");
         return;
     }
 
@@ -61,9 +61,19 @@ void bo_bind(bo *bo) {
     GL_CALL(glBindBuffer(gl_type, bo->gl_id));
 }
 
+void bo_unbind(bo *bo) {
+    if (bo == NULL) {
+        fprintf(stderr, "bo_unbind: buffer object is null\n");
+        return;
+    }
+
+    GLenum gl_type = to_gl_type(bo->type);
+    GL_CALL(glBindBuffer(gl_type, 0));
+}
+
 void bo_upload(bo *bo, int data_size, void *data, bo_usage usage) {
     if (bo == NULL) {
-        fprintf(stderr, "bo_upload: buffer object is null");
+        fprintf(stderr, "bo_upload: buffer object is null\n");
         return;
     }
 

@@ -10,18 +10,18 @@
 typedef enum block_type { BLOCK_TYPE_GRASS } block_type;
 
 typedef struct block_texture {
-    int face_textures[6];
+    int face_textures[6]; // front, top, right, bottom, left, back
 } block_texture;
 
 typedef struct block {
     bo vbo;
     bo ibo;
     vao vao;
-    tilemap tilemap;
+    tilemap *tilemap;
 } block;
 
 void block_init(block *block, vector3 position, block_type type,
-                tilemap tilemap);
+                tilemap *tilemap);
 void block_draw(block *block);
 
 #endif

@@ -1,8 +1,8 @@
 #ifndef GL_UTIL_H
 #define GL_UTIL_H
 
-#include "glad/glad.h"
 #include <stdio.h>
+#include "glad/glad.h"
 
 #define GL_CALL(func)                                                          \
     func;                                                                      \

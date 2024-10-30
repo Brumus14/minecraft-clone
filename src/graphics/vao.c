@@ -11,6 +11,10 @@ void vao_bind(vao *vao) {
     GL_CALL(glBindVertexArray(vao->gl_id));
 }
 
+void vao_unbind() {
+    GL_CALL(glBindVertexArray(0));
+}
+
 GLenum to_gl_array_type(array_type type) {
     switch (type) {
     case VAO_TYPE_FLOAT:

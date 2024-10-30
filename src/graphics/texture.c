@@ -10,6 +10,7 @@ GLenum to_gl_filter(texture_filter filter) {
     case TEXTURE_FILTER_NEAREST:
         return GL_NEAREST;
     default:
+        fprintf(stderr, "texture filter not recognised\n");
         return GL_NEAREST;
     }
 }

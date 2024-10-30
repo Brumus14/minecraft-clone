@@ -1,6 +1,6 @@
 #include "shader.h"
-#include <stdio.h>
 
+#include <stdio.h>
 #include "gl_util.h"
 
 GLenum to_shader_type_gl(shader_type type) {
@@ -13,17 +13,32 @@ GLenum to_shader_type_gl(shader_type type) {
 }
 
 void shader_init(shader *shader, shader_type type) {
+    if (shader == NULL) {
+        fprintf(stderr, "shader_init: shader is null\n");
+        return;
+    }
+
     GLenum gl_type = to_shader_type_gl(type);
 
     shader->gl_id = GL_CALL_R(glCreateShader(gl_type), GLuint);
 }
 
 void shader_source(shader *shader, char *source) {
+    if (shader == NULL) {
+        fprintf(stderr, "shader_source: shader is null\n");
+        return;
+    }
+
     const GLchar *sources[] = {source};
     GL_CALL(glShaderSource(shader->gl_id, 1, sources, 0));
 }
 
 void shader_compile(shader *shader) {
+    if (shader == NULL) {
+        fprintf(stderr, "shader_compile: shader is null\n");
+        return;
+    }
+
     GL_CALL(glCompileShader(shader->gl_id));
 
     GLint val = GL_FALSE;
@@ -31,5 +46,10 @@ void shader_compile(shader *shader) {
 }
 
 void shader_delete(shader *shader) {
+    if (shader == NULL) {
+        fprintf(stderr, "shader_delete: shader is null\n");
+        return;
+    }
+
     GL_CALL(glDeleteShader(shader->gl_id));
 }

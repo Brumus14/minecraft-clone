@@ -21,12 +21,22 @@ vector3 direction_from_rotation(vector3 rotation) {
 }
 
 void generate_perspective_matrix(camera *camera) {
+    if (camera == NULL) {
+        fprintf(stderr, "generate_perspective_matrix: camera is null\n");
+        return;
+    }
+
     glm_perspective(glm_rad(camera->fov), camera->aspect_ratio,
                     camera->near_plane, camera->far_plane,
                     camera->projection_matrix);
 }
 
 void generate_view_matrix(camera *camera) {
+    if (camera == NULL) {
+        fprintf(stderr, "generate_view_matrix: camera is null\n");
+        return;
+    }
+
     vector3 direction = direction_from_rotation(camera->rotation);
 
     vec3 glm_direction;
@@ -41,6 +51,11 @@ void generate_view_matrix(camera *camera) {
 
 void camera_init(camera *camera, vector3 position, vector3 rotation, float fov,
                  float aspect_ratio, float near_plane, float far_plane) {
+    if (camera == NULL) {
+        fprintf(stderr, "camera_init: camera is null\n");
+        return;
+    }
+
     vec3 glm_position;
     vector3_to_glm(position, &glm_position);
 
@@ -55,6 +70,11 @@ void camera_init(camera *camera, vector3 position, vector3 rotation, float fov,
 }
 
 void camera_translate(camera *camera, vector3 translation) {
+    if (camera == NULL) {
+        fprintf(stderr, "camera_translate: camera is null\n");
+        return;
+    }
+
     vector3 direction = direction_from_rotation(camera->rotation);
 
     vector3 position_delta;
@@ -84,6 +104,11 @@ void camera_translate(camera *camera, vector3 translation) {
 }
 
 void camera_update_matrix_uniforms(camera *camera) {
+    if (camera == NULL) {
+        fprintf(stderr, "camera_update_matrix_uniforms: camera is null\n");
+        return;
+    }
+
     GLint shader_program_id;
     GL_CALL(glGetIntegerv(GL_CURRENT_PROGRAM, &shader_program_id));
 
@@ -101,12 +126,22 @@ void camera_update_matrix_uniforms(camera *camera) {
 }
 
 void camera_set_aspect_ratio(camera *camera, float aspect_ratio) {
+    if (camera == NULL) {
+        fprintf(stderr, "camera_set_aspect_ratio: camera is null\n");
+        return;
+    }
+
     camera->aspect_ratio = aspect_ratio;
 
     generate_perspective_matrix(camera);
 }
 
 void camera_set_rotation(camera *camera, vector3 rotation) {
+    if (camera == NULL) {
+        fprintf(stderr, "camera_set_rotation: camera is null\n");
+        return;
+    }
+
     vector3 offset_rotation = vector3_add(rotation, rotation_offset);
 
     vec3 glm_rotation;
@@ -118,6 +153,11 @@ void camera_set_rotation(camera *camera, vector3 rotation) {
 }
 
 void camera_rotate(camera *camera, vector3 delta_rotation) {
+    if (camera == NULL) {
+        fprintf(stderr, "camera_rotate: camera is null\n");
+        return;
+    }
+
     vector3 new_rotation = vector3_add(camera->rotation, delta_rotation);
     new_rotation = vector3_sub(new_rotation, rotation_offset);
 

@@ -1,7 +1,7 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
-#include <glad/glad.h>
+#include "glad/glad.h"
 
 typedef enum draw_mode { DRAW_MODE_TRIANGLES } draw_mode;
 

@@ -1,7 +1,6 @@
 #include "shader_program.h"
 
 #include <stdio.h>
-
 #include "gl_util.h"
 #include "../util.h"
 
@@ -49,6 +48,7 @@ void shader_program_from_files(shader_program *program, char *vertex_path,
 
 void shader_program_bind_attribute(shader_program *program, int index,
                                    char *name) {
+
     GL_CALL(glBindAttribLocation(program->gl_id, index, name));
 }
 
