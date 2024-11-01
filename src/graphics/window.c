@@ -59,6 +59,14 @@ float window_get_aspect_ratio(window *window) {
     return (float)window->width / window->height;
 }
 
+void window_reset_cursor(window *window) {
+    glfwSetInputMode(window->glfw_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+}
+
+void window_capture_cursor(window *window) {
+    glfwSetInputMode(window->glfw_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+}
+
 void window_set_framebuffer_size_callback(
     window *window, window_framebuffer_size_callback function) {
     window->framebuffer_size_callback = function;

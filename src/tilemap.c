@@ -4,7 +4,7 @@
 
 void tilemap_init(tilemap *tilemap, char *texture_path,
                   texture_filter texture_filter, int width, int height) {
-    texture_init(&tilemap->texture, texture_filter);
+    texture_init(&tilemap->texture, texture_filter, TEXTURE_WRAP_REPEAT);
     texture_load(&tilemap->texture, texture_path);
 
     tilemap->width = width;

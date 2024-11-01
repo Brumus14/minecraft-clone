@@ -6,6 +6,7 @@
 #include "util.h"
 #include "graphics/graphics.h"
 #include "world/block.h"
+#include "world/chunk.h"
 #include "tilemap.h"
 
 // REMMEMBER TO AUTO BIND IN FUNCTIONS THAT ITS REQUIRED
@@ -51,14 +52,48 @@ int main() {
     tilemap_init(&tilemap, "res/textures/atlas.png", TEXTURE_FILTER_NEAREST, 16,
                  16);
 
-    block blocks[10000];
+    // make arguments const
 
-    for (int y = 0; y < 100; y++) {
-        for (int x = 0; x < 100; x++) {
-            block_init(&blocks[y * 100 + x], (vector3){x, 0.0, y},
-                       BLOCK_TYPE_GRASS, &tilemap);
+    block blocks[3];
+
+    /*for (int y = 0; y < 10; y++) {*/
+    /*    for (int x = 0; x < 10; x++) {*/
+    /*        block_init(&blocks[y * 10 + x], (vector3){x, 0.0, y},*/
+    /*                   BLOCK_TYPE_GRASS,*/
+    /*                   (bool[]){true, true, true, true, true, true},
+     * &tilemap);*/
+    /*    }*/
+    /*}*/
+    /**/
+    /*for (int y = 0; y < 10; y++) {*/
+    /*    for (int x = 0; x < 10; x++) {*/
+    /*        block_init(&blocks[100 + y * 10 + x], (vector3){x, -1.0, y},*/
+    /*                   BLOCK_TYPE_DIRT, ACTIVE_FACES_ALL, &tilemap);*/
+    /*    }*/
+    /*}*/
+    /**/
+    /*block_init(&blocks[21], (vector3){1.0, 0.0, 2.0}, BLOCK_TYPE_EMPTY,*/
+    /*           ACTIVE_FACES_ALL, &tilemap);*/
+
+    /*chunk chunk;*/
+    /*chunk_init(&chunk, &tilemap);*/
+    /*chunk_calculate_active_faces(&chunk);*/
+
+    /*for (int y = 0; y < 3; y++) {*/
+    for (int x = 0; x < 3; x++) {
+        if (x == 0 || x == 1) {
+
+            block_init(&blocks[x], (vector3){x, 0.0, 0.0}, BLOCK_TYPE_GRASS,
+                       (bool[]){true, true, true, true, true, true}, &tilemap);
+        } else {
+            block_init(&blocks[x], (vector3){x, 0.0, 0.0}, BLOCK_TYPE_GRASS,
+                       (bool[]){true, false, true, true, true, true}, &tilemap);
         }
     }
+    /*}*/
+
+    /*block_init(&blocks[0], (vector3){0.0, 0.0, 0.0}, BLOCK_TYPE_GRASS,*/
+    /*           (bool[]){true, false, true, true, true, true}, &tilemap);*/
 
     shader_program shader_program;
     shader_program_from_files(&shader_program, "res/shaders/vertex.vert",
@@ -70,7 +105,7 @@ int main() {
     while (!window_should_close(&window)) {
         renderer_clear_buffers();
 
-        float camera_speed = 0.03;
+        float camera_speed = 0.05;
         vector3 camera_delta;
         vector3_init(&camera_delta, 0.0, 0.0, 0.0);
 
@@ -117,6 +152,15 @@ int main() {
             rotation_delta.x += -1.0;
         }
 
+        if (glfwGetKey(window.glfw_window, GLFW_KEY_ESCAPE)) {
+            window_reset_cursor(&window);
+        }
+
+        if (glfwGetMouseButton(window.glfw_window, GLFW_MOUSE_BUTTON_LEFT) ==
+            GLFW_PRESS) {
+            window_capture_cursor(&window);
+        }
+
         camera_rotate(&camera, rotation_delta);
 
         vector3_normalise(&camera_delta);
@@ -132,9 +176,11 @@ int main() {
 
         camera_update_matrix_uniforms(&camera);
 
-        for (int i = 0; i < 10000; i++) {
+        for (int i = 0; i < 3; i++) {
             block_draw(&blocks[i]);
         }
+
+        /*chunk_draw(&chunk);*/
 
         window_swap_buffers(&window);
         glfwPollEvents();

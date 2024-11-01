@@ -27,6 +27,8 @@ bool window_should_close(window *window);
 void window_swap_buffers(window *window);
 void window_destroy(window *window);
 float window_get_aspect_ratio(window *window);
+void window_reset_cursor(window *window);
+void window_capture_cursor(window *window);
 void window_set_framebuffer_size_callback(
     window *window, window_framebuffer_size_callback function);
 void window_set_cursor_pos_callback(window *window,
