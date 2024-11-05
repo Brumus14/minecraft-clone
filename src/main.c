@@ -38,7 +38,7 @@ int main() {
     window_init(&window, 400, 400, "minecraft!", &camera);
 
     camera_init(&camera, (vector3){0.0, 0.0, 3.0}, VECTOR3_ZERO, 60.0,
-                window_get_aspect_ratio(&window), 0.1, 100.0);
+                window_get_aspect_ratio(&window), 0.1, 1000.0);
 
     window_set_framebuffer_size_callback(&window, framebuffer_size_callback);
     window_set_cursor_pos_callback(&window, cursor_pos_callback);
@@ -54,46 +54,32 @@ int main() {
 
     // make arguments const
 
-    block blocks[5];
-
-    /*for (int y = 0; y < 10; y++) {*/
-    /*    for (int x = 0; x < 10; x++) {*/
-    /*        block_init(&blocks[y * 10 + x], (vector3){x, 0.0, y},*/
-    /*                   BLOCK_TYPE_GRASS,*/
-    /*                   (bool[]){true, true, true, true, true, true},
-     * &tilemap);*/
-    /*    }*/
-    /*}*/
-    /**/
-    /*for (int y = 0; y < 10; y++) {*/
-    /*    for (int x = 0; x < 10; x++) {*/
-    /*        block_init(&blocks[100 + y * 10 + x], (vector3){x, -1.0, y},*/
-    /*                   BLOCK_TYPE_DIRT, ACTIVE_FACES_ALL, &tilemap);*/
-    /*    }*/
-    /*}*/
-    /**/
-    /*block_init(&blocks[21], (vector3){1.0, 0.0, 2.0}, BLOCK_TYPE_EMPTY,*/
-    /*           ACTIVE_FACES_ALL, &tilemap);*/
-
     /*chunk chunk;*/
     /*chunk_init(&chunk, &tilemap);*/
     /*chunk_calculate_active_faces(&chunk);*/
+    /*chunk_generate_vertices_indices(&chunk);*/
 
-    /*for (int y = 0; y < 3; y++) {*/
-    for (int x = 0; x < 5; x++) {
-        if (x == 2) {
+    int chunks_width = 8;
+    int chunks_height = 8;
+    chunk *chunks = malloc(sizeof(chunk) * chunks_height * chunks_width);
 
-            block_init(&blocks[x], (vector3){x, 0.0, 0.0}, BLOCK_TYPE_GRASS,
-                       (bool[]){true, false, true, true, true, true}, &tilemap);
-        } else {
-            block_init(&blocks[x], (vector3){x, 0.0, 0.0}, BLOCK_TYPE_GRASS,
-                       (bool[]){true, true, true, true, true, true}, &tilemap);
+    for (int y = 0; y < chunks_height; y++) {
+        for (int x = 0; x < chunks_width; x++) {
+            int i = y * chunks_width + x;
+
+            chunk_init(&chunks[i],
+                       (vector3){x * CHUNK_SIZE_X, 0.0, y * CHUNK_SIZE_Z},
+                       &tilemap);
+            chunk_calculate_active_faces(&chunks[i]);
+            chunk_generate_vertices_indices(&chunks[i]);
         }
     }
-    /*}*/
 
-    /*block_init(&blocks[0], (vector3){0.0, 0.0, 0.0}, BLOCK_TYPE_GRASS,*/
-    /*           (bool[]){true, false, true, true, true, true}, &tilemap);*/
+    /*for (int i = 0; i < 4; i++) {*/
+    /*    chunk_init(&chunks[i], (vector3){i * 16, 0.0, 0.0}, &tilemap);*/
+    /*    chunk_calculate_active_faces(&chunks[i]);*/
+    /*    chunk_generate_vertices_indices(&chunks[i]);*/
+    /*}*/
 
     shader_program shader_program;
     shader_program_from_files(&shader_program, "res/shaders/vertex.vert",
@@ -176,11 +162,9 @@ int main() {
 
         camera_update_matrix_uniforms(&camera);
 
-        for (int i = 0; i < 5; i++) {
-            block_draw(&blocks[i]);
+        for (int i = 0; i < chunks_height * chunks_width; i++) {
+            chunk_draw(&chunks[i]);
         }
-
-        /*chunk_draw(&chunk);*/
 
         window_swap_buffers(&window);
         glfwPollEvents();

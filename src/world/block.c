@@ -20,7 +20,79 @@ block_texture block_type_to_texture(block_type type) {
     }
 }
 
-float *generate_vertices(block *block, float *vertices, int *indices) {
+void generate_vertices(block *block, float *vertices, unsigned int *indices) {
+    block_texture texture = block_type_to_texture(block->type);
+
+    float positions[][3] = {
+        {0.0, -1.0, 1.0},
+        {1.0, -1.0, 1.0},
+        {1.0, 0.0,  1.0},
+        {0.0, 0.0,  1.0},
+        {0.0, -1.0, 0.0},
+        {1.0, -1.0, 0.0},
+        {1.0, 0.0,  0.0},
+        {0.0, 0.0,  0.0},
+    };
+
+    int face_vertices[][4] = {
+        {0, 1, 2, 3},
+        {3, 2, 6, 7},
+        {1, 5, 6, 2},
+        {4, 5, 1, 0},
+        {4, 0, 3, 7},
+        {5, 4, 7, 6},
+    };
+
+    memcpy(indices,
+           (unsigned int[]){
+               0,  1,  2,  0,  2,  3,  4,  5,  6,  4,  6,  7,
+               8,  9,  10, 8,  10, 11, 12, 13, 14, 12, 14, 15,
+               16, 17, 18, 16, 18, 19, 20, 21, 22, 20, 22, 23,
+           },
+           sizeof(int) * 6 * block->active_face_count);
+
+    int faces_added = 0;
+
+    for (int i = 0; i < 6; i++) {
+        if (block->active_faces[i] == false) {
+            continue;
+        }
+
+        rectangle rect = tilemap_get_tile_rectangle(block->tilemap,
+                                                    texture.face_textures[i]);
+
+        for (int j = 0; j < 4; j++) {
+            // just set the vertices array no vertex array
+            float vertex[5];
+
+            memcpy(vertex, positions[face_vertices[i][j]], sizeof(float) * 3);
+
+            vertex[0] += block->position.x;
+            vertex[1] += block->position.y;
+            vertex[2] += block->position.z;
+
+            vertex[3] = rect.x;
+            vertex[4] = rect.y;
+
+            switch (j) {
+            case 0:
+                vertex[4] += rect.height;
+                break;
+            case 1:
+                vertex[3] += rect.width;
+                vertex[4] += rect.height;
+                break;
+            case 2:
+                vertex[3] += rect.width;
+                break;
+            }
+
+            memcpy(vertices + (faces_added * 4 + j) * 5, vertex,
+                   sizeof(float) * 5);
+        }
+
+        faces_added++;
+    }
 }
 
 void block_init(block *block, vector3 position, block_type type,
@@ -29,92 +101,34 @@ void block_init(block *block, vector3 position, block_type type,
     block->type = type;
     block->tilemap = tilemap;
 
-    memcpy(block->active_faces, active_faces, sizeof(bool) * 6);
+    if (type != BLOCK_TYPE_EMPTY) {
+        memcpy(block->active_faces, active_faces, sizeof(bool) * 6);
+    } else {
+        /*bool all_inactive_faces[] = {false, false, false, false, false,
+         * false};*/
+        memcpy(block->active_faces, ACTIVE_FACES_NONE, sizeof(bool) * 6);
+    }
 
-    int active_face_count = 0;
+    block_texture texture = block_type_to_texture(type);
+
+    block->active_face_count = 0;
 
     for (int i = 0; i < 6; i++) {
         if (block->active_faces[i] == true) {
-            active_face_count++;
+            block->active_face_count++;
         }
     }
 
-    float vertices[][5] = {
-        {0.0, -1.0, 0.0, 0.0, 1.0},
-        {1.0, -1.0, 0.0, 1.0, 1.0},
-        {1.0, 0.0,  0.0, 1.0, 0.0},
-        {0.0, 0.0,  0.0, 0.0, 0.0},
-    };
+    block->vertex_count = block->active_face_count * 4;
+    block->index_count = block->active_face_count * 6;
 
-    for (int i = 0; i < 4; i++) {
-        vertices[i][0] += block->position.x;
-        vertices[i][1] += block->position.y;
-        vertices[i][2] += block->position.z;
-    }
+    block->vertices = malloc(sizeof(float) * 5 * block->vertex_count);
+    block->indices = malloc(sizeof(unsigned int) * block->index_count);
 
-    unsigned int indices[] = {0, 1, 2, 0, 2, 3};
-    /*unsigned int *indices =*/
-    /*    malloc(sizeof(unsigned int) * (active_face_count == 6 ? 6 : 3));*/
-    /**/
-    /*if (active_face_count == 6) {*/
-    /*    indices[0] = 0;*/
-    /*    indices[1] = 1;*/
-    /*    indices[2] = 2;*/
-    /*    indices[3] = 0;*/
-    /*    indices[4] = 2;*/
-    /*    indices[5] = 3;*/
-    /*} else if (active_face_count == 5) {*/
-    /*    indices[0] = 0;*/
-    /*    indices[1] = 1;*/
-    /*    indices[2] = 2;*/
-    /*}*/
-
-    for (int i = 0; i < (active_face_count == 6 ? 6 : 3); i++) {
-        printf("Index %d: %u\n", i, indices[i]);
-    }
-    for (int i = 0; i < 4; i++) {
-        printf("Vertex %d: %f, %f, %f, %f, %f\n", i, vertices[i][0],
-               vertices[i][1], vertices[i][2], vertices[i][3], vertices[i][4]);
-    }
-
-    bo_init(&block->vbo, BO_TYPE_VERTEX);
-    bo_upload(&block->vbo, sizeof(float) * 5 * 4, vertices,
-              BO_USAGE_STATIC_DRAW);
-
-    bo_init(&block->ibo, BO_TYPE_INDEX);
-    bo_upload(&block->ibo, sizeof(unsigned int) * 6, indices,
-              BO_USAGE_STATIC_DRAW);
-
-    vao_init(&block->vao);
-    vao_attrib(&block->vao, 0, 3, VAO_TYPE_FLOAT, false, sizeof(float) * 5,
-               (void *)0);
-    vao_attrib(&block->vao, 1, 2, VAO_TYPE_FLOAT, false, sizeof(float) * 5,
-               (void *)(sizeof(float) * 3));
-
-    /*free(indices);*/
+    generate_vertices(block, block->vertices, block->indices);
 }
 
-void block_draw(block *block) {
-    block_texture texture = block_type_to_texture(block->type);
-
-    if (texture.empty) {
-        return;
-    }
-
-    int active_face_count = 0;
-
-    for (int i = 0; i < 6; i++) {
-        if (block->active_faces[i] == true) {
-            active_face_count++;
-        }
-    }
-
-    tilemap_bind(block->tilemap);
-    bo_bind(&block->vbo);
-    bo_bind(&block->ibo);
-    vao_bind(&block->vao);
-
-    // use renderer calls
-    glDrawElements(GL_TRIANGLES, (active_face_count == 6 ? 6 : 3),
-                   GL_UNSIGNED_INT, 0);
+void block_term(block *block) {
+    free(block->vertices);
+    free(block->indices);
 }

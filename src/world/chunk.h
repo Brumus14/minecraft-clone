@@ -3,13 +3,22 @@
 
 #include "block.h"
 
+#define CHUNK_SIZE_X 16
+#define CHUNK_SIZE_Y 16
+#define CHUNK_SIZE_Z 16
+
 typedef struct chunk {
-    block blocks[16][16][16];
+    vector3 position;
+    block blocks[CHUNK_SIZE_Z][CHUNK_SIZE_Y][CHUNK_SIZE_X];
     tilemap *tilemap;
+    bo vbo;
+    bo ibo;
+    vao vao;
 } chunk;
 
-void chunk_init(chunk *chunk, tilemap *tilemap);
+void chunk_init(chunk *chunk, vector3 position, tilemap *tilemap);
 void chunk_calculate_active_faces(chunk *chunk);
+void chunk_generate_vertices_indices(chunk *chunk);
 void chunk_draw(chunk *chunk);
 
 #endif
