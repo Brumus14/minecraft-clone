@@ -77,6 +77,8 @@ void bo_upload(bo *bo, int data_size, void *data, bo_usage usage) {
         return;
     }
 
+    bo_bind(bo);
+
     GLenum gl_type = to_gl_type(bo->type);
     GL_CALL(glBufferData(gl_type, data_size, data, to_gl_usage(usage)));
 }

@@ -29,6 +29,7 @@ typedef struct block {
     vao vao;
     tilemap *tilemap;
     bool active_faces[6];
+    int active_face_count;
 } block;
 
 void block_init(block *block, vector3 position, block_type type,

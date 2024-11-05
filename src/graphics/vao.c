@@ -33,6 +33,8 @@ void vao_attrib(vao *vao, int index, int size, array_type type, bool normalised,
                 size_t stride, void *pointer) {
     GLenum gl_type = to_gl_array_type(type);
 
+    vao_bind(vao);
+
     GL_CALL(glVertexAttribPointer(index, size, gl_type, normalised, stride,
                                   pointer));
     GL_CALL(glEnableVertexAttribArray(index));

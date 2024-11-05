@@ -54,7 +54,7 @@ int main() {
 
     // make arguments const
 
-    block blocks[3];
+    block blocks[5];
 
     /*for (int y = 0; y < 10; y++) {*/
     /*    for (int x = 0; x < 10; x++) {*/
@@ -80,14 +80,14 @@ int main() {
     /*chunk_calculate_active_faces(&chunk);*/
 
     /*for (int y = 0; y < 3; y++) {*/
-    for (int x = 0; x < 3; x++) {
-        if (x == 0 || x == 1) {
+    for (int x = 0; x < 5; x++) {
+        if (x == 2) {
 
             block_init(&blocks[x], (vector3){x, 0.0, 0.0}, BLOCK_TYPE_GRASS,
-                       (bool[]){true, true, true, true, true, true}, &tilemap);
+                       (bool[]){true, false, true, true, true, true}, &tilemap);
         } else {
             block_init(&blocks[x], (vector3){x, 0.0, 0.0}, BLOCK_TYPE_GRASS,
-                       (bool[]){true, false, true, true, true, true}, &tilemap);
+                       (bool[]){true, true, true, true, true, true}, &tilemap);
         }
     }
     /*}*/
@@ -176,7 +176,7 @@ int main() {
 
         camera_update_matrix_uniforms(&camera);
 
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 5; i++) {
             block_draw(&blocks[i]);
         }
 
