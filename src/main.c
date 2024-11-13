@@ -35,12 +35,12 @@ int main() {
     // make arguments const
 
     world world;
-    world_init(&world, (vector3){8, 8, 2}, &tilemap); // USE VECTOR3 INT
+    world_init(&world, (vector3){8, 1, 8}, &tilemap); // USE VECTOR3 INT
 
     greedy_mesh_vertices_indices();
 
     player player;
-    player_init(&player, (vector3){10.0, 10.0, 10.0}, VECTOR3_ZERO, 20, 300,
+    player_init(&player, (vector3){10.0, 16.0, 10.0}, VECTOR3_ZERO, 20, 300,
                 &camera);
 
     shader_program shader_program;
@@ -55,7 +55,7 @@ int main() {
         mouse_update_state(&window.mouse);
         glfwPollEvents();
 
-        printf("%f\n", 1.0 / window_get_delta_time(&window));
+        /*printf("%f\n", 1.0 / window_get_delta_time(&window));*/
         renderer_clear_buffers();
 
         if (keyboard_key_just_down(&window.keyboard, KEYCODE_ESCAPE)) {

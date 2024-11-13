@@ -51,13 +51,10 @@ void player_handle_input(player *player, window *window) {
 
     player->rotation = vector3_add(player->rotation, rotation_delta);
 
-    // Make sure rotation is always below 360 degrees
-    player->rotation.x = fmod(player->rotation.x + 360, 360);
-    player->rotation.y = fmod(player->rotation.y + 360, 360);
-    player->rotation.z = fmod(player->rotation.z + 360, 360);
+    player->rotation.x = clamp(player->rotation.x, -89.9, 89.9);
 
-    /*printf("%f, %f, %f\n", player->rotation.x, player->rotation.y,*/
-    /*       player->rotation.z);*/
+    // Make sure rotation is always below 360 degrees or maybe -180 and 180
+    player->rotation.y = fmod(player->rotation.y + 360, 360);
 
     vector3_normalise(&movement_delta);
 

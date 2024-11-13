@@ -37,6 +37,7 @@ void glfw_cursor_pos_callback(GLFWwindow *glfw_window, double xpos,
     window *window_pointer = (window *)glfwGetWindowUserPointer(glfw_window);
 
     mouse_set_position(&window_pointer->mouse, (vector2){xpos, ypos});
+    /*printf("whoooooooooo\n");*/
 }
 
 void glfw_key_callback(GLFWwindow *glfw_window, int key, int scancode,
