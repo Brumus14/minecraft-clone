@@ -1,9 +1,12 @@
 #ifndef WINDOW_H
 #define WINDOW_H
 
-#include <GLFW/glfw3.h>
+#include "renderer.h"
+#include "GLFW/glfw3.h"
 #include <stdbool.h>
 #include "camera.h"
+#include "../input/keyboard.h"
+#include "../input/mouse.h"
 
 typedef struct window window;
 
@@ -16,6 +19,9 @@ typedef struct window {
     int height;
     char *title;
     camera *camera;
+    keyboard keyboard;
+    mouse mouse;
+    float delta_time;
     window_framebuffer_size_callback framebuffer_size_callback;
     window_cursor_pos_callback cursor_pos_callback;
 } window;
@@ -33,5 +39,7 @@ void window_set_framebuffer_size_callback(
     window *window, window_framebuffer_size_callback function);
 void window_set_cursor_pos_callback(window *window,
                                     window_cursor_pos_callback function);
+float window_get_delta_time(window *window);
+void window_update_delta_time(window *window);
 
 #endif

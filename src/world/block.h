@@ -13,7 +13,8 @@ static bool ACTIVE_FACES_NONE[6] = {false, false, false, false, false, false};
 typedef enum block_type {
     BLOCK_TYPE_EMPTY,
     BLOCK_TYPE_GRASS,
-    BLOCK_TYPE_DIRT
+    BLOCK_TYPE_DIRT,
+    BLOCK_TYPE_STONE
 } block_type;
 
 typedef struct block_texture {
@@ -22,7 +23,7 @@ typedef struct block_texture {
     int face_textures[6]; // front, top, right, bottom, left, back
 } block_texture;
 
-typedef struct block {
+typedef struct block { // DEBLOAT THIS
     vector3 position;
     block_type type;
     float *vertices;

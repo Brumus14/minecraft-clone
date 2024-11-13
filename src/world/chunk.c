@@ -1,6 +1,7 @@
 #include "chunk.h"
 
 #include <string.h>
+#include "../graphics/renderer.h"
 
 void chunk_init(chunk *chunk, vector3 position, tilemap *tilemap) {
     chunk->position = position;
@@ -13,6 +14,8 @@ void chunk_init(chunk *chunk, vector3 position, tilemap *tilemap) {
 
                 if (y == CHUNK_SIZE_Y - 1) {
                     type = BLOCK_TYPE_GRASS;
+                } else if (y < CHUNK_SIZE_Y - 5) {
+                    type = BLOCK_TYPE_STONE;
                 } else {
                     type = BLOCK_TYPE_DIRT;
                 }
@@ -28,7 +31,6 @@ void chunk_init(chunk *chunk, vector3 position, tilemap *tilemap) {
     }
 }
 
-// one draw call for the chunk
 void chunk_calculate_active_faces(chunk *chunk) {
     for (int z = 0; z < CHUNK_SIZE_Z; z++) {
         for (int y = 0; y < CHUNK_SIZE_Y; y++) {
@@ -73,11 +75,91 @@ void chunk_calculate_active_faces(chunk *chunk) {
 
                 block_term(block);
 
-                block_init(block, block->position, block->type,
+                vector3 block_position;
+                vector3_init(&block_position, x, y, z);
+
+                block_init(block, block_position, block->type,
                            block->active_faces, block->tilemap);
             }
         }
     }
+}
+/*float *vertices, unsigned int *indices*/
+void greedy_mesh_vertices_indices() {
+    int blocks[4][5] = {
+        {1, 1, 1, 1, 1},
+        {1, 1, 1, 1, 1},
+        {1, 1, 1, 0, 1},
+        {1, 0, 0, 0, 1}
+    };
+
+    int total_vertex_count = 0;
+
+    for (int y = 0; y < 4; y++) {
+        for (int x = 0; x < 5; x++) {
+            if (blocks[y][x] == 1) {
+                total_vertex_count += 4;
+            }
+        }
+    }
+
+    float *total_vertices = malloc(sizeof(float) * 5 * total_vertex_count);
+
+    int vertices_added = 0;
+
+    for (int y = 0; y < 4; y++) {
+        for (int x = 0; x < 5; x++) {
+            if (blocks[y][x] == 1) {
+                float vertex1[5] = {x, y, 0.0, 0.0, 0.0};
+                float positions[4][3] = {
+                    {0.0, -1.0, 0.0},
+                    {1.0, -1.0, 0.0},
+                    {1.0, 0.0,  0.0},
+                    {0.0, 0.0,  0.0}
+                };
+
+                for (int i = 0; i < 4; i++) {
+                    memcpy(total_vertices + vertices_added * 5, vertex1,
+                           sizeof(float) * 5);
+
+                    total_vertices[vertices_added] += positions[i][0];
+                    total_vertices[vertices_added + 1] += positions[i][1];
+                    total_vertices[vertices_added + 2] += positions[i][2];
+
+                    vertices_added++;
+                }
+            }
+        }
+    }
+
+    float *vertices = malloc(sizeof(float) * 5 * total_vertex_count);
+
+    float start_pos[2] = {0.0, 0.0};
+    int current_v = 0;
+
+    for (int v = 0; v < total_vertex_count; v++) {
+        memcpy(vertices, total_vertices, 5);
+
+        start_pos[0] = total_vertices[v * 5];
+        start_pos[1] = total_vertices[v * 5 + 1];
+
+        for (int i = current_v; i < total_vertex_count; i++) {
+            if (total_vertices[i * 5] == total_vertices[v * 5] + 1) {
+            }
+        }
+    }
+
+    /*for (int i = 0; i < 5 * total_vertex_count; i++) {*/
+    /*    printf("%f, ", total_vertices[i]);*/
+    /**/
+    /*    if ((i + 1) % 5 == 0) {*/
+    /*        putchar('\n');*/
+    /*    }*/
+    /**/
+    /*    if ((i + 1) % 20 == 0) {*/
+    /*        putchar('\n');*/
+    /*    }*/
+    /*}*/
 }
 
 void chunk_generate_vertices_indices(chunk *chunk) {
@@ -164,5 +246,6 @@ void chunk_draw(chunk *chunk) {
     bo_bind(&chunk->vbo);
     bo_bind(&chunk->ibo);
     vao_bind(&chunk->vao);
-    glDrawElements(GL_TRIANGLES, total_index_count, GL_UNSIGNED_INT, 0);
+    renderer_draw_elements(DRAW_MODE_TRIANGLES, total_index_count,
+                           INDEX_TYPE_UNSIGNED_INT);
 }

@@ -2,23 +2,7 @@
 
 #include "glad/glad.h"
 #include "gl_util.h"
-
-const vector3 rotation_offset = (vector3){0.0, -90.0, 0.0};
-
-vector3 direction_from_rotation(vector3 rotation) {
-    vector3 direction;
-    vector3 offset_rotation = vector3_add(rotation, rotation_offset);
-
-    direction.x =
-        cos(glm_rad(offset_rotation.y)) * cos(glm_rad(offset_rotation.x));
-    direction.y = sin(glm_rad(offset_rotation.x));
-    direction.z =
-        sin(glm_rad(offset_rotation.y)) * cos(glm_rad(offset_rotation.x));
-
-    vector3_normalise(&direction);
-
-    return direction;
-}
+#include "../math/math_util.h"
 
 void generate_perspective_matrix(camera *camera) {
     if (camera == NULL) {
@@ -37,7 +21,8 @@ void generate_view_matrix(camera *camera) {
         return;
     }
 
-    vector3 direction = direction_from_rotation(camera->rotation);
+    /*vector3 direction = direction_from_rotation(camera->rotation);*/
+    vector3 direction = rotation_to_direction(camera->rotation);
 
     vec3 glm_direction;
     vector3_to_glm(direction, &glm_direction);
@@ -67,15 +52,23 @@ void camera_init(camera *camera, vector3 position, vector3 rotation, float fov,
 
     generate_view_matrix(camera);
     generate_perspective_matrix(camera);
+
+    /*vector3 testdir = direction_from_rotation((vector3){0.0, 0.0, 0.0});*/
+    /*printf("%f, %f, %f\n", testdir.x, testdir.y, testdir.z);*/
 }
 
-void camera_translate(camera *camera, vector3 translation) {
+void camera_set_position(camera *camera, vector3 position) {
+    camera->position = position;
+}
+
+void camera_move(camera *camera, vector3 movement_delta) {
     if (camera == NULL) {
         fprintf(stderr, "camera_translate: camera is null\n");
         return;
     }
 
-    vector3 direction = direction_from_rotation(camera->rotation);
+    /*vector3 direction = direction_from_rotation(camera->rotation);*/
+    vector3 direction = rotation_to_direction(camera->rotation);
 
     vector3 position_delta;
     vector3_init(&position_delta, 0.0, 0.0, 0.0);
@@ -85,7 +78,7 @@ void camera_translate(camera *camera, vector3 translation) {
     vector3_normalise(&forwards);
 
     position_delta = vector3_add(
-        position_delta, vector3_scalar_multiply(forwards, -translation.z));
+        position_delta, vector3_scalar_multiply(forwards, -movement_delta.z));
 
     vector3 up;
     vector3_init(&up, 0.0, 1.0, 0.0);
@@ -94,9 +87,9 @@ void camera_translate(camera *camera, vector3 translation) {
         position_delta,
         vector3_scalar_multiply(
             vector3_normalised(vector3_cross_product(direction, up)),
-            translation.x));
+            movement_delta.x));
 
-    position_delta.y += translation.y;
+    position_delta.y += movement_delta.y;
 
     camera->position = vector3_add(camera->position, position_delta);
 
@@ -142,24 +135,18 @@ void camera_set_rotation(camera *camera, vector3 rotation) {
         return;
     }
 
-    vector3 offset_rotation = vector3_add(rotation, rotation_offset);
-
-    vec3 glm_rotation;
-    vector3_to_glm(offset_rotation, &glm_rotation);
-
-    camera->rotation = offset_rotation;
+    camera->rotation = rotation;
 
     generate_view_matrix(camera);
 }
 
-void camera_rotate(camera *camera, vector3 delta_rotation) {
+void camera_rotate(camera *camera, vector3 rotation_delta) {
     if (camera == NULL) {
         fprintf(stderr, "camera_rotate: camera is null\n");
         return;
     }
 
-    vector3 new_rotation = vector3_add(camera->rotation, delta_rotation);
-    new_rotation = vector3_sub(new_rotation, rotation_offset);
+    vector3 new_rotation = vector3_add(camera->rotation, rotation_delta);
 
     camera_set_rotation(camera, new_rotation);
 }

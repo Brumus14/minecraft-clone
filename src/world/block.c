@@ -6,9 +6,7 @@ block_texture block_type_to_texture(block_type type) {
     // front, top, right, bottom, left, back
     switch (type) {
     case BLOCK_TYPE_EMPTY:
-        return (block_texture){
-            .empty = true, .face_textures = {0, 0, 0, 0, 0, 0}
-        };
+        return (block_texture){.empty = true};
     case BLOCK_TYPE_GRASS:
         return (block_texture){
             .empty = false, .face_textures = {1, 0, 1, 2, 1, 1}
@@ -16,6 +14,10 @@ block_texture block_type_to_texture(block_type type) {
     case BLOCK_TYPE_DIRT:
         return (block_texture){
             .empty = false, .face_textures = {3, 2, 3, 2, 3, 3}
+        };
+    case BLOCK_TYPE_STONE:
+        return (block_texture){
+            .empty = false, .face_textures = {4, 4, 4, 4, 4, 4}
         };
     }
 }

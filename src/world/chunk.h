@@ -21,4 +21,6 @@ void chunk_calculate_active_faces(chunk *chunk);
 void chunk_generate_vertices_indices(chunk *chunk);
 void chunk_draw(chunk *chunk);
 
+void greedy_mesh_vertices_indices();
+
 #endif

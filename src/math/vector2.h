@@ -8,7 +8,7 @@ typedef struct vector2 {
     float y;
 } vector2;
 
-static const vector2 VECTOR3_ZERO = {0.0, 0.0};
+static const vector2 VECTOR2_ZERO = {0.0, 0.0};
 
 void vector2_init(vector2 *vector, float x, float y);
 void vector2_normalise(vector2 *vector);

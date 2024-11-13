@@ -11,7 +11,7 @@ void vector2_normalise(vector2 *vector) {
     float magnitude = sqrt(pow(vector->x, 2) + pow(vector->y, 2));
 
     if (magnitude == 0) {
-        vector2_init(vector, 0.0, 0.0, 0.0);
+        vector2_init(vector, 0.0, 0.0);
     } else {
         vector->x /= magnitude;
         vector->y /= magnitude;
@@ -20,10 +20,9 @@ void vector2_normalise(vector2 *vector) {
 
 vector2 vector2_normalised(vector2 vector) {
     vector2 result;
-    vector2_init(&result, 0.0, 0.0, 0.0);
+    vector2_init(&result, 0.0, 0.0);
 
-    float magnitude =
-        sqrt(pow(vector.x, 2) + pow(vector.y, 2) + pow(vector.z, 2));
+    float magnitude = sqrt(pow(vector.x, 2) + pow(vector.y, 2));
 
     if (magnitude != 0) {
         result.x = vector.x / magnitude;

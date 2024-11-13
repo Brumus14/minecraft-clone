@@ -8,40 +8,20 @@
 #include "world/block.h"
 #include "world/chunk.h"
 #include "tilemap.h"
+#include "player.h"
+#include "world/world.h"
 
 // REMMEMBER TO AUTO BIND IN FUNCTIONS THAT ITS REQUIRED
-
-const double SENSITIVITY = 0.1;
-
-void framebuffer_size_callback(window *window, int width, int height) {
-    renderer_set_viewport(0, 0, width, height);
-    glfwGetWindowSize(window->glfw_window, &window->width, &window->height);
-    camera_set_aspect_ratio(window->camera,
-                            (float)window->width / window->height);
-}
-
-void cursor_pos_callback(window *window, double x_pos, double y_pos) {
-    static double previous_x_pos;
-    static double previous_y_pos;
-
-    camera_rotate(window->camera,
-                  (vector3){(previous_y_pos - y_pos) * SENSITIVITY,
-                            (x_pos - previous_x_pos) * SENSITIVITY, 0.0});
-    previous_x_pos = x_pos;
-    previous_y_pos = y_pos;
-}
 
 int main() {
     window window;
     camera camera;
 
     window_init(&window, 400, 400, "minecraft!", &camera);
+    glfwSwapInterval(1);
 
-    camera_init(&camera, (vector3){0.0, 0.0, 3.0}, VECTOR3_ZERO, 60.0,
+    camera_init(&camera, VECTOR3_ZERO, VECTOR3_ZERO, 60.0,
                 window_get_aspect_ratio(&window), 0.1, 1000.0);
-
-    window_set_framebuffer_size_callback(&window, framebuffer_size_callback);
-    window_set_cursor_pos_callback(&window, cursor_pos_callback);
 
     glfwSetInputMode(window.glfw_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     renderer_init();
@@ -54,32 +34,14 @@ int main() {
 
     // make arguments const
 
-    /*chunk chunk;*/
-    /*chunk_init(&chunk, &tilemap);*/
-    /*chunk_calculate_active_faces(&chunk);*/
-    /*chunk_generate_vertices_indices(&chunk);*/
+    world world;
+    world_init(&world, (vector3){8, 8, 2}, &tilemap); // USE VECTOR3 INT
 
-    int chunks_width = 8;
-    int chunks_height = 8;
-    chunk *chunks = malloc(sizeof(chunk) * chunks_height * chunks_width);
+    greedy_mesh_vertices_indices();
 
-    for (int y = 0; y < chunks_height; y++) {
-        for (int x = 0; x < chunks_width; x++) {
-            int i = y * chunks_width + x;
-
-            chunk_init(&chunks[i],
-                       (vector3){x * CHUNK_SIZE_X, 0.0, y * CHUNK_SIZE_Z},
-                       &tilemap);
-            chunk_calculate_active_faces(&chunks[i]);
-            chunk_generate_vertices_indices(&chunks[i]);
-        }
-    }
-
-    /*for (int i = 0; i < 4; i++) {*/
-    /*    chunk_init(&chunks[i], (vector3){i * 16, 0.0, 0.0}, &tilemap);*/
-    /*    chunk_calculate_active_faces(&chunks[i]);*/
-    /*    chunk_generate_vertices_indices(&chunks[i]);*/
-    /*}*/
+    player player;
+    player_init(&player, (vector3){10.0, 10.0, 10.0}, VECTOR3_ZERO, 20, 300,
+                &camera);
 
     shader_program shader_program;
     shader_program_from_files(&shader_program, "res/shaders/vertex.vert",
@@ -89,56 +51,14 @@ int main() {
     shader_program_use(&shader_program);
 
     while (!window_should_close(&window)) {
+        keyboard_update_state(&window.keyboard);
+        mouse_update_state(&window.mouse);
+        glfwPollEvents();
+
+        printf("%f\n", 1.0 / window_get_delta_time(&window));
         renderer_clear_buffers();
 
-        float camera_speed = 0.05;
-        vector3 camera_delta;
-        vector3_init(&camera_delta, 0.0, 0.0, 0.0);
-
-        vector3 rotation_delta;
-        vector3_init(&rotation_delta, 0.0, 0.0, 0.0);
-
-        if (glfwGetKey(window.glfw_window, GLFW_KEY_S)) {
-            camera_delta.z += 1.0;
-        }
-
-        if (glfwGetKey(window.glfw_window, GLFW_KEY_W)) {
-            camera_delta.z += -1.0;
-        }
-
-        if (glfwGetKey(window.glfw_window, GLFW_KEY_A)) {
-            camera_delta.x += -1.0;
-        }
-
-        if (glfwGetKey(window.glfw_window, GLFW_KEY_D)) {
-            camera_delta.x += 1.0;
-        }
-
-        if (glfwGetKey(window.glfw_window, GLFW_KEY_SPACE)) {
-            camera_delta.y += 1.0;
-        }
-
-        if (glfwGetKey(window.glfw_window, GLFW_KEY_LEFT_SHIFT)) {
-            camera_delta.y += -1.0;
-        }
-
-        if (glfwGetKey(window.glfw_window, GLFW_KEY_LEFT)) {
-            rotation_delta.y += -1.0;
-        }
-
-        if (glfwGetKey(window.glfw_window, GLFW_KEY_RIGHT)) {
-            rotation_delta.y += 1.0;
-        }
-
-        if (glfwGetKey(window.glfw_window, GLFW_KEY_UP)) {
-            rotation_delta.x += 1.0;
-        }
-
-        if (glfwGetKey(window.glfw_window, GLFW_KEY_DOWN)) {
-            rotation_delta.x += -1.0;
-        }
-
-        if (glfwGetKey(window.glfw_window, GLFW_KEY_ESCAPE)) {
+        if (keyboard_key_just_down(&window.keyboard, KEYCODE_ESCAPE)) {
             window_reset_cursor(&window);
         }
 
@@ -147,27 +67,20 @@ int main() {
             window_capture_cursor(&window);
         }
 
-        camera_rotate(&camera, rotation_delta);
+        player_handle_input(&player, &window);
 
-        vector3_normalise(&camera_delta);
-
-        camera_delta.x *= camera_speed;
-        camera_delta.y *= camera_speed;
-        camera_delta.z *= camera_speed;
-
-        camera_translate(&camera, camera_delta);
+        camera_set_rotation(&camera, player.rotation);
+        camera_set_position(&camera, player.position);
 
         GLint model_loc = glGetUniformLocation(shader_program.gl_id, "model");
         glUniformMatrix4fv(model_loc, 1, GL_FALSE, (float *)model_matrix);
 
         camera_update_matrix_uniforms(&camera);
 
-        for (int i = 0; i < chunks_height * chunks_width; i++) {
-            chunk_draw(&chunks[i]);
-        }
+        world_draw(&world);
 
+        window_update_delta_time(&window);
         window_swap_buffers(&window);
-        glfwPollEvents();
     }
 
     window_destroy(&window);

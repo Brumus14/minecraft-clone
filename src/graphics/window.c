@@ -2,16 +2,63 @@
 
 bool glfw_initialised = false;
 
+keycode glfw_keycode_to_keycode(int key) {
+    if (key >= GLFW_KEY_0 && key <= GLFW_KEY_9) {
+        return key - 48;
+    } else if (key >= GLFW_KEY_A && key <= GLFW_KEY_Z) {
+        return (key - 65) + KEYCODE_A;
+    } else if (key == GLFW_KEY_SPACE) {
+        return KEYCODE_SPACE;
+    } else if (key == GLFW_KEY_ESCAPE) {
+        return KEYCODE_ESCAPE;
+    } else if (key == GLFW_KEY_LEFT_SHIFT) {
+        return KEYCODE_LEFT_SHIFT;
+    } else if (key >= GLFW_KEY_RIGHT && key <= GLFW_KEY_UP) {
+        return (key - GLFW_KEY_RIGHT) + KEYCODE_ARROW_RIGHT;
+    }
+
+    return -1;
+}
+
 void glfw_framebuffer_size_callback(GLFWwindow *glfw_window, int width,
                                     int height) {
     window *window_pointer = (window *)glfwGetWindowUserPointer(glfw_window);
-    window_pointer->framebuffer_size_callback(window_pointer, width, height);
+
+    renderer_set_viewport(0, 0, width, height);
+    glfwGetWindowSize(window_pointer->glfw_window, &window_pointer->width,
+                      &window_pointer->height);
+    camera_set_aspect_ratio(window_pointer->camera,
+                            (float)window_pointer->width /
+                                window_pointer->height);
 }
 
 void glfw_cursor_pos_callback(GLFWwindow *glfw_window, double xpos,
                               double ypos) {
     window *window_pointer = (window *)glfwGetWindowUserPointer(glfw_window);
-    window_pointer->cursor_pos_callback(window_pointer, xpos, ypos);
+
+    mouse_set_position(&window_pointer->mouse, (vector2){xpos, ypos});
+}
+
+void glfw_key_callback(GLFWwindow *glfw_window, int key, int scancode,
+                       int action, int mods) {
+    window *window_pointer = (window *)glfwGetWindowUserPointer(glfw_window);
+
+    key_state state;
+
+    if (action == GLFW_PRESS) {
+        state = KEY_STATE_DOWN;
+    } else if (action == GLFW_RELEASE) {
+        state = KEY_STATE_UP;
+    } else {
+        return;
+    }
+
+    keycode keycode = glfw_keycode_to_keycode(key);
+
+    if (keycode < KEYCODE_LAST) {
+        keyboard_set_key(&window_pointer->keyboard,
+                         glfw_keycode_to_keycode(key), state);
+    }
 }
 
 void glfw_init() {
@@ -28,6 +75,9 @@ void window_init(window *window, int width, int height, char *title,
     window->title = title;
     window->camera = camera;
 
+    keyboard_init(&window->keyboard);
+    mouse_init(&window->mouse);
+
     if (!glfw_initialised) {
         glfw_init();
     }
@@ -41,6 +91,7 @@ void window_init(window *window, int width, int height, char *title,
     glfwSetFramebufferSizeCallback(window->glfw_window,
                                    glfw_framebuffer_size_callback);
     glfwSetCursorPosCallback(window->glfw_window, glfw_cursor_pos_callback);
+    glfwSetKeyCallback(window->glfw_window, glfw_key_callback);
 }
 
 bool window_should_close(window *window) {
@@ -65,6 +116,16 @@ void window_reset_cursor(window *window) {
 
 void window_capture_cursor(window *window) {
     glfwSetInputMode(window->glfw_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+}
+
+float window_get_delta_time(window *window) {
+    return window->delta_time;
+}
+
+void window_update_delta_time(window *window) {
+    window->delta_time = glfwGetTime();
+
+    glfwSetTime(0);
 }
 
 void window_set_framebuffer_size_callback(

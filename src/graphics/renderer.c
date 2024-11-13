@@ -1,7 +1,7 @@
 #include "renderer.h"
 
-#include "GLFW/glfw3.h"
 #include "gl_util.h"
+#include "GLFW/glfw3.h"
 
 void renderer_init() {
     gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
@@ -33,7 +33,31 @@ GLenum to_gl_draw_mode(draw_mode mode) {
     }
 }
 
-void renderer_draw_arrays(draw_mode mode, int first, int count) {
-    GLenum gl_mode = to_gl_draw_mode(mode);
-    GL_CALL(glDrawArrays(gl_mode, first, count));
+GLenum to_gl_index_type(index_type type) {
+    switch (type) {
+    case INDEX_TYPE_UNSIGNED_INT:
+        return GL_UNSIGNED_INT;
+    case INDEX_TYPE_UNSIGNED_SHORT:
+        return GL_UNSIGNED_SHORT;
+    case INDEX_TYPE_UNSIGNED_BYTE:
+        return GL_UNSIGNED_BYTE;
+    }
+}
+
+void renderer_draw_elements(draw_mode mode, int count, index_type type) {
+    GL_CALL(glDrawElements(to_gl_draw_mode(mode), count, to_gl_index_type(type),
+                           0));
+}
+
+GLenum to_gl_polygon_mode(polygon_mode mode) {
+    switch (mode) {
+    case POLYGON_MODE_FILL:
+        return GL_FILL;
+    case POLYGON_MODE_LINE:
+        return GL_LINE;
+    }
+}
+
+void renderer_set_polygon_mode(polygon_mode mode) {
+    glPolygonMode(GL_FRONT_AND_BACK, to_gl_polygon_mode(mode));
 }
