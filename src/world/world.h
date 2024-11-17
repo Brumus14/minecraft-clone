@@ -4,12 +4,14 @@
 #include "chunk.h"
 
 typedef struct world {
-    vector3 size;
     tilemap *tilemap;
+    int chunk_count;
     chunk *chunks;
 } world;
 
-void world_init(world *world, vector3 size, tilemap *tilemap);
+void world_init(world *world, tilemap *tilemap);
+void world_load_chunk(world *world, vector3i position);
+void world_unload_chunk(world *world, vector3i position);
 void world_draw(world *world);
 
 #endif

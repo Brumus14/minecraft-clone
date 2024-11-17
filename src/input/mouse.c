@@ -11,7 +11,7 @@ void mouse_init(mouse *mouse) {
 }
 
 void mouse_update_state(mouse *mouse) {
-    mouse->position_delta = VECTOR2_ZERO;
+    mouse->position_delta = VECTOR2D_ZERO;
     mouse->button_count = MOUSE_BUTTON_LAST;
 
     for (int i = 0; i < mouse->button_count; i++) {
@@ -50,7 +50,7 @@ bool mouse_button_just_down(mouse *mouse, mouse_button button) {
     return (mouse->buttons_just_down[button] == true);
 }
 
-void mouse_set_position(mouse *mouse, vector2 position) {
-    mouse->position_delta = vector2_sub(position, mouse->position);
+void mouse_set_position(mouse *mouse, vector2d position) {
+    mouse->position_delta = vector2d_sub(position, mouse->position);
     mouse->position = position;
 }

@@ -1,8 +1,6 @@
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
-#include "stb_image.h"
 #include <stdio.h>
-#include <stdlib.h>
 #include "util.h"
 #include "graphics/graphics.h"
 #include "world/block.h"
@@ -10,6 +8,7 @@
 #include "tilemap.h"
 #include "player.h"
 #include "world/world.h"
+#include "math/math_util.h"
 
 // REMMEMBER TO AUTO BIND IN FUNCTIONS THAT ITS REQUIRED
 
@@ -18,12 +17,13 @@ int main() {
     camera camera;
 
     window_init(&window, 400, 400, "minecraft!", &camera);
-    glfwSwapInterval(1);
+    glfwSwapInterval(0);
 
-    camera_init(&camera, VECTOR3_ZERO, VECTOR3_ZERO, 60.0,
+    camera_init(&camera, VECTOR3D_ZERO, VECTOR3D_ZERO, 60.0,
                 window_get_aspect_ratio(&window), 0.1, 1000.0);
 
     glfwSetInputMode(window.glfw_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetInputMode(window.glfw_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
     renderer_init();
     renderer_set_clear_colour(0.53, 0.81, 0.92, 1.0);
     mat4 model_matrix = GLM_MAT4_IDENTITY;
@@ -35,12 +35,12 @@ int main() {
     // make arguments const
 
     world world;
-    world_init(&world, (vector3){8, 1, 8}, &tilemap); // USE VECTOR3 INT
+    world_init(&world, &tilemap); // USE VECTOR3 INT
 
-    greedy_mesh_vertices_indices();
+    /*greedy_mesh_vertices_indices();*/
 
     player player;
-    player_init(&player, (vector3){10.0, 16.0, 10.0}, VECTOR3_ZERO, 20, 300,
+    player_init(&player, (vector3d){10.0, 16.0, 10.0}, VECTOR3D_ZERO, 10, 0.05,
                 &camera);
 
     shader_program shader_program;
@@ -51,11 +51,14 @@ int main() {
     shader_program_use(&shader_program);
 
     while (!window_should_close(&window)) {
-        keyboard_update_state(&window.keyboard);
-        mouse_update_state(&window.mouse);
+        window_update_delta_time(&window);
+        window_update_input(&window);
         glfwPollEvents();
 
-        /*printf("%f\n", 1.0 / window_get_delta_time(&window));*/
+        player_manage_chunks(&player, &world); // create chunk manager? ecs?
+        printf("%d\n", world.chunk_count);
+
+        printf("%f\n", 1.0 / window_get_delta_time(&window));
         renderer_clear_buffers();
 
         if (keyboard_key_just_down(&window.keyboard, KEYCODE_ESCAPE)) {
@@ -79,7 +82,6 @@ int main() {
 
         world_draw(&world);
 
-        window_update_delta_time(&window);
         window_swap_buffers(&window);
     }
 

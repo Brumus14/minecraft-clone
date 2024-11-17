@@ -24,7 +24,7 @@ typedef struct block_texture {
 } block_texture;
 
 typedef struct block { // DEBLOAT THIS
-    vector3 position;
+    vector3i position;
     block_type type;
     float *vertices;
     int vertex_count;
@@ -35,7 +35,7 @@ typedef struct block { // DEBLOAT THIS
     int active_face_count;
 } block;
 
-void block_init(block *block, vector3 position, block_type type,
+void block_init(block *block, vector3i position, block_type type,
                 bool *active_faces, tilemap *tilemap);
 void block_term(block *block);
 

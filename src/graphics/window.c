@@ -2,11 +2,11 @@
 
 bool glfw_initialised = false;
 
-keycode glfw_keycode_to_keycode(int key) {
+keycode glfw_to_keycode(int key) {
     if (key >= GLFW_KEY_0 && key <= GLFW_KEY_9) {
-        return key - 48;
+        return key - GLFW_KEY_0 + KEYCODE_0;
     } else if (key >= GLFW_KEY_A && key <= GLFW_KEY_Z) {
-        return (key - 65) + KEYCODE_A;
+        return (key - GLFW_KEY_A) + KEYCODE_A;
     } else if (key == GLFW_KEY_SPACE) {
         return KEYCODE_SPACE;
     } else if (key == GLFW_KEY_ESCAPE) {
@@ -15,6 +15,24 @@ keycode glfw_keycode_to_keycode(int key) {
         return KEYCODE_LEFT_SHIFT;
     } else if (key >= GLFW_KEY_RIGHT && key <= GLFW_KEY_UP) {
         return (key - GLFW_KEY_RIGHT) + KEYCODE_ARROW_RIGHT;
+    }
+
+    return -1;
+}
+
+int keycode_to_glfw(keycode key) {
+    if (key >= KEYCODE_0 && key <= KEYCODE_9) {
+        return key + GLFW_KEY_0;
+    } else if (key >= KEYCODE_A && key <= KEYCODE_Z) {
+        return (key - KEYCODE_A) + GLFW_KEY_A;
+    } else if (key == KEYCODE_SPACE) {
+        return GLFW_KEY_SPACE;
+    } else if (key == KEYCODE_ESCAPE) {
+        return GLFW_KEY_ESCAPE;
+    } else if (key == KEYCODE_LEFT_SHIFT) {
+        return GLFW_KEY_LEFT_SHIFT;
+    } else if (key >= KEYCODE_ARROW_RIGHT && key <= KEYCODE_ARROW_UP) {
+        return (key - KEYCODE_ARROW_RIGHT) + GLFW_KEY_RIGHT;
     }
 
     return -1;
@@ -32,35 +50,36 @@ void glfw_framebuffer_size_callback(GLFWwindow *glfw_window, int width,
                                 window_pointer->height);
 }
 
-void glfw_cursor_pos_callback(GLFWwindow *glfw_window, double xpos,
-                              double ypos) {
-    window *window_pointer = (window *)glfwGetWindowUserPointer(glfw_window);
+/*void glfw_cursor_pos_callback(GLFWwindow *glfw_window, double xpos,*/
+/*                              double ypos) {*/
+/*    window *window_pointer = (window
+ * *)glfwGetWindowUserPointer(glfw_window);*/
+/**/
+/*    mouse_set_position(&window_pointer->mouse, (vector2d){xpos, ypos});*/
+/*}*/
 
-    mouse_set_position(&window_pointer->mouse, (vector2){xpos, ypos});
-    /*printf("whoooooooooo\n");*/
-}
-
-void glfw_key_callback(GLFWwindow *glfw_window, int key, int scancode,
-                       int action, int mods) {
-    window *window_pointer = (window *)glfwGetWindowUserPointer(glfw_window);
-
-    key_state state;
-
-    if (action == GLFW_PRESS) {
-        state = KEY_STATE_DOWN;
-    } else if (action == GLFW_RELEASE) {
-        state = KEY_STATE_UP;
-    } else {
-        return;
-    }
-
-    keycode keycode = glfw_keycode_to_keycode(key);
-
-    if (keycode < KEYCODE_LAST) {
-        keyboard_set_key(&window_pointer->keyboard,
-                         glfw_keycode_to_keycode(key), state);
-    }
-}
+/*void glfw_key_callback(GLFWwindow *glfw_window, int key, int scancode,*/
+/*                       int action, int mods) {*/
+/*    window *window_pointer = (window
+ * *)glfwGetWindowUserPointer(glfw_window);*/
+/**/
+/*    key_state state;*/
+/**/
+/*    if (action == GLFW_PRESS) {*/
+/*        state = KEY_STATE_DOWN;*/
+/*    } else if (action == GLFW_RELEASE) {*/
+/*        state = KEY_STATE_UP;*/
+/*    } else {*/
+/*        return;*/
+/*    }*/
+/**/
+/*    keycode keycode = glfw_keycode_to_keycode(key);*/
+/**/
+/*    if (keycode < KEYCODE_LAST) {*/
+/*        keyboard_set_key(&window_pointer->keyboard,*/
+/*                         glfw_keycode_to_keycode(key), state);*/
+/*    }*/
+/*}*/
 
 void glfw_init() {
     glfwInit();
@@ -91,8 +110,8 @@ void window_init(window *window, int width, int height, char *title,
 
     glfwSetFramebufferSizeCallback(window->glfw_window,
                                    glfw_framebuffer_size_callback);
-    glfwSetCursorPosCallback(window->glfw_window, glfw_cursor_pos_callback);
-    glfwSetKeyCallback(window->glfw_window, glfw_key_callback);
+    /*glfwSetCursorPosCallback(window->glfw_window, glfw_cursor_pos_callback);*/
+    /*glfwSetKeyCallback(window->glfw_window, glfw_key_callback);*/
 }
 
 bool window_should_close(window *window) {
@@ -119,14 +138,15 @@ void window_capture_cursor(window *window) {
     glfwSetInputMode(window->glfw_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
-float window_get_delta_time(window *window) {
+double window_get_delta_time(window *window) {
     return window->delta_time;
 }
 
 void window_update_delta_time(window *window) {
-    window->delta_time = glfwGetTime();
+    double current_time = glfwGetTime();
 
-    glfwSetTime(0);
+    window->delta_time = current_time - window->previous_time;
+    window->previous_time = current_time;
 }
 
 void window_set_framebuffer_size_callback(
@@ -137,4 +157,28 @@ void window_set_framebuffer_size_callback(
 void window_set_cursor_pos_callback(window *window,
                                     window_cursor_pos_callback function) {
     window->cursor_pos_callback = function;
+}
+
+// Update mouse buttons
+void window_update_input(window *window) {
+    keyboard_update_state(&window->keyboard);
+    mouse_update_state(&window->mouse);
+
+    for (int i = 0; i < KEYCODE_LAST; i++) {
+        if (glfwGetKey(window->glfw_window, keycode_to_glfw(i)) == GLFW_PRESS) {
+            keyboard_set_key(&window->keyboard, i, KEY_STATE_DOWN);
+        }
+
+        else if (glfwGetKey(window->glfw_window, keycode_to_glfw(i)) ==
+                 GLFW_RELEASE) {
+            keyboard_set_key(&window->keyboard, i, KEY_STATE_UP);
+        }
+    }
+
+    double mouse_x;
+    double mouse_y;
+
+    glfwGetCursorPos(window->glfw_window, &mouse_x, &mouse_y);
+
+    mouse_set_position(&window->mouse, (vector2d){mouse_x, mouse_y});
 }

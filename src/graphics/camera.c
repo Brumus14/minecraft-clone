@@ -21,28 +21,29 @@ void generate_view_matrix(camera *camera) {
         return;
     }
 
-    /*vector3 direction = direction_from_rotation(camera->rotation);*/
-    vector3 direction = rotation_to_direction(camera->rotation);
+    /*vector3d direction = direction_from_rotation(camera->rotation);*/
+    vector3d direction = rotation_to_direction(camera->rotation);
 
     vec3 glm_direction;
-    vector3_to_glm(direction, &glm_direction);
+    vector3d_to_glm(direction, &glm_direction);
 
     vec3 glm_position;
-    vector3_to_glm(camera->position, &glm_position);
+    vector3d_to_glm(camera->position, &glm_position);
 
     glm_look(glm_position, glm_direction, (vec3){0.0, 1.0, 0.0},
              camera->view_matrix);
 }
 
-void camera_init(camera *camera, vector3 position, vector3 rotation, float fov,
-                 float aspect_ratio, float near_plane, float far_plane) {
+void camera_init(camera *camera, vector3d position, vector3d rotation,
+                 double fov, double aspect_ratio, double near_plane,
+                 double far_plane) {
     if (camera == NULL) {
         fprintf(stderr, "camera_init: camera is null\n");
         return;
     }
 
     vec3 glm_position;
-    vector3_to_glm(position, &glm_position);
+    vector3d_to_glm(position, &glm_position);
 
     camera->position = position;
     camera->rotation = rotation;
@@ -53,45 +54,45 @@ void camera_init(camera *camera, vector3 position, vector3 rotation, float fov,
     generate_view_matrix(camera);
     generate_perspective_matrix(camera);
 
-    /*vector3 testdir = direction_from_rotation((vector3){0.0, 0.0, 0.0});*/
+    /*vector3d testdir = direction_from_rotation((vector3d){0.0, 0.0, 0.0});*/
     /*printf("%f, %f, %f\n", testdir.x, testdir.y, testdir.z);*/
 }
 
-void camera_set_position(camera *camera, vector3 position) {
+void camera_set_position(camera *camera, vector3d position) {
     camera->position = position;
 }
 
-void camera_move(camera *camera, vector3 movement_delta) {
+void camera_move(camera *camera, vector3d movement_delta) {
     if (camera == NULL) {
         fprintf(stderr, "camera_translate: camera is null\n");
         return;
     }
 
-    /*vector3 direction = direction_from_rotation(camera->rotation);*/
-    vector3 direction = rotation_to_direction(camera->rotation);
+    /*vector3d direction = direction_from_rotation(camera->rotation);*/
+    vector3d direction = rotation_to_direction(camera->rotation);
 
-    vector3 position_delta;
-    vector3_init(&position_delta, 0.0, 0.0, 0.0);
+    vector3d position_delta;
+    vector3d_init(&position_delta, 0.0, 0.0, 0.0);
 
-    vector3 forwards = direction;
+    vector3d forwards = direction;
     forwards.y = 0.0;
-    vector3_normalise(&forwards);
+    vector3d_normalise(&forwards);
 
-    position_delta = vector3_add(
-        position_delta, vector3_scalar_multiply(forwards, -movement_delta.z));
+    position_delta = vector3d_add(
+        position_delta, vector3d_scalar_multiply(forwards, -movement_delta.z));
 
-    vector3 up;
-    vector3_init(&up, 0.0, 1.0, 0.0);
+    vector3d up;
+    vector3d_init(&up, 0.0, 1.0, 0.0);
 
-    position_delta = vector3_add(
+    position_delta = vector3d_add(
         position_delta,
-        vector3_scalar_multiply(
-            vector3_normalised(vector3_cross_product(direction, up)),
+        vector3d_scalar_multiply(
+            vector3d_normalised(vector3d_cross_product(direction, up)),
             movement_delta.x));
 
     position_delta.y += movement_delta.y;
 
-    camera->position = vector3_add(camera->position, position_delta);
+    camera->position = vector3d_add(camera->position, position_delta);
 
     generate_view_matrix(camera);
 }
@@ -108,8 +109,9 @@ void camera_update_matrix_uniforms(camera *camera) {
     GLint view_loc =
         GL_CALL_R(glGetUniformLocation(shader_program_id, "view"), GLint);
 
-    GL_CALL(glUniformMatrix4fv(view_loc, 1, GL_FALSE,
-                               (float *)camera->view_matrix));
+    GL_CALL(glUniformMatrix4fv(
+        view_loc, 1, GL_FALSE,
+        (float *)camera->view_matrix)); // reduce casting for performance
 
     GLint projection_loc =
         GL_CALL_R(glGetUniformLocation(shader_program_id, "projection"), GLint);
@@ -118,7 +120,7 @@ void camera_update_matrix_uniforms(camera *camera) {
                                (float *)camera->projection_matrix));
 }
 
-void camera_set_aspect_ratio(camera *camera, float aspect_ratio) {
+void camera_set_aspect_ratio(camera *camera, double aspect_ratio) {
     if (camera == NULL) {
         fprintf(stderr, "camera_set_aspect_ratio: camera is null\n");
         return;
@@ -129,7 +131,7 @@ void camera_set_aspect_ratio(camera *camera, float aspect_ratio) {
     generate_perspective_matrix(camera);
 }
 
-void camera_set_rotation(camera *camera, vector3 rotation) {
+void camera_set_rotation(camera *camera, vector3d rotation) {
     if (camera == NULL) {
         fprintf(stderr, "camera_set_rotation: camera is null\n");
         return;
@@ -140,13 +142,13 @@ void camera_set_rotation(camera *camera, vector3 rotation) {
     generate_view_matrix(camera);
 }
 
-void camera_rotate(camera *camera, vector3 rotation_delta) {
+void camera_rotate(camera *camera, vector3d rotation_delta) {
     if (camera == NULL) {
         fprintf(stderr, "camera_rotate: camera is null\n");
         return;
     }
 
-    vector3 new_rotation = vector3_add(camera->rotation, rotation_delta);
+    vector3d new_rotation = vector3d_add(camera->rotation, rotation_delta);
 
     camera_set_rotation(camera, new_rotation);
 }

@@ -8,7 +8,7 @@
 #define CHUNK_SIZE_Z 16
 
 typedef struct chunk {
-    vector3 position;
+    vector3i position;
     block blocks[CHUNK_SIZE_Z][CHUNK_SIZE_Y][CHUNK_SIZE_X];
     tilemap *tilemap;
     bo vbo;
@@ -16,7 +16,7 @@ typedef struct chunk {
     vao vao;
 } chunk;
 
-void chunk_init(chunk *chunk, vector3 position, tilemap *tilemap);
+void chunk_init(chunk *chunk, vector3i position, tilemap *tilemap);
 void chunk_calculate_active_faces(chunk *chunk);
 void chunk_generate_vertices_indices(chunk *chunk);
 void chunk_draw(chunk *chunk);

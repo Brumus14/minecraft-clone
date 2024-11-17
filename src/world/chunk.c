@@ -3,7 +3,7 @@
 #include <string.h>
 #include "../graphics/renderer.h"
 
-void chunk_init(chunk *chunk, vector3 position, tilemap *tilemap) {
+void chunk_init(chunk *chunk, vector3i position, tilemap *tilemap) {
     chunk->position = position;
     chunk->tilemap = tilemap;
 
@@ -24,7 +24,7 @@ void chunk_init(chunk *chunk, vector3 position, tilemap *tilemap) {
                 /*    type = BLOCK_TYPE_EMPTY;*/
                 /*}*/
 
-                block_init(&chunk->blocks[z][y][x], (vector3){x, y, z}, type,
+                block_init(&chunk->blocks[z][y][x], (vector3i){x, y, z}, type,
                            ACTIVE_FACES_ALL, chunk->tilemap);
             }
         }
@@ -75,8 +75,8 @@ void chunk_calculate_active_faces(chunk *chunk) {
 
                 block_term(block);
 
-                vector3 block_position;
-                vector3_init(&block_position, x, y, z);
+                vector3i block_position;
+                vector3i_init(&block_position, x, y, z);
 
                 block_init(block, block_position, block->type,
                            block->active_faces, block->tilemap);
@@ -204,9 +204,9 @@ void chunk_generate_vertices_indices(chunk *chunk) {
     }
 
     for (int i = 0; i < total_vertex_count; i++) {
-        vertices[i * 5] += chunk->position.x;
-        vertices[i * 5 + 1] += chunk->position.y;
-        vertices[i * 5 + 2] += chunk->position.z;
+        vertices[i * 5] += chunk->position.x * 16;
+        vertices[i * 5 + 1] += chunk->position.y * 16;
+        vertices[i * 5 + 2] += chunk->position.z * 16;
     }
 
     bo_init(&chunk->vbo, BO_TYPE_VERTEX);

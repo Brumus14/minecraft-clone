@@ -20,8 +20,8 @@ typedef struct mouse {
     button_state buttons[MOUSE_BUTTON_LAST];
     bool buttons_just_up[MOUSE_BUTTON_LAST];
     bool buttons_just_down[MOUSE_BUTTON_LAST];
-    vector2 position;
-    vector2 position_delta;
+    vector2d position;
+    vector2d position_delta;
 } mouse;
 
 void mouse_init(mouse *mouse);
@@ -32,6 +32,6 @@ bool mouse_button_up(mouse *mouse, mouse_button button);
 bool mouse_button_just_up(mouse *mouse, mouse_button button);
 bool mouse_button_down(mouse *mouse, mouse_button button);
 bool mouse_button_just_down(mouse *mouse, mouse_button button);
-void mouse_set_position(mouse *mouse, vector2 position);
+void mouse_set_position(mouse *mouse, vector2d position);
 
 #endif

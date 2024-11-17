@@ -97,7 +97,7 @@ void generate_vertices(block *block, float *vertices, unsigned int *indices) {
     }
 }
 
-void block_init(block *block, vector3 position, block_type type,
+void block_init(block *block, vector3i position, block_type type,
                 bool *active_faces, tilemap *tilemap) {
     block->position = position;
     block->type = type;

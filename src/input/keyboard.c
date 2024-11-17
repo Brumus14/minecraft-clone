@@ -11,8 +11,6 @@ void keyboard_init(keyboard *keyboard) {
 }
 
 void keyboard_update_state(keyboard *keyboard) {
-    keyboard->key_count = KEYCODE_LAST;
-
     for (int i = 0; i < keyboard->key_count; i++) {
         keyboard->keys_just_up[i] = false;
         keyboard->keys_just_down[i] = false;

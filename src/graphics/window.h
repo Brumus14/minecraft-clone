@@ -21,7 +21,8 @@ typedef struct window {
     camera *camera;
     keyboard keyboard;
     mouse mouse;
-    float delta_time;
+    double delta_time;
+    double previous_time;
     window_framebuffer_size_callback framebuffer_size_callback;
     window_cursor_pos_callback cursor_pos_callback;
 } window;
@@ -39,7 +40,8 @@ void window_set_framebuffer_size_callback(
     window *window, window_framebuffer_size_callback function);
 void window_set_cursor_pos_callback(window *window,
                                     window_cursor_pos_callback function);
-float window_get_delta_time(window *window);
+double window_get_delta_time(window *window);
 void window_update_delta_time(window *window);
+void window_update_input(window *window);
 
 #endif
