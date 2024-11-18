@@ -94,19 +94,26 @@ void player_handle_input(player *player, window *window) {
 void player_manage_chunks(player *player, world *world) {
     int render_distance = 5;
     vector2i player_chunk;
-    player_chunk.x = player->position.x / CHUNK_SIZE_X;
-    player_chunk.y = player->position.z / CHUNK_SIZE_Z;
+    player_chunk.x = floor(player->position.x / CHUNK_SIZE_X);
+    player_chunk.y = floor(player->position.z / CHUNK_SIZE_Z);
+
+    vector3i unloaded_chunks[20]; // DONT USE THIS
+    int unloaded_chunk_count = 0;
 
     for (int i = 0; i < world->chunk_count; i++) {
         chunk *chunk = &world->chunks[i];
 
         if (chunk->position.x < player_chunk.x - render_distance ||
             chunk->position.x > player_chunk.x + render_distance ||
-            chunk->position.y < player_chunk.y - render_distance ||
-            chunk->position.y > player_chunk.y + render_distance) {
-            world_unload_chunk(world, chunk->position);
-            // HERE
+            chunk->position.z < player_chunk.y - render_distance ||
+            chunk->position.z > player_chunk.y + render_distance) {
+            unloaded_chunks[unloaded_chunk_count] = chunk->position;
+            unloaded_chunk_count++;
         }
+    }
+
+    for (int i = 0; i < unloaded_chunk_count; i++) {
+        world_unload_chunk(world, unloaded_chunks[i]);
     }
 
     for (int y = -render_distance; y <= render_distance; y++) {

@@ -10,22 +10,8 @@ void chunk_init(chunk *chunk, vector3i position, tilemap *tilemap) {
     for (int z = 0; z < CHUNK_SIZE_Z; z++) {
         for (int y = 0; y < CHUNK_SIZE_Y; y++) {
             for (int x = 0; x < CHUNK_SIZE_X; x++) {
-                block_type type = BLOCK_TYPE_EMPTY;
-
-                if (y == CHUNK_SIZE_Y - 1) {
-                    type = BLOCK_TYPE_GRASS;
-                } else if (y < CHUNK_SIZE_Y - 5) {
-                    type = BLOCK_TYPE_STONE;
-                } else {
-                    type = BLOCK_TYPE_DIRT;
-                }
-
-                /*if (y - (15 * cos((x * M_PI / 2) / 15)) > 0.01) {*/
-                /*    type = BLOCK_TYPE_EMPTY;*/
-                /*}*/
-
-                block_init(&chunk->blocks[z][y][x], (vector3i){x, y, z}, type,
-                           ACTIVE_FACES_ALL, chunk->tilemap);
+                block_init(&chunk->blocks[z][y][x], (vector3i){x, y, z},
+                           BLOCK_TYPE_EMPTY, ACTIVE_FACES_ALL, chunk->tilemap);
             }
         }
     }

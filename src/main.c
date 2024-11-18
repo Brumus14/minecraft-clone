@@ -56,7 +56,6 @@ int main() {
         glfwPollEvents();
 
         player_manage_chunks(&player, &world); // create chunk manager? ecs?
-        printf("%d\n", world.chunk_count);
 
         printf("%f\n", 1.0 / window_get_delta_time(&window));
         renderer_clear_buffers();
