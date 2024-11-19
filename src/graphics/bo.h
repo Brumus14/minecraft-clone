@@ -27,5 +27,6 @@ GLenum to_gl_type(bo_type type);
 void bo_init(bo *bo, bo_type type);
 void bo_bind(bo *bo);
 void bo_upload(bo *bo, int data_size, void *data, bo_usage usage);
+void bo_delete(bo *bo);
 
 #endif

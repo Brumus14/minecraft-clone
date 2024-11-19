@@ -10,6 +10,8 @@
 #include "world/world.h"
 #include "math/math_util.h"
 
+#include "noise1234.h"
+
 // REMMEMBER TO AUTO BIND IN FUNCTIONS THAT ITS REQUIRED
 
 int main() {
@@ -30,12 +32,15 @@ int main() {
 
     tilemap tilemap;
     tilemap_init(&tilemap, "res/textures/atlas.png", TEXTURE_FILTER_NEAREST, 16,
-                 16);
+                 16, 16, 16, 1, 2);
 
     // make arguments const
 
-    world world;
-    world_init(&world, &tilemap); // USE VECTOR3 INT
+    /*world world;*/
+    /*world_init(&world, &tilemap); // USE VECTOR3 INT*/
+
+    chunk chunk;
+    chunk_init(&chunk, (vector3i){0, 0, 0}, &tilemap);
 
     /*greedy_mesh_vertices_indices();*/
 
@@ -50,19 +55,42 @@ int main() {
     shader_program_link(&shader_program);
     shader_program_use(&shader_program);
 
+    glDisable(GL_CULL_FACE);
+
     while (!window_should_close(&window)) {
         window_update_delta_time(&window);
         window_update_input(&window);
         glfwPollEvents();
 
-        player_manage_chunks(&player, &world); // create chunk manager? ecs?
+        /*player_manage_chunks(&player, &world); // create chunk manager? ecs?*/
 
-        printf("%f\n", 1.0 / window_get_delta_time(&window));
+        /*printf("%f\n", 1.0 / window_get_delta_time(&window));*/
         renderer_clear_buffers();
 
-        if (keyboard_key_just_down(&window.keyboard, KEYCODE_ESCAPE)) {
-            window_reset_cursor(&window);
-        }
+        /*if (keyboard_key_just_down(&window.keyboard, KEYCODE_ESCAPE)) {*/
+        /*    window_reset_cursor(&window);*/
+        /*}*/
+        /**/
+        /*if (keyboard_key_just_down(&window.keyboard, KEYCODE_1)) {*/
+        /*    world_load_chunk(&world, (vector3i){0, 0, 0});*/
+        /*}*/
+        /**/
+        /*if (keyboard_key_just_down(&window.keyboard, KEYCODE_2)) {*/
+        /*    world_unload_chunk(&world, (vector3i){0, 0, 0});*/
+        /*}*/
+        /**/
+        /*if (keyboard_key_just_down(&window.keyboard, KEYCODE_3)) {*/
+        /*    world_load_chunk(&world, (vector3i){0, 1, 0});*/
+        /*}*/
+        /**/
+        /*if (keyboard_key_just_down(&window.keyboard, KEYCODE_4)) {*/
+        /*    world_unload_chunk(&world, (vector3i){0, 1, 0});*/
+        /*}*/
+        /**/
+        /*for (int i = 0; i < world.chunk_count; i++) {*/
+        /*    printf("%d, %d, %d\n", world.chunks[i].position.x,*/
+        /*           world.chunks[i].position.y, world.chunks[i].position.z);*/
+        /*}*/
 
         if (glfwGetMouseButton(window.glfw_window, GLFW_MOUSE_BUTTON_LEFT) ==
             GLFW_PRESS) {
@@ -79,7 +107,8 @@ int main() {
 
         camera_update_matrix_uniforms(&camera);
 
-        world_draw(&world);
+        /*world_draw(&world);*/
+        chunk_draw(&chunk);
 
         window_swap_buffers(&window);
     }

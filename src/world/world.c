@@ -1,6 +1,7 @@
 #include "world.h"
 
 #include <string.h>
+#include "noise1234.h"
 
 int get_chunk_index(world *world, vector3i position) {
     for (int i = 0; i < world->chunk_count; i++) {
@@ -18,12 +19,13 @@ void world_init(world *world, tilemap *tilemap) {
     world->chunks = malloc(0);
 }
 
-block_type generation_algorithm(vector3i position) {
-    if (position.x < 1 || position.z < 3) {
-        return BLOCK_TYPE_STONE;
+block_type terrain_generation_algorithm(vector3i position) {
+    if (position.y <
+        (noise3(position.x * 0.03, position.z * 0.03, 1.0) - 1) * -16) {
+        return BLOCK_TYPE_GRASS;
     }
 
-    return BLOCK_TYPE_GRASS;
+    return BLOCK_TYPE_EMPTY;
 }
 
 void world_load_chunk(world *world, vector3i position) {
@@ -42,26 +44,24 @@ void world_load_chunk(world *world, vector3i position) {
     for (int z = 0; z < CHUNK_SIZE_Z; z++) {
         for (int y = 0; y < CHUNK_SIZE_Y; y++) {
             for (int x = 0; x < CHUNK_SIZE_X; x++) {
-
                 vector3i global_position;
                 vector3i_init(&global_position, position.x * CHUNK_SIZE_X + x,
                               position.y * CHUNK_SIZE_Y + y,
                               position.z * CHUNK_SIZE_Z + z);
 
-                chunk->blocks[z][y][x].type = generation_algorithm((vector3i){
-                    global_position.x, global_position.y, global_position.z});
+                chunk->blocks[z][y][x] = terrain_generation_algorithm(
+                    (vector3i){global_position.x, global_position.y,
+                               global_position.z});
             }
         }
     }
 
-    chunk_calculate_active_faces(chunk); // MAYBE DO THIS AUTOMATICALLY
-    chunk_generate_vertices_indices(chunk);
+    /*chunk_calculate_active_faces(chunk); // MAYBE DO THIS AUTOMATICALLY*/
+    /*chunk_generate_vertices_indices(chunk);*/
 }
 
 void world_unload_chunk(world *world, vector3i position) {
     int chunk_index = get_chunk_index(world, position);
-    /*printf("unload!\n");*/
-    /*printf("UNLOADING: %d, %d, %d\n", position.x, position.y, position.z);*/
 
     if (chunk_index == -1) {
         return;

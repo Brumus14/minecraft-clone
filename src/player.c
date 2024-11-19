@@ -97,7 +97,7 @@ void player_manage_chunks(player *player, world *world) {
     player_chunk.x = floor(player->position.x / CHUNK_SIZE_X);
     player_chunk.y = floor(player->position.z / CHUNK_SIZE_Z);
 
-    vector3i unloaded_chunks[20]; // DONT USE THIS
+    vector3i unloaded_chunks[world->chunk_count]; // DONT USE THIS
     int unloaded_chunk_count = 0;
 
     for (int i = 0; i < world->chunk_count; i++) {

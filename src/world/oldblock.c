@@ -121,8 +121,10 @@ void block_init(block *block, vector3i position, block_type type,
         }
     }
 
-    block->vertex_count = block->active_face_count * 4;
-    block->index_count = block->active_face_count * 6;
+    /*block->vertex_count = block->active_face_count * 4;*/
+    /*block->index_count = block->active_face_count * 6;*/
+    block->vertex_count = 6 * 4;
+    block->index_count = 6 * 6;
 
     block->vertices = malloc(sizeof(float) * 5 * block->vertex_count);
     block->indices = malloc(sizeof(unsigned int) * block->index_count);
