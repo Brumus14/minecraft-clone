@@ -56,7 +56,6 @@ typedef enum key_state {
 } key_state;
 
 typedef struct keyboard {
-    int key_count;
     key_state keys[KEYCODE_LAST];
     bool keys_just_up[KEYCODE_LAST];
     bool keys_just_down[KEYCODE_LAST];

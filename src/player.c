@@ -44,6 +44,7 @@ void player_handle_input(player *player, window *window) {
     }
 
     double delta_time = window_get_delta_time(window);
+
     rotation_delta.x = -window->mouse.position_delta.y;
     rotation_delta.y = window->mouse.position_delta.x;
 
@@ -56,10 +57,6 @@ void player_handle_input(player *player, window *window) {
 
     // Make sure rotation is always below 360 degrees or maybe -180 and 180
     player->rotation.y = fmod(player->rotation.y + 360, 360);
-
-    /*if (rotation_delta.x != 0 || rotation_delta.y != 0) {*/
-    /*    printf("%f, %f\n", rotation_delta.x, rotation_delta.y);*/
-    /*}*/
 
     vector3d_normalise(&movement_delta);
 
@@ -89,10 +86,18 @@ void player_handle_input(player *player, window *window) {
 
     vector3d_add_to(player->position, relative_movement_delta,
                     &player->position);
+
+    // maybe not do this???
+    player->moved_this_frame =
+        vector3d_magnitude(relative_movement_delta) > EPSILON;
 }
 
 void player_manage_chunks(player *player, world *world) {
-    int render_distance = 5;
+    if (!player->moved_this_frame) {
+        return;
+    }
+
+    int render_distance = 7; // move to a variable
     vector2i player_chunk;
     player_chunk.x = floor(player->position.x / CHUNK_SIZE_X);
     player_chunk.y = floor(player->position.z / CHUNK_SIZE_Z);
@@ -120,6 +125,8 @@ void player_manage_chunks(player *player, world *world) {
         for (int x = -render_distance; x <= render_distance; x++) {
             world_load_chunk(
                 world, (vector3i){player_chunk.x + x, 0, player_chunk.y + y});
+            world_load_chunk(
+                world, (vector3i){player_chunk.x + x, 1, player_chunk.y + y});
         }
     }
 }

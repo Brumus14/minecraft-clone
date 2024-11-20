@@ -16,7 +16,6 @@ typedef enum button_state {
 } button_state;
 
 typedef struct mouse {
-    int button_count;
     button_state buttons[MOUSE_BUTTON_LAST];
     bool buttons_just_up[MOUSE_BUTTON_LAST];
     bool buttons_just_down[MOUSE_BUTTON_LAST];

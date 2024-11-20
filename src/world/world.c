@@ -20,12 +20,14 @@ void world_init(world *world, tilemap *tilemap) {
 }
 
 block_type terrain_generation_algorithm(vector3i position) {
+    block_type type = BLOCK_TYPE_EMPTY;
+
     if (position.y <
         (noise3(position.x * 0.03, position.z * 0.03, 1.0) - 1) * -16) {
-        return BLOCK_TYPE_GRASS;
+        type = BLOCK_TYPE_GRASS;
     }
 
-    return BLOCK_TYPE_EMPTY;
+    return type;
 }
 
 void world_load_chunk(world *world, vector3i position) {
@@ -44,6 +46,7 @@ void world_load_chunk(world *world, vector3i position) {
     for (int z = 0; z < CHUNK_SIZE_Z; z++) {
         for (int y = 0; y < CHUNK_SIZE_Y; y++) {
             for (int x = 0; x < CHUNK_SIZE_X; x++) {
+
                 vector3i global_position;
                 vector3i_init(&global_position, position.x * CHUNK_SIZE_X + x,
                               position.y * CHUNK_SIZE_Y + y,
@@ -56,8 +59,7 @@ void world_load_chunk(world *world, vector3i position) {
         }
     }
 
-    /*chunk_calculate_active_faces(chunk); // MAYBE DO THIS AUTOMATICALLY*/
-    /*chunk_generate_vertices_indices(chunk);*/
+    chunk_update(chunk);
 }
 
 void world_unload_chunk(world *world, vector3i position) {

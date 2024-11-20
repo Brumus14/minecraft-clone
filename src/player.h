@@ -12,6 +12,7 @@ typedef struct player {
     camera *camera;
     double speed;
     double sensitivity;
+    bool moved_this_frame;
 } player;
 
 void player_init(player *player, vector3d position, vector3d rotation,

@@ -8,9 +8,12 @@ void vector3d_init(vector3d *vector, double x, double y, double z) {
     vector->z = z;
 }
 
+double vector3d_magnitude(vector3d vector) {
+    return sqrt(pow(vector.x, 2) + pow(vector.y, 2) + pow(vector.z, 2));
+}
+
 void vector3d_normalise(vector3d *vector) {
-    double magnitude =
-        sqrt(pow(vector->x, 2) + pow(vector->y, 2) + pow(vector->z, 2));
+    double magnitude = vector3d_magnitude(*vector);
 
     if (magnitude > EPSILON) {
         vector->x /= magnitude;
@@ -22,8 +25,7 @@ void vector3d_normalise(vector3d *vector) {
 vector3d vector3d_normalised(vector3d vector) {
     vector3d result = VECTOR3D_ZERO;
 
-    double magnitude =
-        sqrt(pow(vector.x, 2) + pow(vector.y, 2) + pow(vector.z, 2));
+    double magnitude = vector3d_magnitude(vector);
 
     if (magnitude > EPSILON) {
         result.x = vector.x / magnitude;

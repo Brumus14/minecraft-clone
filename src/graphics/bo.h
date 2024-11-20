@@ -28,5 +28,6 @@ void bo_init(bo *bo, bo_type type);
 void bo_bind(bo *bo);
 void bo_upload(bo *bo, int data_size, void *data, bo_usage usage);
 void bo_delete(bo *bo);
+int bo_get_size(bo *bo);
 
 #endif

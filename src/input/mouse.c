@@ -1,9 +1,7 @@
 #include "mouse.h"
 
 void mouse_init(mouse *mouse) {
-    mouse->button_count = MOUSE_BUTTON_LAST;
-
-    for (int i = 0; i < mouse->button_count; i++) {
+    for (int i = 0; i < MOUSE_BUTTON_LAST; i++) {
         mouse->buttons[i] = BUTTON_STATE_UP;
         mouse->buttons_just_up[i] = false;
         mouse->buttons_just_down[i] = false;
@@ -12,22 +10,23 @@ void mouse_init(mouse *mouse) {
 
 void mouse_update_state(mouse *mouse) {
     mouse->position_delta = VECTOR2D_ZERO;
-    mouse->button_count = MOUSE_BUTTON_LAST;
 
-    for (int i = 0; i < mouse->button_count; i++) {
+    for (int i = 0; i < MOUSE_BUTTON_LAST; i++) {
         mouse->buttons_just_up[i] = false;
         mouse->buttons_just_down[i] = false;
     }
 }
 
 void mouse_set_button(mouse *mouse, mouse_button button, button_state state) {
-    mouse->buttons[button] = state;
-
-    if (state == BUTTON_STATE_UP) {
+    if (state == BUTTON_STATE_UP &&
+        mouse->buttons[button] == BUTTON_STATE_DOWN) {
         mouse->buttons_just_up[button] = true;
-    } else if (state == BUTTON_STATE_DOWN) {
+    } else if (state == BUTTON_STATE_DOWN &&
+               mouse->buttons[button] == BUTTON_STATE_UP) {
         mouse->buttons_just_down[button] = true;
     }
+
+    mouse->buttons[button] = state;
 }
 
 button_state mouse_get_button(mouse *mouse, mouse_button button) {

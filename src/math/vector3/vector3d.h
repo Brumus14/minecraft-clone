@@ -17,6 +17,7 @@ typedef struct vector3d {
     }
 
 void vector3d_init(vector3d *vector, double x, double y, double z);
+double vector3d_magnitude(vector3d vector);
 void vector3d_normalise(vector3d *vector);
 vector3d vector3d_normalised(vector3d vector);
 void vector3d_to_glm(vector3d vector, vec3 *destination);

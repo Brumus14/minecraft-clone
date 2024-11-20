@@ -53,9 +53,6 @@ void camera_init(camera *camera, vector3d position, vector3d rotation,
 
     generate_view_matrix(camera);
     generate_perspective_matrix(camera);
-
-    /*vector3d testdir = direction_from_rotation((vector3d){0.0, 0.0, 0.0});*/
-    /*printf("%f, %f, %f\n", testdir.x, testdir.y, testdir.z);*/
 }
 
 void camera_set_position(camera *camera, vector3d position) {
@@ -118,6 +115,11 @@ void camera_update_matrix_uniforms(camera *camera) {
 
     GL_CALL(glUniformMatrix4fv(projection_loc, 1, GL_FALSE,
                                (float *)camera->projection_matrix));
+
+    // should this be moved somewhere else?
+    mat4 model_matrix = GLM_MAT4_IDENTITY;
+    GLint model_loc = GL_CALL(glGetUniformLocation(shader_program_id, "model"));
+    GL_CALL(glUniformMatrix4fv(model_loc, 1, GL_FALSE, (float *)model_matrix));
 }
 
 void camera_set_aspect_ratio(camera *camera, double aspect_ratio) {
