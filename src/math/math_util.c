@@ -26,10 +26,20 @@ void vector3d_print(vector3d v) {
     printf("%f, %f, %f\n", v.x, v.y, v.z);
 }
 
+void vector3i_print(vector3i v) {
+    printf("%d, %d, %d\n", v.x, v.y, v.z);
+}
+
 int sign(float value) {
     if (value == 0) {
         return 0;
     }
 
     return value / fabsf(value);
+}
+
+int mod(int a, int b) {
+    int r = a % b;
+
+    return r < 0 ? r + b : r;
 }

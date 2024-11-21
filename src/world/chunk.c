@@ -32,7 +32,7 @@ void chunk_init(chunk *chunk, vector3i position, tilemap *tilemap) {
     chunk->vbo.gl_id = 0;
     chunk->ibo.gl_id = 0;
 
-    /*chunk_update(chunk);*/
+    chunk_update(chunk);
 }
 
 void chunk_update(chunk *chunk) {
@@ -92,6 +92,8 @@ void chunk_update(chunk *chunk) {
                                VERTEX_POSITIONS[FACE_INDICES[f][i]],
                                3 * sizeof(float));
 
+                        // dont think blocks are positioned correctly as block
+                        // origin back top left but chunk is back bottom left
                         vertices[(faces_added * 4 + i) * 5] +=
                             x + chunk->position.x * CHUNK_SIZE_X;
                         vertices[(faces_added * 4 + i) * 5 + 1] +=

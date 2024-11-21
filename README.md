@@ -5,4 +5,4 @@ To run first clone the git respository then do the following:
 mkdir build
 make
 ```
-And then run the executable
+And then run the executable.

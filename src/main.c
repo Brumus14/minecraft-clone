@@ -10,8 +10,6 @@
 #include "world/world.h"
 #include "math/math_util.h"
 
-#include "noise1234.h"
-
 // REMMEMBER TO AUTO BIND IN FUNCTIONS THAT ITS REQUIRED
 
 int main() {
@@ -41,7 +39,7 @@ int main() {
     /*greedy_mesh_vertices_indices();*/
 
     player player;
-    player_init(&player, (vector3d){10.0, 16.0, 10.0}, VECTOR3D_ZERO, 10, 0.05,
+    player_init(&player, (vector3d){8.0, 4.0, 8.0}, VECTOR3D_ZERO, 10, 0.05,
                 &camera);
 
     // move to chunk/world?
@@ -60,7 +58,7 @@ int main() {
 
         player_manage_chunks(&player, &world); // create chunk manager? ecs?
 
-        /*printf("%f\n", 1.0 / window_get_delta_time(&window));*/
+        printf("%f\n", 1.0 / window_get_delta_time(&window));
 
         if (keyboard_key_just_down(&window.keyboard, KEYCODE_ESCAPE)) {
             window_reset_cursor(&window);

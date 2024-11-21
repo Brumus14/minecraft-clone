@@ -4,6 +4,7 @@
 #include "gl_util.h"
 #include "../math/math_util.h"
 
+// use frustum culling
 void generate_perspective_matrix(camera *camera) {
     if (camera == NULL) {
         fprintf(stderr, "generate_perspective_matrix: camera is null\n");

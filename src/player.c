@@ -93,11 +93,11 @@ void player_handle_input(player *player, window *window) {
 }
 
 void player_manage_chunks(player *player, world *world) {
-    if (!player->moved_this_frame) {
-        return;
-    }
+    /*if (!player->moved_this_frame) {*/
+    /*    return;*/
+    /*}*/
 
-    int render_distance = 7; // move to a variable
+    int render_distance = 2; // move to a variable
     vector2i player_chunk;
     player_chunk.x = floor(player->position.x / CHUNK_SIZE_X);
     player_chunk.y = floor(player->position.z / CHUNK_SIZE_Z);
@@ -123,6 +123,8 @@ void player_manage_chunks(player *player, world *world) {
 
     for (int y = -render_distance; y <= render_distance; y++) {
         for (int x = -render_distance; x <= render_distance; x++) {
+            world_load_chunk(
+                world, (vector3i){player_chunk.x + x, -1, player_chunk.y + y});
             world_load_chunk(
                 world, (vector3i){player_chunk.x + x, 0, player_chunk.y + y});
             world_load_chunk(
