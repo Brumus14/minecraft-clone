@@ -3,6 +3,30 @@
 #include "string.h"
 
 bool is_block_face_active(chunk *chunk, int x, int y, int z, int face) {
+    // XRAY MODE
+    /*if (chunk->blocks[z][y][x] == BLOCK_TYPE_COAL) {*/
+    /*    switch (face) {*/
+    /*    case 0:*/
+    /*        return !(z < CHUNK_SIZE_Z - 1 &&*/
+    /*                 chunk->blocks[z + 1][y][x] == BLOCK_TYPE_COAL);*/
+    /*    case 1:*/
+    /*        return !(y < CHUNK_SIZE_Y - 1 &&*/
+    /*                 chunk->blocks[z][y + 1][x] == BLOCK_TYPE_COAL);*/
+    /*    case 2:*/
+    /*        return !(x < CHUNK_SIZE_X - 1 &&*/
+    /*                 chunk->blocks[z][y][x + 1] == BLOCK_TYPE_COAL);*/
+    /*    case 3:*/
+    /*        return !(y > 0 && chunk->blocks[z][y - 1][x] ==
+     * BLOCK_TYPE_COAL);*/
+    /*    case 4:*/
+    /*        return !(x > 0 && chunk->blocks[z][y][x - 1] ==
+     * BLOCK_TYPE_COAL);*/
+    /*    case 5:*/
+    /*        return !(z > 0 && chunk->blocks[z - 1][y][x] ==
+     * BLOCK_TYPE_COAL);*/
+    /*    }*/
+    /*}*/
+
     switch (face) {
     case 0:
         return !(z < CHUNK_SIZE_Z - 1 &&

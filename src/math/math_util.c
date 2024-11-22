@@ -1,5 +1,10 @@
 #include "math_util.h"
 
+#include <stdlib.h>
+#include <time.h>
+
+bool rand_seeded = false;
+
 vector3d rotation_to_direction(vector3d rotation) {
     vector3d direction;
     rotation.y -= 90;
@@ -42,4 +47,14 @@ int mod(int a, int b) {
     int r = a % b;
 
     return r < 0 ? r + b : r;
+}
+
+double random_range(double min, double max) {
+    if (!rand_seeded) {
+        srand(time(NULL));
+
+        rand_seeded = true;
+    }
+
+    return ((double)rand() / RAND_MAX) * (max - min) + min;
 }

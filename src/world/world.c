@@ -20,6 +20,8 @@ void world_init(world *world, tilemap *tilemap) {
     world->chunks = malloc(0);
     world->chunks_to_generate_count = 0;
     world->chunks_to_generate = malloc(0);
+
+    world->seed = random_range(0, 100);
 }
 
 void generate_chunk_terrain(world *world, chunk *chunk, int stage) {
@@ -35,9 +37,15 @@ void generate_chunk_terrain(world *world, chunk *chunk, int stage) {
 
                     block_type type = BLOCK_TYPE_EMPTY;
 
-                    if (position.y <
-                        (noise3(position.x * 0.03, position.z * 0.03, 1.0)) *
-                            3 * 16) {
+                    if (position.y < (noise3(position.x * 0.03,
+                                             position.z * 0.03, world->seed)) *
+                                             16 -
+                                         8) {
+                        type = BLOCK_TYPE_STONE;
+                    } else if (position.y <
+                               (noise3(position.x * 0.03, position.z * 0.03,
+                                       world->seed)) *
+                                   16) {
                         type = BLOCK_TYPE_DIRT;
                     }
 
@@ -57,10 +65,18 @@ void generate_chunk_terrain(world *world, chunk *chunk, int stage) {
 
                     if (chunk->blocks[z][y][x] == BLOCK_TYPE_DIRT &&
                         world_get_block(world,
-                                        (vector3i){position.x, position.y + 1,
+                                        (vector3d){position.x, position.y + 1,
                                                    position.z}) ==
                             BLOCK_TYPE_EMPTY) {
                         chunk->blocks[z][y][x] = BLOCK_TYPE_GRASS;
+                    } else if (chunk->blocks[z][y][x] == BLOCK_TYPE_STONE) {
+                        if (-noise4(position.x * 0.2, position.y * 0.2,
+                                    position.z * 0.2, world->seed) < -0.4) {
+                            chunk->blocks[z][y][x] = BLOCK_TYPE_COAL;
+                        }
+                        /*if (random_range(0.0, 1.0) < 0.1) {*/
+                        /*    chunk->blocks[z][y][x] = BLOCK_TYPE_COAL;*/
+                        /*}*/
                     }
                 }
             }
@@ -101,13 +117,14 @@ void generate_chunks(world *world) {
         chunk *chunk = &world->chunks[world->chunks_to_generate[i]];
 
         generate_chunk_terrain(world, chunk, 1);
-    }
-
-    for (int i = 0; i < world->chunks_to_generate_count; i++) {
-        chunk *chunk = &world->chunks[world->chunks_to_generate[i]];
-
         chunk_update(chunk);
     }
+
+    /*for (int i = 0; i < world->chunks_to_generate_count; i++) {*/
+    /*    chunk *chunk = &world->chunks[world->chunks_to_generate[i]];*/
+    /**/
+    /*    chunk_update(chunk);*/
+    /*}*/
 
     world->chunks_to_generate_count = 0;
     world->chunks_to_generate = malloc(0);
@@ -139,11 +156,11 @@ void world_draw(world *world) {
 }
 
 // use mipmapping
-block_type world_get_block(world *world, vector3i position) {
+block_type world_get_block(world *world, vector3d position) {
     // rename to chunks loaded
-    vector3i chunk_position = {floorf((float)position.x / CHUNK_SIZE_X),
-                               floorf((float)position.y / CHUNK_SIZE_Y),
-                               floorf((float)position.z / CHUNK_SIZE_Z)};
+    vector3i chunk_position = {floor(position.x / CHUNK_SIZE_X),
+                               floor(position.y / CHUNK_SIZE_Y),
+                               floor(position.z / CHUNK_SIZE_Z)};
 
     int chunk_index = get_chunk_index(world, chunk_position);
 
@@ -153,10 +170,33 @@ block_type world_get_block(world *world, vector3i position) {
 
     chunk *chunk = &world->chunks[chunk_index];
 
-    vector3i block_chunk_position = {mod(position.x, CHUNK_SIZE_X),
-                                     mod(position.y, CHUNK_SIZE_Y),
-                                     mod(position.z, CHUNK_SIZE_Z)};
+    vector3i block_chunk_position = {mod(floor(position.x), CHUNK_SIZE_X),
+                                     mod(floor(position.y), CHUNK_SIZE_Y),
+                                     mod(floor(position.z), CHUNK_SIZE_Z)};
 
     return chunk->blocks[block_chunk_position.z][block_chunk_position.y]
                         [block_chunk_position.x];
+}
+
+void world_set_block(world *world, block_type type, vector3d position) {
+    vector3i chunk_position = {floor(position.x / CHUNK_SIZE_X),
+                               floor(position.y / CHUNK_SIZE_Y),
+                               floor(position.z / CHUNK_SIZE_Z)};
+
+    int chunk_index = get_chunk_index(world, chunk_position);
+
+    if (chunk_index == -1) {
+        return;
+    }
+
+    chunk *chunk = &world->chunks[chunk_index];
+
+    vector3i block_chunk_position = {mod(floor(position.x), CHUNK_SIZE_X),
+                                     mod(floor(position.y), CHUNK_SIZE_Y),
+                                     mod(floor(position.z), CHUNK_SIZE_Z)};
+
+    chunk->blocks[block_chunk_position.z][block_chunk_position.y]
+                 [block_chunk_position.x] = type;
+
+    chunk_update(chunk);
 }

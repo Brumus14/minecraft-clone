@@ -12,5 +12,6 @@ void vector3d_print(vector3d v);
 void vector3i_print(vector3i v);
 int sign(float value);
 int mod(int a, int b);
+double random_range(double min, double max);
 
 #endif

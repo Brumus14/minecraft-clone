@@ -19,5 +19,6 @@ void player_init(player *player, vector3d position, vector3d rotation,
                  double speed, double sensitivity, camera *camera);
 void player_handle_input(player *player, window *window);
 void player_manage_chunks(player *player, world *world);
+void player_get_target_block(player *player, world *world);
 
 #endif

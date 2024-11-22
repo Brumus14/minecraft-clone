@@ -124,11 +124,35 @@ void player_manage_chunks(player *player, world *world) {
     for (int y = -render_distance; y <= render_distance; y++) {
         for (int x = -render_distance; x <= render_distance; x++) {
             world_load_chunk(
+                world, (vector3i){player_chunk.x + x, -4, player_chunk.y + y});
+            world_load_chunk(
+                world, (vector3i){player_chunk.x + x, -3, player_chunk.y + y});
+            world_load_chunk(
+                world, (vector3i){player_chunk.x + x, -2, player_chunk.y + y});
+            world_load_chunk(
                 world, (vector3i){player_chunk.x + x, -1, player_chunk.y + y});
             world_load_chunk(
                 world, (vector3i){player_chunk.x + x, 0, player_chunk.y + y});
             world_load_chunk(
                 world, (vector3i){player_chunk.x + x, 1, player_chunk.y + y});
+            world_load_chunk(
+                world, (vector3i){player_chunk.x + x, 2, player_chunk.y + y});
         }
     }
+}
+
+void player_get_target_block(player *player, world *world) {
+    float max_ray_length = 5;
+
+    vector3d ray_origin = player->position;
+    vector3d direction = rotation_to_direction(player->rotation);
+    vector3i voxel_origin = {floor(ray_origin.x), floor(ray_origin.y),
+                             floor(ray_origin.z)};
+    // when direction 0
+    vector3d steps = {direction.x > 0 ? 1 : -1, direction.y > 0 ? 1 : -1,
+                      direction.z > 0 ? 1 : -1};
+    vector3d deltas = {1 / direction.x, 1 / direction.y, 1 / direction.z};
+
+    float travelled = 0;
+    bool hit = false;
 }

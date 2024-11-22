@@ -9,12 +9,14 @@ typedef struct world {
     chunk *chunks;
     int *chunks_to_generate;
     int chunks_to_generate_count;
+    float seed;
 } world;
 
 void world_init(world *world, tilemap *tilemap);
 void world_load_chunk(world *world, vector3i position);
 void world_unload_chunk(world *world, vector3i position);
 void world_draw(world *world);
-block_type world_get_block(world *world, vector3i position);
+block_type world_get_block(world *world, vector3d position);
+void world_set_block(world *world, block_type type, vector3d position);
 
 #endif

@@ -38,6 +38,8 @@ int main() {
 
     /*greedy_mesh_vertices_indices();*/
 
+    // 21474836.0
+    // 2147483.0
     player player;
     player_init(&player, (vector3d){8.0, 4.0, 8.0}, VECTOR3D_ZERO, 10, 0.05,
                 &camera);
@@ -58,7 +60,7 @@ int main() {
 
         player_manage_chunks(&player, &world); // create chunk manager? ecs?
 
-        printf("%f\n", 1.0 / window_get_delta_time(&window));
+        /*printf("%f\n", 1.0 / window_get_delta_time(&window));*/
 
         if (keyboard_key_just_down(&window.keyboard, KEYCODE_ESCAPE)) {
             window_reset_cursor(&window);
@@ -66,6 +68,7 @@ int main() {
 
         if (mouse_button_just_down(&window.mouse, MOUSE_BUTTON_LEFT)) {
             window_capture_cursor(&window);
+            player_get_target_block(&player, &world);
         }
 
         player_handle_input(&player, &window);
