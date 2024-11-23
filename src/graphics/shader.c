@@ -41,8 +41,19 @@ void shader_compile(shader *shader) {
 
     GL_CALL(glCompileShader(shader->gl_id));
 
-    GLint val = GL_FALSE;
-    GL_CALL(glGetShaderiv(shader->gl_id, GL_COMPILE_STATUS, &val));
+    GLint compile_status;
+    GL_CALL(glGetShaderiv(shader->gl_id, GL_COMPILE_STATUS, &compile_status));
+
+    if (compile_status == GL_FALSE) {
+        int max_length = 0;
+        GL_CALL(glGetShaderiv(shader->gl_id, GL_INFO_LOG_LENGTH, &max_length));
+
+        char error[max_length];
+        glGetShaderInfoLog(shader->gl_id, max_length, &max_length,
+                           (GLchar *)&error);
+
+        fprintf(stderr, "shader_compile: %s\n", error);
+    }
 }
 
 void shader_delete(shader *shader) {

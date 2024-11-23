@@ -13,5 +13,7 @@ block_texture block_type_to_texture(block_type type) {
         return (block_texture){4, 4, 4, 4, 4, 4};
     case BLOCK_TYPE_COAL:
         return (block_texture){5, 5, 5, 5, 5, 5};
+    case BLOCK_TYPE_LOG:
+        return (block_texture){6, 7, 6, 7, 6, 6};
     }
 }

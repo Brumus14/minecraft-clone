@@ -105,6 +105,9 @@ void window_init(window *window, int width, int height, char *title,
 
     glfwSetWindowUserPointer(window->glfw_window, window);
 
+    glfwSetInputMode(window->glfw_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetInputMode(window->glfw_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+
     glfwSetFramebufferSizeCallback(window->glfw_window,
                                    glfw_framebuffer_size_callback);
     /*glfwSetCursorPosCallback(window->glfw_window, glfw_cursor_pos_callback);*/

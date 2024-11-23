@@ -15,5 +15,6 @@ typedef struct matrix4d {
 } matrix4d;
 
 void matrix4d_to_glm(matrix4d *matrix, mat4 destination);
+matrix4d matrix4d_from_glm(mat4 glm_matrix);
 
 #endif

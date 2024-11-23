@@ -1,6 +1,7 @@
 #include "world.h"
 
 #include <string.h>
+#include <pthread.h>
 #include "noise1234.h"
 #include "../math/math_util.h"
 
@@ -70,13 +71,10 @@ void generate_chunk_terrain(world *world, chunk *chunk, int stage) {
                             BLOCK_TYPE_EMPTY) {
                         chunk->blocks[z][y][x] = BLOCK_TYPE_GRASS;
                     } else if (chunk->blocks[z][y][x] == BLOCK_TYPE_STONE) {
-                        if (-noise4(position.x * 0.2, position.y * 0.2,
-                                    position.z * 0.2, world->seed) < -0.4) {
+                        if (noise4(position.x * 0.2, position.y * 0.2,
+                                   position.z * 0.2, world->seed) > 0.6) {
                             chunk->blocks[z][y][x] = BLOCK_TYPE_COAL;
                         }
-                        /*if (random_range(0.0, 1.0) < 0.1) {*/
-                        /*    chunk->blocks[z][y][x] = BLOCK_TYPE_COAL;*/
-                        /*}*/
                     }
                 }
             }
@@ -120,12 +118,6 @@ void generate_chunks(world *world) {
         chunk_update(chunk);
     }
 
-    /*for (int i = 0; i < world->chunks_to_generate_count; i++) {*/
-    /*    chunk *chunk = &world->chunks[world->chunks_to_generate[i]];*/
-    /**/
-    /*    chunk_update(chunk);*/
-    /*}*/
-
     world->chunks_to_generate_count = 0;
     world->chunks_to_generate = malloc(0);
 }
@@ -149,6 +141,8 @@ void world_unload_chunk(world *world, vector3i position) {
 
 void world_draw(world *world) {
     generate_chunks(world);
+
+    texture_bind(&world->tilemap->texture);
 
     for (int i = 0; i < world->chunk_count; i++) {
         chunk_draw(&world->chunks[i]);

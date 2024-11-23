@@ -81,12 +81,30 @@ vector3d vector3d_scalar_multiply(vector3d vector, double scalar) {
     return result;
 }
 
+void vector3d_cross_product_to(vector3d v1, vector3d v2, vector3d *dest) {
+    dest->x = v1.y * v2.z - v1.z * v2.y;
+    dest->y = v1.z * v2.x - v1.x * v2.z;
+    dest->z = v1.x * v2.y - v1.y * v2.x;
+}
+
 vector3d vector3d_cross_product(vector3d v1, vector3d v2) {
     vector3d result;
 
-    result.x = v1.y * v2.z - v1.z * v2.y;
-    result.y = v1.z * v2.x - v1.x * v2.z;
-    result.z = v1.x * v2.y - v1.y * v2.x;
+    vector3d_cross_product_to(v1, v2, &result);
+
+    return result;
+}
+
+void vector3d_dot_product_to(vector3d v1, vector3d v2, vector3d *dest) {
+    dest->x = v1.x * v2.x;
+    dest->y = v1.y * v2.y;
+    dest->z = v1.z * v2.z;
+}
+
+vector3d vector3d_dot_product(vector3d v1, vector3d v2) {
+    vector3d result;
+
+    vector3d_dot_product_to(v1, v2, &result);
 
     return result;
 }

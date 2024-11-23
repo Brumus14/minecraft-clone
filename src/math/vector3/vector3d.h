@@ -27,7 +27,10 @@ vector3d vector3d_sub(vector3d v1, vector3d v2);
 void vector3d_scalar_multiply_to(vector3d vector, double scalar,
                                  vector3d *dest);
 vector3d vector3d_scalar_multiply(vector3d vector, double scalar);
+void vector3d_cross_product_to(vector3d v1, vector3d v2, vector3d *dest);
 vector3d vector3d_cross_product(vector3d v1, vector3d v2);
+void vector3d_dot_product_to(vector3d v1, vector3d v2, vector3d *dest);
+vector3d vector3d_dot_product(vector3d v1, vector3d v2);
 bool vector3d_equal(vector3d v1, vector3d v2);
 
 #endif

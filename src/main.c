@@ -9,48 +9,51 @@
 #include "player.h"
 #include "world/world.h"
 #include "math/math_util.h"
+#include "gui/gui.h"
+#include "gui/gui_image.h"
 
 // REMMEMBER TO AUTO BIND IN FUNCTIONS THAT ITS REQUIRED
+// make arguments const
+// make camera prepare draw function
+// better gui
 
 int main() {
     window window;
     camera camera;
+    gui gui;
 
     window_init(&window, 400, 400, "minecraft!", &camera);
     glfwSwapInterval(0);
 
-    camera_init(&camera, VECTOR3D_ZERO, VECTOR3D_ZERO, 60.0,
-                window_get_aspect_ratio(&window), 0.1, 1000.0);
-
-    glfwSetInputMode(window.glfw_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    glfwSetInputMode(window.glfw_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
     renderer_init();
     renderer_set_clear_colour(0.53, 0.81, 0.92, 1.0);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    camera_init(&camera, VECTOR3D_ZERO, VECTOR3D_ZERO, 90.0,
+                window_get_aspect_ratio(&window), 0.1, 1000.0);
+
+    gui_init(&gui, &window);
+
+    gui_image crosshair;
+    gui_image_init(&crosshair, "res/textures/crosshair.png", (vector2d){0, 0},
+                   (vector2d){0.04, 0.04});
 
     tilemap tilemap;
     tilemap_init(&tilemap, "res/textures/atlas.png", TEXTURE_FILTER_NEAREST, 16,
                  16, 16, 16, 1, 2);
 
-    // make arguments const
-
     world world;
-    world_init(&world, &tilemap); // USE VECTOR3 INT
+    world_init(&world, &tilemap);
 
     /*greedy_mesh_vertices_indices();*/
 
     // 21474836.0
     // 2147483.0
     player player;
-    player_init(&player, (vector3d){8.0, 4.0, 8.0}, VECTOR3D_ZERO, 10, 0.05,
+    player_init(&player, (vector3d){8.0, 4.0, 8.0}, VECTOR3D_ZERO, 5, 0.05,
                 &camera);
-
-    // move to chunk/world?
-    shader_program shader_program;
-    shader_program_from_files(&shader_program, "res/shaders/vertex.vert",
-                              "res/shaders/fragment.frag");
-    shader_program_bind_attribute(&shader_program, 0, "position");
-    shader_program_link(&shader_program);
-    shader_program_use(&shader_program);
 
     while (!window_should_close(&window)) {
         renderer_clear_buffers();
@@ -68,7 +71,11 @@ int main() {
 
         if (mouse_button_just_down(&window.mouse, MOUSE_BUTTON_LEFT)) {
             window_capture_cursor(&window);
-            player_get_target_block(&player, &world);
+            player_destroy_block(&player, &world);
+        }
+
+        if (mouse_button_just_down(&window.mouse, MOUSE_BUTTON_RIGHT)) {
+            player_place_block(&player, &world, BLOCK_TYPE_LOG);
         }
 
         player_handle_input(&player, &window);
@@ -76,9 +83,13 @@ int main() {
         camera_set_rotation(&camera, player.rotation);
         camera_set_position(&camera, player.position);
 
-        camera_update_matrix_uniforms(&camera);
+        camera_prepare_draw(&camera);
 
         world_draw(&world);
+
+        gui_prepare_draw(&gui);
+
+        gui_image_draw(&crosshair);
 
         window_swap_buffers(&window);
     }

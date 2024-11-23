@@ -22,7 +22,6 @@ void generate_view_matrix(camera *camera) {
         return;
     }
 
-    /*vector3d direction = direction_from_rotation(camera->rotation);*/
     vector3d direction = rotation_to_direction(camera->rotation);
 
     vec3 glm_direction;
@@ -54,6 +53,11 @@ void camera_init(camera *camera, vector3d position, vector3d rotation,
 
     generate_view_matrix(camera);
     generate_perspective_matrix(camera);
+
+    shader_program_from_files(&camera->shader_program, "res/shaders/voxel.vert",
+                              "res/shaders/voxel.frag");
+    shader_program_bind_attribute(&camera->shader_program, 0, "position");
+    shader_program_link(&camera->shader_program);
 }
 
 void camera_set_position(camera *camera, vector3d position) {
@@ -154,4 +158,9 @@ void camera_rotate(camera *camera, vector3d rotation_delta) {
     vector3d new_rotation = vector3d_add(camera->rotation, rotation_delta);
 
     camera_set_rotation(camera, new_rotation);
+}
+
+void camera_prepare_draw(camera *camera) {
+    shader_program_use(&camera->shader_program);
+    camera_update_matrix_uniforms(camera);
 }

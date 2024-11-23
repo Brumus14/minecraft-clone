@@ -2,6 +2,7 @@
 #define TEXTURE_H
 
 #include "glad/glad.h"
+#include "../math/vector2.h"
 
 typedef enum texture_filter {
     TEXTURE_FILTER_LINEAR,
@@ -17,6 +18,7 @@ typedef struct texture {
     GLuint gl_id;
     texture_filter filter;
     texture_wrap wrap;
+    vector2i size;
 } texture;
 
 void texture_init(texture *texture, texture_filter filter, texture_wrap wrap);

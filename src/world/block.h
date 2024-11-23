@@ -7,7 +7,17 @@ typedef enum block_type {
     BLOCK_TYPE_DIRT,
     BLOCK_TYPE_STONE,
     BLOCK_TYPE_COAL,
+    BLOCK_TYPE_LOG,
 } block_type;
+
+typedef enum block_face {
+    BLOCK_FACE_FRONT,
+    BLOCK_FACE_TOP,
+    BLOCK_FACE_RIGHT,
+    BLOCK_FACE_BOTTOM,
+    BLOCK_FACE_LEFT,
+    BLOCK_FACE_BACK,
+} block_face;
 
 typedef struct block {
     block_type type;

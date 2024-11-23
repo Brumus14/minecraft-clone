@@ -2,46 +2,43 @@
 
 #include "string.h"
 
-bool is_block_face_active(chunk *chunk, int x, int y, int z, int face) {
+bool is_block_face_active(chunk *chunk, int x, int y, int z, block_face face) {
     // XRAY MODE
-    /*if (chunk->blocks[z][y][x] == BLOCK_TYPE_COAL) {*/
-    /*    switch (face) {*/
-    /*    case 0:*/
-    /*        return !(z < CHUNK_SIZE_Z - 1 &&*/
-    /*                 chunk->blocks[z + 1][y][x] == BLOCK_TYPE_COAL);*/
-    /*    case 1:*/
-    /*        return !(y < CHUNK_SIZE_Y - 1 &&*/
-    /*                 chunk->blocks[z][y + 1][x] == BLOCK_TYPE_COAL);*/
-    /*    case 2:*/
-    /*        return !(x < CHUNK_SIZE_X - 1 &&*/
-    /*                 chunk->blocks[z][y][x + 1] == BLOCK_TYPE_COAL);*/
-    /*    case 3:*/
-    /*        return !(y > 0 && chunk->blocks[z][y - 1][x] ==
-     * BLOCK_TYPE_COAL);*/
-    /*    case 4:*/
-    /*        return !(x > 0 && chunk->blocks[z][y][x - 1] ==
-     * BLOCK_TYPE_COAL);*/
-    /*    case 5:*/
-    /*        return !(z > 0 && chunk->blocks[z - 1][y][x] ==
-     * BLOCK_TYPE_COAL);*/
-    /*    }*/
-    /*}*/
+    if (chunk->blocks[z][y][x] == BLOCK_TYPE_COAL) {
+        switch (face) {
+        case BLOCK_FACE_FRONT:
+            return !(z < CHUNK_SIZE_Z - 1 &&
+                     chunk->blocks[z + 1][y][x] == BLOCK_TYPE_COAL);
+        case BLOCK_FACE_TOP:
+            return !(y < CHUNK_SIZE_Y - 1 &&
+                     chunk->blocks[z][y + 1][x] == BLOCK_TYPE_COAL);
+        case BLOCK_FACE_RIGHT:
+            return !(x < CHUNK_SIZE_X - 1 &&
+                     chunk->blocks[z][y][x + 1] == BLOCK_TYPE_COAL);
+        case BLOCK_FACE_BOTTOM:
+            return !(y > 0 && chunk->blocks[z][y - 1][x] == BLOCK_TYPE_COAL);
+        case BLOCK_FACE_LEFT:
+            return !(x > 0 && chunk->blocks[z][y][x - 1] == BLOCK_TYPE_COAL);
+        case BLOCK_FACE_BACK:
+            return !(z > 0 && chunk->blocks[z - 1][y][x] == BLOCK_TYPE_COAL);
+        }
+    }
 
     switch (face) {
-    case 0:
+    case BLOCK_FACE_FRONT:
         return !(z < CHUNK_SIZE_Z - 1 &&
                  chunk->blocks[z + 1][y][x] != BLOCK_TYPE_EMPTY);
-    case 1:
+    case BLOCK_FACE_TOP:
         return !(y < CHUNK_SIZE_Y - 1 &&
                  chunk->blocks[z][y + 1][x] != BLOCK_TYPE_EMPTY);
-    case 2:
+    case BLOCK_FACE_RIGHT:
         return !(x < CHUNK_SIZE_X - 1 &&
                  chunk->blocks[z][y][x + 1] != BLOCK_TYPE_EMPTY);
-    case 3:
+    case BLOCK_FACE_BOTTOM:
         return !(y > 0 && chunk->blocks[z][y - 1][x] != BLOCK_TYPE_EMPTY);
-    case 4:
+    case BLOCK_FACE_LEFT:
         return !(x > 0 && chunk->blocks[z][y][x - 1] != BLOCK_TYPE_EMPTY);
-    case 5:
+    case BLOCK_FACE_BACK:
         return !(z > 0 && chunk->blocks[z - 1][y][x] != BLOCK_TYPE_EMPTY);
     }
 
@@ -168,6 +165,7 @@ void chunk_update(chunk *chunk) {
                (void *)(3 * sizeof(float)));
 }
 
+// bind texture
 void chunk_draw(chunk *chunk) {
     vao_bind(&chunk->vao);
     bo_bind(&chunk->ibo);

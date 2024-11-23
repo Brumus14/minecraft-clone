@@ -47,11 +47,10 @@ void texture_bind(texture *texture) {
 }
 
 void texture_load(texture *texture, char *path) {
-    int width;
-    int height;
     int channels;
 
-    unsigned char *stb_texture = stbi_load(path, &width, &height, &channels, 0);
+    unsigned char *stb_texture =
+        stbi_load(path, &texture->size.x, &texture->size.y, &channels, 0);
 
     GLenum gl_format;
 
@@ -63,8 +62,9 @@ void texture_load(texture *texture, char *path) {
 
     texture_bind(texture);
 
-    GL_CALL(glTexImage2D(GL_TEXTURE_2D, 0, gl_format, width, height, 0,
-                         gl_format, GL_UNSIGNED_BYTE, stb_texture));
+    GL_CALL(glTexImage2D(GL_TEXTURE_2D, 0, gl_format, texture->size.x,
+                         texture->size.y, 0, gl_format, GL_UNSIGNED_BYTE,
+                         stb_texture));
 
     stbi_image_free(stb_texture);
 }
