@@ -56,6 +56,8 @@ void generate_chunk_terrain(world *world, chunk *chunk, int stage) {
         }
     }
 
+    // better ore generation
+    // use octaves and make noise generator abstraction
     if (stage == 1) {
         for (int z = 0; z < CHUNK_SIZE_Z; z++) {
             for (int y = 0; y < CHUNK_SIZE_Y; y++) {
@@ -74,6 +76,10 @@ void generate_chunk_terrain(world *world, chunk *chunk, int stage) {
                         if (noise4(position.x * 0.2, position.y * 0.2,
                                    position.z * 0.2, world->seed) > 0.6) {
                             chunk->blocks[z][y][x] = BLOCK_TYPE_COAL;
+                        } else if (noise4(position.x * 0.2, position.y * 0.2,
+                                          position.z * 0.2,
+                                          world->seed * 1.419198) > 0.6) {
+                            chunk->blocks[z][y][x] = BLOCK_TYPE_DIAMOND;
                         }
                     }
                 }

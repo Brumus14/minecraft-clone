@@ -12,6 +12,7 @@ typedef struct window window;
 
 typedef void (*window_framebuffer_size_callback)(window *, int, int);
 typedef void (*window_cursor_pos_callback)(window *, double, double);
+typedef void (*window_scroll_callback)(window *, double, double);
 
 typedef struct window {
     GLFWwindow *glfw_window;
@@ -25,6 +26,7 @@ typedef struct window {
     double previous_time;
     window_framebuffer_size_callback framebuffer_size_callback;
     window_cursor_pos_callback cursor_pos_callback;
+    window_scroll_callback scroll_callback;
 } window;
 
 void glfw_init();
@@ -40,6 +42,8 @@ void window_set_framebuffer_size_callback(
     window *window, window_framebuffer_size_callback function);
 void window_set_cursor_pos_callback(window *window,
                                     window_cursor_pos_callback function);
+void window_set_scroll_callback(window *window,
+                                window_scroll_callback function);
 double window_get_delta_time(window *window);
 void window_update_delta_time(window *window);
 void window_update_input(window *window);

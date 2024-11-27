@@ -21,6 +21,7 @@ typedef struct mouse {
     bool buttons_just_down[MOUSE_BUTTON_LAST];
     vector2d position;
     vector2d position_delta;
+    vector2d scroll_offset;
 } mouse;
 
 void mouse_init(mouse *mouse);

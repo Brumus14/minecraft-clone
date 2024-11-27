@@ -18,6 +18,7 @@ typedef enum index_type {
 
 void renderer_init();
 void renderer_clear_buffers();
+void renderer_clear_depth_buffer();
 void renderer_set_clear_colour(float red, float green, float blue, float alpha);
 void renderer_set_viewport(int x, int y, int width, int height);
 void renderer_draw_elements(draw_mode mode, int count, index_type type);

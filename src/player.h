@@ -13,6 +13,7 @@ typedef struct player {
     double speed;
     double sensitivity;
     bool moved_this_frame;
+    block_type selected_block;
 } player;
 
 void player_init(player *player, vector3d position, vector3d rotation,

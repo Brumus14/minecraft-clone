@@ -1,0 +1,45 @@
+#ifndef GUI_H
+#define GUI_H
+
+#include "../graphics/graphics.h"
+#include "../math/matrix4/matrix4d.h"
+#include "image.h"
+
+typedef union gui_element_data {
+    gui_image *image;
+} gui_element_data;
+
+typedef enum gui_element_type {
+    GUI_ELEMENT_TYPE_IMAGE,
+} gui_element_type;
+
+typedef struct gui_element {
+    gui_element_type type;
+    gui_element_data data;
+} gui_element;
+
+typedef struct gui {
+    gui_element *elements;
+    int element_count;
+    window *window;
+    shader_program shader_program;
+    matrix4d orthographic_matrix;
+} gui;
+
+typedef enum gui_origin {
+    GUI_ORIGIN_LEFT_TOP,
+    GUI_ORIGIN_CENTER_TOP,
+    GUI_ORIGIN_RIGHT_TOP,
+    GUI_ORIGIN_LEFT_CENTER,
+    GUI_ORIGIN_CENTER_CENTER,
+    GUI_ORIGIN_RIGHT_CENTER,
+    GUI_ORIGIN_LEFT_BOTTOM,
+    GUI_ORIGIN_CENTER_BOTTOM,
+    GUI_ORIGIN_RIGHT_BOTTOM,
+} gui_origin;
+
+void gui_init(gui *gui, window *window);
+void gui_draw(gui *gui);
+void gui_add_image(gui *gui, gui_image *image);
+
+#endif

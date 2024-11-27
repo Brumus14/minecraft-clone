@@ -11,10 +11,17 @@ void renderer_init() {
     GL_CALL(glFrontFace(GL_CCW));
 
     GL_CALL(glEnable(GL_DEPTH_TEST));
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 void renderer_clear_buffers() {
     GL_CALL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+}
+
+void renderer_clear_depth_buffer() {
+    GL_CALL(glClear(GL_DEPTH_BUFFER_BIT));
 }
 
 void renderer_set_clear_colour(float red, float green, float blue,

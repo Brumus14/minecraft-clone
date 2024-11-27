@@ -24,6 +24,26 @@ bool is_block_face_active(chunk *chunk, int x, int y, int z, block_face face) {
         }
     }
 
+    if (chunk->blocks[z][y][x] == BLOCK_TYPE_DIAMOND) {
+        switch (face) {
+        case BLOCK_FACE_FRONT:
+            return !(z < CHUNK_SIZE_Z - 1 &&
+                     chunk->blocks[z + 1][y][x] == BLOCK_TYPE_DIAMOND);
+        case BLOCK_FACE_TOP:
+            return !(y < CHUNK_SIZE_Y - 1 &&
+                     chunk->blocks[z][y + 1][x] == BLOCK_TYPE_DIAMOND);
+        case BLOCK_FACE_RIGHT:
+            return !(x < CHUNK_SIZE_X - 1 &&
+                     chunk->blocks[z][y][x + 1] == BLOCK_TYPE_DIAMOND);
+        case BLOCK_FACE_BOTTOM:
+            return !(y > 0 && chunk->blocks[z][y - 1][x] == BLOCK_TYPE_DIAMOND);
+        case BLOCK_FACE_LEFT:
+            return !(x > 0 && chunk->blocks[z][y][x - 1] == BLOCK_TYPE_DIAMOND);
+        case BLOCK_FACE_BACK:
+            return !(z > 0 && chunk->blocks[z - 1][y][x] == BLOCK_TYPE_DIAMOND);
+        }
+    }
+
     switch (face) {
     case BLOCK_FACE_FRONT:
         return !(z < CHUNK_SIZE_Z - 1 &&

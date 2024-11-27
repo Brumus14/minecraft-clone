@@ -35,12 +35,12 @@ void vector3i_print(vector3i v) {
     printf("%d, %d, %d\n", v.x, v.y, v.z);
 }
 
-int sign(float value) {
+int sign(double value) {
     if (value == 0) {
         return 0;
     }
 
-    return value / fabsf(value);
+    return value / fabs(value);
 }
 
 int mod(int a, int b) {

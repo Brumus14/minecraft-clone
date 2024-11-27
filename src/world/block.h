@@ -8,6 +8,7 @@ typedef enum block_type {
     BLOCK_TYPE_STONE,
     BLOCK_TYPE_COAL,
     BLOCK_TYPE_LOG,
+    BLOCK_TYPE_DIAMOND,
 } block_type;
 
 typedef enum block_face {

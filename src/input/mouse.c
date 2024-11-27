@@ -6,10 +6,15 @@ void mouse_init(mouse *mouse) {
         mouse->buttons_just_up[i] = false;
         mouse->buttons_just_down[i] = false;
     }
+
+    mouse->position = VECTOR2D_ZERO;
+    mouse->position_delta = VECTOR2D_ZERO;
+    mouse->scroll_offset = VECTOR2D_ZERO;
 }
 
 void mouse_update_state(mouse *mouse) {
     mouse->position_delta = VECTOR2D_ZERO;
+    mouse->scroll_offset = VECTOR2D_ZERO;
 
     for (int i = 0; i < MOUSE_BUTTON_LAST; i++) {
         mouse->buttons_just_up[i] = false;
