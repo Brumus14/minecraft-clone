@@ -1,3 +1,2 @@
-# lib/stb/include/stb_ds.h linguist-language=C
-# src/graphics/stb_image.c linguist-language=C
-*.c linguist-language=Java
+*.c linguist-language=C
+*.h linguist-language=C
