@@ -24,6 +24,7 @@ typedef struct block {
     block_type type;
 } block;
 
+// rename to texture indexes?
 typedef struct block_texture {
     int face_texture_indices[6]; // front, top, right, bottom, left, back
 } block_texture;

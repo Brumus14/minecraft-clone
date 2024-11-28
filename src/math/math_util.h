@@ -13,5 +13,7 @@ void vector3i_print(vector3i v);
 int sign(double value);
 int mod(int a, int b);
 double random_range(double min, double max);
+double min(double a, double b);
+double max(double a, double b);
 
 #endif

@@ -50,6 +50,10 @@ void gui_draw(gui *gui) {
         case GUI_ELEMENT_TYPE_IMAGE: {
             gui_image *image = gui->elements[i].data.image;
 
+            if (!image->visible) {
+                break;
+            }
+
             texture_bind(&image->texture);
             vao_bind(&image->vao);
             bo_bind(&image->ibo);

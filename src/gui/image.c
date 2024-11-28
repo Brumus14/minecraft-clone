@@ -80,11 +80,11 @@ void gui_image_update(gui_image *gui_image) {
 }
 
 // paramter for texture filter
-void gui_image_init(gui_image *gui_image, char *image_path,
-                    rectangle texture_rectangle, vector2d position,
+void gui_image_init(gui_image *gui_image, char *image_path, vector2d position,
                     vector2d scale, gui_element_origin origin,
                     gui_element_layer layer) {
-    gui_image->texture_rectangle = texture_rectangle;
+    gui_image->visible = true;
+    gui_image->texture_rectangle = (rectangle){0, 0, 1, 1};
     gui_image->position = position;
     gui_image->scale = scale;
     gui_image->origin = origin;
@@ -115,19 +115,6 @@ void gui_image_init(gui_image *gui_image, char *image_path,
     gui_image_update(gui_image);
 }
 
-void gui_image_draw(gui_image *gui_image) {
-    texture_bind(&gui_image->texture);
-    vao_bind(&gui_image->vao);
-    bo_bind(&gui_image->ibo);
-    bo_bind(&gui_image->vbo);
-
-    int index_count = bo_get_size(&gui_image->ibo) /
-                      sizeof(unsigned int); // already know this value
-
-    renderer_draw_elements(DRAW_MODE_TRIANGLES, index_count,
-                           INDEX_TYPE_UNSIGNED_INT);
-}
-
 void gui_image_set_scale(gui_image *gui_image, vector2d scale) {
     gui_image->scale = scale;
     gui_image_update(gui_image);
@@ -135,5 +122,11 @@ void gui_image_set_scale(gui_image *gui_image, vector2d scale) {
 
 void gui_image_set_position(gui_image *gui_image, vector2d position) {
     gui_image->position = position;
+    gui_image_update(gui_image);
+}
+
+void gui_image_set_texture_rectangle(gui_image *gui_image,
+                                     rectangle texture_rectangle) {
+    gui_image->texture_rectangle = texture_rectangle;
     gui_image_update(gui_image);
 }

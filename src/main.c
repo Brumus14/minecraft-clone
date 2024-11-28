@@ -12,8 +12,8 @@
 #include "math/math_util.h"
 #include "gui/gui.h"
 #include "gui/image.h"
-#include "stopwatch.h"
 #include "hotbar.h"
+#include "items.h"
 
 // REMMEMBER TO AUTO BIND IN FUNCTIONS THAT ITS REQUIRED
 // make arguments const
@@ -21,7 +21,6 @@
 // better gui
 
 int main() {
-    stopwatch timer;
 
     window window;
     camera camera;
@@ -39,14 +38,21 @@ int main() {
     gui_init(&gui, &window);
 
     gui_image crosshair;
-    gui_image_init(&crosshair, "res/textures/crosshair.png",
-                   (rectangle){0, 0, 1, 1}, VECTOR2D_ZERO, (vector2d){16, 16},
-                   GUI_ELEMENT_ORIGIN_CENTER_CENTER, GUI_ELEMENT_LAYER_0);
+    gui_image_init(&crosshair, "res/textures/crosshair.png", VECTOR2D_ZERO,
+                   (vector2d){16, 16}, GUI_ELEMENT_ORIGIN_CENTER_CENTER,
+                   GUI_ELEMENT_LAYER_0);
 
     gui_add_image(&gui, &crosshair);
 
     hotbar hotbar;
     hotbar_init(&hotbar, &gui);
+
+    hotbar_set_item(&hotbar, 0, ITEM_TYPE_GRASS_BLOCK);
+    hotbar_set_item(&hotbar, 1, ITEM_TYPE_DIRT_BLOCK);
+    hotbar_set_item(&hotbar, 2, ITEM_TYPE_STONE_BLOCK);
+    hotbar_set_item(&hotbar, 3, ITEM_TYPE_COAL_BLOCK);
+    hotbar_set_item(&hotbar, 4, ITEM_TYPE_LOG_BLOCK);
+    hotbar_set_item(&hotbar, 5, ITEM_TYPE_DIAMOND_BLOCK);
 
     tilemap tilemap;
     tilemap_init(&tilemap, "res/textures/atlas.png", TEXTURE_FILTER_NEAREST, 16,
@@ -60,26 +66,20 @@ int main() {
     // 21474836.0
     // 2147483.0
     player player;
-    player_init(&player, (vector3d){8.0, 4.0, 8.0}, VECTOR3D_ZERO, 5, 0.05,
+    player_init(&player, (vector3d){8.0, 4.0, 8.0}, VECTOR3D_ZERO, 16, 0.05,
                 &camera);
 
     while (!window_should_close(&window)) {
         glfwSwapInterval(0);
-        stopwatch_start(&timer);
         renderer_clear_buffers();
-        stopwatch_end(&timer);
-        printf("TIMER 1: %f\n", stopwatch_time(&timer));
 
-        stopwatch_start(&timer);
         window_update_delta_time(&window);
         window_update_input(&window);
-        stopwatch_end(&timer);
-        printf("TIMER 2: %f\n", stopwatch_time(&timer));
 
-        if (window.mouse.scroll_offset.y > 0) {
+        if (window.mouse.scroll_offset.y < -0.5) {
             hotbar.current_slot++;
             hotbar.current_slot = mod(hotbar.current_slot, 9);
-        } else if (window.mouse.scroll_offset.y < 0) {
+        } else if (window.mouse.scroll_offset.y > 0.5) {
             hotbar.current_slot--;
             hotbar.current_slot = mod(hotbar.current_slot, 9);
         }
@@ -90,15 +90,11 @@ int main() {
                                        2}); // only run when window size changed
         hotbar_update_gui(&hotbar);
 
-        stopwatch_start(&timer);
         player_manage_chunks(&player,
                              &world); // create chunk manager? ecs? SLOW
-        stopwatch_end(&timer);
-        printf("TIMER 3: %f\n", stopwatch_time(&timer));
 
         /*printf("%f\n", 1.0 / window_get_delta_time(&window));*/
 
-        stopwatch_start(&timer);
         if (keyboard_key_just_down(&window.keyboard, KEYCODE_ESCAPE)) {
             window_reset_cursor(&window);
         }
@@ -109,42 +105,78 @@ int main() {
         }
 
         if (mouse_button_just_down(&window.mouse, MOUSE_BUTTON_RIGHT)) {
-            player_place_block(&player, &world, BLOCK_TYPE_LOG);
+            block_type current_block =
+                item_type_to_block_type(hotbar_get_current_item(&hotbar));
+
+            if (current_block != -1) {
+                if (keyboard_key_down(&window.keyboard, KEYCODE_R)) {
+                    player_replace_block(&player, &world, current_block);
+                } else {
+                    player_place_block(&player, &world, current_block);
+                }
+            }
         }
-        stopwatch_end(&timer);
-        printf("TIMER 4: %f\n", stopwatch_time(&timer));
 
-        stopwatch_start(&timer);
+        // move to hotbar file?
+        if (keyboard_key_just_down(&window.keyboard, KEYCODE_1)) {
+            // make into function so doesnt update hotbar gui every frame
+            hotbar.current_slot = 0;
+            hotbar.current_slot = mod(hotbar.current_slot, 9);
+        }
+
+        if (keyboard_key_just_down(&window.keyboard, KEYCODE_2)) {
+            hotbar.current_slot = 1;
+            hotbar.current_slot = mod(hotbar.current_slot, 9);
+        }
+
+        if (keyboard_key_just_down(&window.keyboard, KEYCODE_3)) {
+            hotbar.current_slot = 2;
+            hotbar.current_slot = mod(hotbar.current_slot, 9);
+        }
+
+        if (keyboard_key_just_down(&window.keyboard, KEYCODE_4)) {
+            hotbar.current_slot = 3;
+            hotbar.current_slot = mod(hotbar.current_slot, 9);
+        }
+
+        if (keyboard_key_just_down(&window.keyboard, KEYCODE_5)) {
+            hotbar.current_slot = 4;
+            hotbar.current_slot = mod(hotbar.current_slot, 9);
+        }
+
+        if (keyboard_key_just_down(&window.keyboard, KEYCODE_6)) {
+            hotbar.current_slot = 5;
+            hotbar.current_slot = mod(hotbar.current_slot, 9);
+        }
+
+        if (keyboard_key_just_down(&window.keyboard, KEYCODE_7)) {
+            hotbar.current_slot = 6;
+            hotbar.current_slot = mod(hotbar.current_slot, 9);
+        }
+
+        if (keyboard_key_just_down(&window.keyboard, KEYCODE_8)) {
+            hotbar.current_slot = 7;
+            hotbar.current_slot = mod(hotbar.current_slot, 9);
+        }
+
+        if (keyboard_key_just_down(&window.keyboard, KEYCODE_9)) {
+            hotbar.current_slot = 8;
+            hotbar.current_slot = mod(hotbar.current_slot, 9);
+        }
+
         player_handle_input(&player, &window);
-        stopwatch_end(&timer);
-        printf("TIMER 5: %f\n", stopwatch_time(&timer));
 
-        stopwatch_start(&timer);
         camera_set_rotation(&camera, player.rotation);
         camera_set_position(&camera, player.position);
-        stopwatch_end(&timer);
-        printf("TIMER 6: %f\n", stopwatch_time(&timer));
 
-        stopwatch_start(&timer);
         camera_prepare_draw(&camera);
-        stopwatch_end(&timer);
-        printf("TIMER 7: %f\n", stopwatch_time(&timer));
 
-        stopwatch_start(&timer);
         world_draw(&world); // SLOW
-        stopwatch_end(&timer);
-        printf("TIMER 8: %f\n", stopwatch_time(&timer));
 
         renderer_clear_depth_buffer();
-        stopwatch_start(&timer);
         gui_draw(&gui);
-        stopwatch_end(&timer);
-        printf("TIMER 9: %f\n", stopwatch_time(&timer));
 
-        stopwatch_start(&timer);
         window_swap_buffers(&window);
-        stopwatch_end(&timer);
-        printf("TIMER 10: %f\n", stopwatch_time(&timer));
     }
 
     window_destroy(&window);
