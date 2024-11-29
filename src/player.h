@@ -6,19 +6,27 @@
 #include "graphics/window.h"
 #include "world/world.h"
 
+#define DEFAULT_SPEED 10.92
+#define SPRINTING_SPEED 21.6
+
+#define COLLISION_BOX_X 0.6
+#define COLLISION_BOX_Y 1.8
+#define COLLISION_BOX_Z 0.6
+
 typedef struct player {
     vector3d position;
     vector3d rotation;
     camera *camera;
-    double speed;
     double acceleration;
+    double speed;
     vector3d velocity;
     double sensitivity;
+    bool sprinting;
 } player;
 
 void player_init(player *player, vector3d position, vector3d rotation,
-                 double speed, double sensitivity, camera *camera);
-void player_handle_input(player *player, window *window);
+                 double sensitivity, camera *camera);
+void player_handle_input(player *player, window *window, world *world);
 void player_manage_chunks(player *player, world *world);
 bool player_get_target_block(player *player, world *world,
                              vector3d *position_dest, block_face *face);

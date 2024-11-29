@@ -149,6 +149,17 @@ void camera_set_rotation(camera *camera, vector3d rotation) {
     generate_view_matrix(camera);
 }
 
+void camera_set_fov(camera *camera, double fov) {
+    if (camera == NULL) {
+        fprintf(stderr, "camera_set_rotation: camera is null\n");
+        return;
+    }
+
+    camera->fov = fov;
+
+    generate_perspective_matrix(camera);
+}
+
 void camera_rotate(camera *camera, vector3d rotation_delta) {
     if (camera == NULL) {
         fprintf(stderr, "camera_rotate: camera is null\n");

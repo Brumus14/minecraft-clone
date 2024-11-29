@@ -25,6 +25,7 @@ void camera_move(camera *camera, vector3d movement_delta);
 void camera_update_matrix_uniforms(camera *camera);
 void camera_set_aspect_ratio(camera *camera, double aspect_ratio);
 void camera_set_rotation(camera *camera, vector3d rotation);
+void camera_set_fov(camera *camera, double fov);
 void camera_rotate(camera *camera, vector3d rotation_delta);
 void camera_prepare_draw(camera *camera);
 

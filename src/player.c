@@ -2,19 +2,57 @@
 
 #include <stdlib.h>
 #include "math/math_util.h"
+#include "collision.h"
 
 void player_init(player *player, vector3d position, vector3d rotation,
-                 double speed, double sensitivity, camera *camera) {
+                 double sensitivity, camera *camera) {
     player->position = position;
     player->rotation = rotation;
-    player->speed = speed;
-    player->acceleration = speed * 4;
+    player->speed = DEFAULT_SPEED;
+    player->acceleration = player->speed * 4;
     player->velocity = VECTOR3D_ZERO;
     player->sensitivity = sensitivity;
     player->camera = camera;
+    player->sprinting = false;
 }
 
-void player_handle_input(player *player, window *window) {
+// move to AABB collision function
+bool valid_position(world *world, vector3d position) {
+    for (int z = -1; z <= 1; z++) {
+        for (int y = -1; y <= 1; y++) {
+            for (int x = -1; x <= 1; x++) {
+                if (z == 0 && y == 0 && x == 0) {
+                    continue;
+                }
+
+                if (world_get_block(
+                        world, vector3d_add(position, (vector3d){x, y, z})) ==
+                    BLOCK_TYPE_EMPTY) {
+                    continue;
+                }
+
+                cuboid voxel_cuboid;
+                cuboid_init(&voxel_cuboid, floor(position.x + x),
+                            floor(position.y + y), floor(position.z + z), 1, 1,
+                            1);
+
+                cuboid player_cuboid;
+                cuboid_init(&player_cuboid, position.x - (COLLISION_BOX_X / 2),
+                            position.y - (COLLISION_BOX_Y / 2),
+                            position.z - (COLLISION_BOX_Z / 2), COLLISION_BOX_X,
+                            COLLISION_BOX_Y, COLLISION_BOX_Z);
+
+                if (collision_aabb_3d(player_cuboid, voxel_cuboid)) {
+                    return false;
+                }
+            }
+        }
+    }
+
+    return true;
+}
+
+void player_handle_input(player *player, window *window, world *world) {
     vector3d velocity_delta = VECTOR3D_ZERO;
     vector3d rotation_delta = VECTOR3D_ZERO;
 
@@ -57,24 +95,37 @@ void player_handle_input(player *player, window *window) {
     player->rotation.y = fmod(player->rotation.y + 360, 360);
 
     // Update the position
+    // make sure cant build up speed if cant move e.g. next to block edge
+    if (vector3d_magnitude(velocity_delta) == 0) {
+        player->sprinting = false;
+    }
+
+    player->speed = player->sprinting ? SPRINTING_SPEED : DEFAULT_SPEED;
+
     vector3d_normalise(&velocity_delta);
     vector3d_scalar_multiply_to(
         velocity_delta, player->acceleration * delta_time, &velocity_delta);
 
     vector3d_add_to(player->velocity, velocity_delta, &player->velocity);
 
-    float decceleration = 0.99;
+    float decceleration = 20;
 
     if (velocity_delta.x == 0) {
-        player->velocity.x *= decceleration;
+        player->velocity.x +=
+            -sign(player->velocity.x) *
+            min(decceleration * delta_time, fabs(player->velocity.x));
     }
 
     if (velocity_delta.y == 0) {
-        player->velocity.y *= decceleration;
+        player->velocity.y +=
+            -sign(player->velocity.y) *
+            min(decceleration * delta_time, fabs(player->velocity.y));
     }
 
     if (velocity_delta.z == 0) {
-        player->velocity.z *= decceleration;
+        player->velocity.z +=
+            -sign(player->velocity.z) *
+            min(decceleration * delta_time, fabs(player->velocity.z));
     }
 
     if (vector3d_magnitude(player->velocity) > player->speed) {
@@ -112,8 +163,51 @@ void player_handle_input(player *player, window *window) {
                                 vector3d_magnitude(position_delta),
                                 &relative_position_delta);
 
-    vector3d_add_to(player->position, relative_position_delta,
-                    &player->position);
+    vector3d new_position =
+        vector3d_add(player->position, relative_position_delta);
+
+    // move position to block edge
+    if (relative_position_delta.x < 0) {
+        if (valid_position(world, (vector3d){new_position.x, player->position.y,
+                                             player->position.z}) !=
+            BLOCK_TYPE_EMPTY) {
+            player->position.x = new_position.x;
+        }
+    } else if (relative_position_delta.x > 0) {
+        if (valid_position(world, (vector3d){new_position.x, player->position.y,
+                                             player->position.z}) !=
+            BLOCK_TYPE_EMPTY) {
+            player->position.x = new_position.x;
+        }
+    }
+
+    if (relative_position_delta.y < 0) {
+        if (valid_position(world, (vector3d){player->position.x, new_position.y,
+                                             player->position.z}) !=
+            BLOCK_TYPE_EMPTY) {
+            player->position.y = new_position.y;
+        }
+    } else if (relative_position_delta.y > 0) {
+        if (valid_position(world, (vector3d){player->position.x, new_position.y,
+                                             player->position.z}) !=
+            BLOCK_TYPE_EMPTY) {
+            player->position.y = new_position.y;
+        }
+    }
+
+    if (relative_position_delta.z < 0) {
+        if (valid_position(world,
+                           (vector3d){player->position.x, player->position.y,
+                                      new_position.z}) != BLOCK_TYPE_EMPTY) {
+            player->position.z = new_position.z;
+        }
+    } else if (relative_position_delta.z > 0) {
+        if (valid_position(world,
+                           (vector3d){player->position.x, player->position.y,
+                                      new_position.z}) != BLOCK_TYPE_EMPTY) {
+            player->position.z = new_position.z;
+        }
+    }
 }
 
 void player_manage_chunks(player *player, world *world) {
@@ -147,26 +241,20 @@ void player_manage_chunks(player *player, world *world) {
 
     for (int y = -render_distance; y <= render_distance; y++) {
         for (int x = -render_distance; x <= render_distance; x++) {
-            /*world_load_chunk(*/
-            /*    world, (vector3i){player_chunk.x + x, -4, player_chunk.y +
-             * y});*/
-            /*world_load_chunk(*/
-            /*    world, (vector3i){player_chunk.x + x, -3, player_chunk.y +
-             * y});*/
-            /*world_load_chunk(*/
-            /*    world, (vector3i){player_chunk.x + x, -2, player_chunk.y +
-             * y});*/
-            /*world_load_chunk(*/
-            /*    world, (vector3i){player_chunk.x + x, -1, player_chunk.y +
-             * y});*/
+            world_load_chunk(
+                world, (vector3i){player_chunk.x + x, -4, player_chunk.y + y});
+            world_load_chunk(
+                world, (vector3i){player_chunk.x + x, -3, player_chunk.y + y});
+            world_load_chunk(
+                world, (vector3i){player_chunk.x + x, -2, player_chunk.y + y});
+            world_load_chunk(
+                world, (vector3i){player_chunk.x + x, -1, player_chunk.y + y});
             world_load_chunk(
                 world, (vector3i){player_chunk.x + x, 0, player_chunk.y + y});
-            /*world_load_chunk(*/
-            /*    world, (vector3i){player_chunk.x + x, 1, player_chunk.y +
-             * y});*/
-            /*world_load_chunk(*/
-            /*    world, (vector3i){player_chunk.x + x, 2, player_chunk.y +
-             * y});*/
+            world_load_chunk(
+                world, (vector3i){player_chunk.x + x, 1, player_chunk.y + y});
+            world_load_chunk(
+                world, (vector3i){player_chunk.x + x, 2, player_chunk.y + y});
         }
     }
 }
@@ -176,7 +264,7 @@ bool player_get_target_block(player *player, world *world,
                              vector3d *position_dest, block_face *face) {
     float max_ray_length = 5; // move to variable
 
-    vector3d ray_origin = player->position;
+    vector3d ray_origin = player->camera->position;
 
     if (world_get_block(world, ray_origin) != BLOCK_TYPE_EMPTY) {
         *position_dest = ray_origin;

@@ -66,7 +66,7 @@ int main() {
     // 21474836.0
     // 2147483.0
     player player;
-    player_init(&player, (vector3d){8.0, 4.0, 8.0}, VECTOR3D_ZERO, 16, 0.05,
+    player_init(&player, (vector3d){8.0, 4.0, 8.0}, VECTOR3D_ZERO, 0.05,
                 &camera);
 
     while (!window_should_close(&window)) {
@@ -94,6 +94,11 @@ int main() {
                              &world); // create chunk manager? ecs? SLOW
 
         /*printf("%f\n", 1.0 / window_get_delta_time(&window));*/
+
+        // use sprinting boolean
+        if (keyboard_key_just_down(&window.keyboard, KEYCODE_LEFT_CONTROL)) {
+            player.sprinting = !player.sprinting;
+        }
 
         if (keyboard_key_just_down(&window.keyboard, KEYCODE_ESCAPE)) {
             window_reset_cursor(&window);
@@ -164,10 +169,25 @@ int main() {
             hotbar.current_slot = mod(hotbar.current_slot, 9);
         }
 
-        player_handle_input(&player, &window);
+        player_handle_input(&player, &window, &world);
 
         camera_set_rotation(&camera, player.rotation);
-        camera_set_position(&camera, player.position);
+        camera_set_position(
+            &camera, vector3d_add(player.position, (vector3d){0, 0.6, 0}));
+
+        if (player.sprinting) {
+            if (camera.fov < 90 * 1.1) {
+                camera_set_fov(&camera, camera.fov + 0.1);
+            } else if (camera.fov > 90 * 1.1) {
+                camera_set_fov(&camera, 90 * 1.1);
+            }
+        } else {
+            if (camera.fov > 90) {
+                camera_set_fov(&camera, camera.fov - 0.1);
+            } else if (camera.fov < 90) {
+                camera_set_fov(&camera, 90);
+            }
+        }
 
         camera_prepare_draw(&camera);
 

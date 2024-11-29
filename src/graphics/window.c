@@ -4,17 +4,27 @@ bool glfw_initialised = false;
 
 keycode glfw_to_keycode(int key) {
     if (key >= GLFW_KEY_0 && key <= GLFW_KEY_9) {
-        return key - GLFW_KEY_0 + KEYCODE_0;
-    } else if (key >= GLFW_KEY_A && key <= GLFW_KEY_Z) {
+        return (key - GLFW_KEY_0) + KEYCODE_0;
+    }
+
+    else if (key >= GLFW_KEY_A && key <= GLFW_KEY_Z) {
         return (key - GLFW_KEY_A) + KEYCODE_A;
-    } else if (key == GLFW_KEY_SPACE) {
+    }
+
+    else if (key == GLFW_KEY_SPACE) {
         return KEYCODE_SPACE;
-    } else if (key == GLFW_KEY_ESCAPE) {
-        return KEYCODE_ESCAPE;
-    } else if (key == GLFW_KEY_LEFT_SHIFT) {
-        return KEYCODE_LEFT_SHIFT;
-    } else if (key >= GLFW_KEY_RIGHT && key <= GLFW_KEY_UP) {
+    }
+
+    else if (key >= GLFW_KEY_ESCAPE && key <= GLFW_KEY_BACKSPACE) {
+        return (key - GLFW_KEY_ESCAPE) + KEYCODE_ESCAPE;
+    }
+
+    else if (key >= GLFW_KEY_RIGHT && key <= GLFW_KEY_UP) {
         return (key - GLFW_KEY_RIGHT) + KEYCODE_ARROW_RIGHT;
+    }
+
+    else if (key >= GLFW_KEY_LEFT_SHIFT && key <= GLFW_KEY_RIGHT_SUPER) {
+        return (key - GLFW_KEY_LEFT_SHIFT) + KEYCODE_LEFT_SHIFT;
     }
 
     return -1;
@@ -22,17 +32,27 @@ keycode glfw_to_keycode(int key) {
 
 int keycode_to_glfw(keycode key) {
     if (key >= KEYCODE_0 && key <= KEYCODE_9) {
-        return key + GLFW_KEY_0;
-    } else if (key >= KEYCODE_A && key <= KEYCODE_Z) {
+        return (key - KEYCODE_0) + GLFW_KEY_0;
+    }
+
+    else if (key >= KEYCODE_A && key <= KEYCODE_Z) {
         return (key - KEYCODE_A) + GLFW_KEY_A;
-    } else if (key == KEYCODE_SPACE) {
+    }
+
+    else if (key == KEYCODE_SPACE) {
         return GLFW_KEY_SPACE;
-    } else if (key == KEYCODE_ESCAPE) {
-        return GLFW_KEY_ESCAPE;
-    } else if (key == KEYCODE_LEFT_SHIFT) {
-        return GLFW_KEY_LEFT_SHIFT;
-    } else if (key >= KEYCODE_ARROW_RIGHT && key <= KEYCODE_ARROW_UP) {
+    }
+
+    else if (key >= KEYCODE_ESCAPE && key <= KEYCODE_BACKSPACE) {
+        return (key - KEYCODE_ESCAPE) + GLFW_KEY_ESCAPE;
+    }
+
+    else if (key >= KEYCODE_ARROW_RIGHT && key <= KEYCODE_ARROW_UP) {
         return (key - KEYCODE_ARROW_RIGHT) + GLFW_KEY_RIGHT;
+    }
+
+    else if (key >= KEYCODE_LEFT_SHIFT && key <= KEYCODE_RIGHT_SUPER) {
+        return (key - KEYCODE_LEFT_SHIFT) + GLFW_KEY_LEFT_SHIFT;
     }
 
     return -1;
