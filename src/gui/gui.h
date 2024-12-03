@@ -1,8 +1,8 @@
 #ifndef GUI_H
 #define GUI_H
 
-#include "../graphics/graphics.h"
-#include "../math/matrix4/matrix4d.h"
+#include "../graphics/window.h"
+#include "../graphics/shader_program.h"
 #include "gui_element.h"
 
 typedef struct gui {
@@ -10,7 +10,7 @@ typedef struct gui {
     int element_count;
     window *window;
     shader_program shader_program;
-    matrix4d orthographic_matrix;
+    int gl_orthographic_matrix_location;
 } gui;
 
 void gui_init(gui *gui, window *window);

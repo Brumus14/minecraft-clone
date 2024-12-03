@@ -17,7 +17,6 @@ void shader_program_bind_attribute(shader_program *program, int index,
                                    char *name);
 void shader_program_link(shader_program *program);
 void shader_program_use(shader_program *program);
-void shader_program_delete(shader_program *program);
-/*void shader_program_delete_all(shader_program *program);*/
+void shader_program_destroy(shader_program *program);
 
 #endif

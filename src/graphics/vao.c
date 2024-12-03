@@ -34,6 +34,6 @@ void vao_attrib(vao *vao, int index, int size, array_type type, bool normalised,
     GL_CALL(glEnableVertexAttribArray(index));
 }
 
-void vao_delete(vao *vao) {
+void vao_destroy(vao *vao) {
     GL_CALL(glDeleteVertexArrays(1, &vao->gl_id));
 }

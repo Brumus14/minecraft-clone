@@ -19,6 +19,6 @@ void vao_init(vao *vao);
 void vao_bind(vao *vao);
 void vao_attrib(vao *vao, int index, int size, array_type type, bool normalised,
                 size_t stride, void *pointer);
-void vao_delete(vao *vao);
+void vao_destroy(vao *vao);
 
 #endif

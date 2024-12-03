@@ -73,7 +73,7 @@ void bo_upload(bo *bo, int data_size, void *data, bo_usage usage) {
     GL_CALL(glBufferData(gl_type, data_size, data, to_gl_usage(usage)));
 }
 
-void bo_delete(bo *bo) {
+void bo_destroy(bo *bo) {
     GL_CALL(glDeleteBuffers(1, &bo->gl_id));
 }
 

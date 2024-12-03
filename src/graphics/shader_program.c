@@ -60,18 +60,6 @@ void shader_program_use(shader_program *program) {
     GL_CALL(glUseProgram(program->gl_id));
 }
 
-void shader_program_delete(shader_program *program) {
-    shader_program_use(program);
+void shader_program_destroy(shader_program *program) {
     GL_CALL(glDeleteProgram(program->gl_id));
 }
-
-/*void shader_program_delete_all(shader_program *program) {*/
-/*    for (int i = 0; i < 5; ++i) {*/
-/*        if (program->shader_gl_id_values[i] != 0) {*/
-/*            glDeleteShader(program->shader_gl_id_values[i]);*/
-/*        }*/
-/*    }*/
-/**/
-/*    shader_program_use(program);*/
-/*    glDeleteProgram(program->gl_id);*/
-/*}*/

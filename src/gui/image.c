@@ -68,8 +68,10 @@ void gui_image_update(gui_image *gui_image) {
     }
 
     for (int i = 0; i < 4; i++) {
-        vertices[i][0] *= gui_image->scale.x; // scale by image size
-        vertices[i][1] *= gui_image->scale.y;
+        vertices[i][0] *=
+            gui_image->texture.size.x * rect->width * gui_image->scale.x;
+        vertices[i][1] *=
+            gui_image->texture.size.y * rect->height * gui_image->scale.y;
 
         vertices[i][0] += gui_image->position.x;
         vertices[i][1] += gui_image->position.y;
@@ -113,6 +115,31 @@ void gui_image_init(gui_image *gui_image, char *image_path, vector2d position,
                (void *)(3 * sizeof(float)));
 
     gui_image_update(gui_image);
+}
+
+void gui_image_draw(gui_image *gui_image) {
+    if (!gui_image->visible) {
+        return;
+    }
+
+    texture_bind(&gui_image->texture);
+    vao_bind(&gui_image->vao);
+    bo_bind(&gui_image->ibo);
+    bo_bind(&gui_image->vbo);
+
+    renderer_draw_elements(DRAW_MODE_TRIANGLES, GUI_IMAGE_INDEX_COUNT,
+                           INDEX_TYPE_UNSIGNED_INT);
+}
+
+void gui_image_set_visible(gui_image *gui_image, bool visible) {
+    gui_image->visible = visible;
+    gui_image_update(gui_image);
+}
+
+void gui_image_destroy(gui_image *gui_image) {
+    vao_destroy(&gui_image->vao);
+    bo_destroy(&gui_image->vbo);
+    bo_destroy(&gui_image->ibo);
 }
 
 void gui_image_set_scale(gui_image *gui_image, vector2d scale) {

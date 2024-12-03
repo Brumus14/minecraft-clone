@@ -3,14 +3,18 @@
 #include <stdio.h>
 
 void tilemap_init(tilemap *tilemap, char *texture_path,
-                  texture_filter texture_filter, int width, int height,
-                  int tile_width, int tile_height, int margin, int spacing) {
+                  texture_filter texture_filter, int tile_width,
+                  int tile_height, int margin, int spacing) {
     texture_init(&tilemap->texture, texture_filter, TEXTURE_WRAP_REPEAT);
     texture_load(&tilemap->texture, texture_path);
 
     // remove width and height figure out using texture width and height
-    tilemap->width = width;
-    tilemap->height = height;
+    tilemap->width = (tilemap->texture.size.x - 2 * margin - tile_width) /
+                         (tile_width + spacing) +
+                     1;
+    tilemap->height = (tilemap->texture.size.y - 2 * margin - tile_height) /
+                          (tile_height + spacing) +
+                      1;
     tilemap->tile_width = tile_width;
     tilemap->tile_height = tile_height;
     tilemap->margin = margin;

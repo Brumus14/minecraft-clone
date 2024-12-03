@@ -14,14 +14,13 @@
 #include "gui/image.h"
 #include "hotbar.h"
 #include "items.h"
+#include "queue.h"
 
 // REMMEMBER TO AUTO BIND IN FUNCTIONS THAT ITS REQUIRED
 // make arguments const
 // make camera prepare draw function
-// better gui
 
 int main() {
-
     window window;
     camera camera;
     gui gui;
@@ -39,7 +38,7 @@ int main() {
 
     gui_image crosshair;
     gui_image_init(&crosshair, "res/textures/crosshair.png", VECTOR2D_ZERO,
-                   (vector2d){16, 16}, GUI_ELEMENT_ORIGIN_CENTER_CENTER,
+                   (vector2d){1, 1}, GUI_ELEMENT_ORIGIN_CENTER_CENTER,
                    GUI_ELEMENT_LAYER_0);
 
     gui_add_image(&gui, &crosshair);
@@ -53,15 +52,10 @@ int main() {
     hotbar_set_item(&hotbar, 3, ITEM_TYPE_COAL_BLOCK);
     hotbar_set_item(&hotbar, 4, ITEM_TYPE_LOG_BLOCK);
     hotbar_set_item(&hotbar, 5, ITEM_TYPE_DIAMOND_BLOCK);
-
-    tilemap tilemap;
-    tilemap_init(&tilemap, "res/textures/atlas.png", TEXTURE_FILTER_NEAREST, 16,
-                 16, 16, 16, 1, 2);
+    hotbar_set_item(&hotbar, 1, ITEM_TYPE_EMPTY);
 
     world world;
-    world_init(&world, &tilemap);
-
-    /*greedy_mesh_vertices_indices();*/
+    world_init(&world);
 
     // 21474836.0
     // 2147483.0
@@ -169,7 +163,7 @@ int main() {
             hotbar.current_slot = mod(hotbar.current_slot, 9);
         }
 
-        player_handle_input(&player, &window, &world);
+        player_update(&player, &window, &world);
 
         camera_set_rotation(&camera, player.rotation);
         camera_set_position(

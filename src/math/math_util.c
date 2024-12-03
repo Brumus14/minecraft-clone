@@ -50,6 +50,7 @@ int mod(int a, int b) {
 }
 
 double random_range(double min, double max) {
+    // maybe separate this for efficiency?
     if (!rand_seeded) {
         srand(time(NULL));
 

@@ -18,6 +18,7 @@ typedef struct player {
     vector3d rotation;
     camera *camera;
     double acceleration;
+    double deceleration;
     double speed;
     vector3d velocity;
     double sensitivity;
@@ -27,6 +28,7 @@ typedef struct player {
 void player_init(player *player, vector3d position, vector3d rotation,
                  double sensitivity, camera *camera);
 void player_handle_input(player *player, window *window, world *world);
+void player_update(player *player, window *window, world *world);
 void player_manage_chunks(player *player, world *world);
 bool player_get_target_block(player *player, world *world,
                              vector3d *position_dest, block_face *face);

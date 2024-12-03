@@ -1,18 +1,20 @@
 #ifndef WORLD_H
 #define WORLD_H
 
+#include <pthread.h>
 #include "chunk.h"
 
 typedef struct world {
-    tilemap *tilemap;
+    tilemap tilemap;
     int chunk_count;
     chunk *chunks;
     int *chunks_to_generate;
     int chunks_to_generate_count;
     float seed;
+    pthread_t generation_thread;
 } world;
 
-void world_init(world *world, tilemap *tilemap);
+void world_init(world *world);
 void world_load_chunk(world *world, vector3i position);
 void world_unload_chunk(world *world, vector3i position);
 void world_draw(world *world);
