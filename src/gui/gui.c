@@ -33,7 +33,7 @@ void gui_draw(gui *gui) {
     for (int i = 0; i < gui->element_count; i++) {
         switch (gui->elements[i].type) {
         case GUI_ELEMENT_TYPE_IMAGE:
-            gui_image_draw(gui->elements[i].data.image);
+            gui_image_draw(gui->elements[i].data);
             break;
         }
     }
@@ -49,7 +49,7 @@ void gui_add_element(gui *gui, gui_element element) {
 void gui_add_image(gui *gui, gui_image *image) {
     gui_element element;
 
-    element.data.image = image;
+    element.data = image;
     element.type = GUI_ELEMENT_TYPE_IMAGE;
 
     gui_add_element(gui, element);

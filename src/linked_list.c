@@ -44,29 +44,37 @@ void linked_list_insert_end(linked_list *list, void *data) {
 }
 
 void linked_list_insert(linked_list *list, void *data, int index) {
+    int list_length = linked_list_length(list);
+
+    if (index > list_length) {
+        return;
+    }
+
     if (index == 0) {
         linked_list_insert_beginning(list, data);
         return;
-    }
-
-    list_node *new_node = malloc(sizeof(list_node));
-    list_node_init(new_node, data);
-
-    list_node *node = list->head;
-
-    for (int i = 0; i < index; i++) {
-        node = node->next;
-    }
-
-    if (node == NULL) {
+    } else if (index == list_length) {
         linked_list_insert_end(list, data);
-        return;
-    }
+    } else {
+        list_node *new_node = malloc(sizeof(list_node));
+        list_node_init(new_node, data);
 
-    new_node->previous = node->previous;
-    new_node->next = node;
-    node->previous->next = new_node;
-    node->previous = new_node;
+        list_node *node = list->head;
+
+        for (int i = 0; i < index; i++) {
+            node = node->next;
+        }
+
+        if (node == NULL) {
+            linked_list_insert_end(list, data);
+            return;
+        }
+
+        new_node->previous = node->previous;
+        new_node->next = node;
+        node->previous->next = new_node;
+        node->previous = new_node;
+    }
 }
 
 void linked_list_remove_beginning(linked_list *list) {
@@ -104,20 +112,28 @@ void linked_list_remove_end(linked_list *list) {
 }
 
 void linked_list_remove(linked_list *list, int index) {
-    if (list->head == NULL) {
+    int list_length = linked_list_length(list);
+
+    if (index >= list_length) {
         return;
     }
 
-    list_node *removed_node = list->head;
+    if (index == 0) {
+        linked_list_remove_beginning(list);
+    } else if (index == list_length - 1) {
+        linked_list_remove_end(list);
+    } else {
+        list_node *removed_node = list->head;
 
-    for (int i = 0; i < index; i++) {
-        removed_node = removed_node->next;
+        for (int i = 0; i < index; i++) {
+            removed_node = removed_node->next;
+        }
+
+        removed_node->previous->next = removed_node->next;
+        removed_node->next->previous = removed_node->previous;
+
+        free(removed_node);
     }
-
-    removed_node->previous->next = removed_node->next;
-    removed_node->next->previous = removed_node->previous;
-
-    free(removed_node);
 }
 
 void linked_list_destroy(linked_list *list) {
@@ -131,4 +147,30 @@ void linked_list_destroy(linked_list *list) {
 
     list->head = NULL;
     list->tail = NULL;
+}
+
+int linked_list_length(linked_list *list) {
+    int length = 0;
+    list_node *current_node = list->head;
+
+    while (current_node != NULL) {
+        length++;
+        current_node = current_node->next;
+    }
+
+    return length;
+}
+
+void *linked_list_get(linked_list *list, int index) {
+    if (index >= linked_list_length(list)) {
+        return NULL;
+    }
+
+    list_node *current_node = list->head;
+
+    for (int i = 0; i < index; i++) {
+        current_node = current_node->next;
+    }
+
+    return current_node->data;
 }

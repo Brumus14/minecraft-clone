@@ -3,11 +3,12 @@
 
 #include <pthread.h>
 #include "chunk.h"
+#include "../linked_list.h"
 
 typedef struct world {
     tilemap tilemap;
-    int chunk_count;
-    chunk *chunks;
+    int chunks_count;
+    linked_list chunks;
     int *chunks_to_generate;
     int chunks_to_generate_count;
     float seed;

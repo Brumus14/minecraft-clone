@@ -1,5 +1,7 @@
 #include "image.h"
 
+#include "../graphics/renderer.h"
+
 // create function to set origin
 void gui_image_update(gui_image *gui_image) {
     bo_bind(&gui_image->vbo);

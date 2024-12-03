@@ -3,8 +3,9 @@
 
 #define GUI_IMAGE_INDEX_COUNT 6
 
-#include "../graphics/graphics.h"
-#include "../math/vector2.h"
+#include "../graphics/texture.h"
+#include "../graphics/vao.h"
+#include "../graphics/bo.h"
 #include "../math/rectangle.h"
 #include "gui_element.h"
 

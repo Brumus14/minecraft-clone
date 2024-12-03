@@ -3,19 +3,16 @@
 
 typedef struct gui_image gui_image;
 
-typedef union gui_element_data {
-    gui_image *image;
-} gui_element_data;
-
 typedef enum gui_element_type {
     GUI_ELEMENT_TYPE_IMAGE,
 } gui_element_type;
 
 typedef struct gui_element {
     gui_element_type type;
-    gui_element_data data;
+    void *data;
 } gui_element;
 
+// Origin in format x_y
 typedef enum gui_element_origin {
     GUI_ELEMENT_ORIGIN_LEFT_TOP,
     GUI_ELEMENT_ORIGIN_CENTER_TOP,
@@ -28,6 +25,7 @@ typedef enum gui_element_origin {
     GUI_ELEMENT_ORIGIN_RIGHT_BOTTOM,
 } gui_element_origin;
 
+// 0 is back 9 is front
 typedef enum gui_element_layer {
     GUI_ELEMENT_LAYER_0,
     GUI_ELEMENT_LAYER_1,

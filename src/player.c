@@ -138,11 +138,12 @@ void player_update_movement(player *player, window *window) {
 void player_update(player *player, window *window, world *world) {
     player_update_rotation(player, window);
     player_update_movement(player, window);
+    player_manage_chunks(player, world);
 
-    printf("pos:\n");
-    vector3d_print(player->position);
-    printf("vel:\n");
-    vector3d_print(player->velocity);
+    // printf("pos:\n");
+    // vector3d_print(player->position);
+    // printf("vel:\n");
+    // vector3d_print(player->velocity);
 }
 
 void player_manage_chunks(player *player, world *world) {
@@ -155,11 +156,12 @@ void player_manage_chunks(player *player, world *world) {
     player_chunk.x = floor(player->position.x / CHUNK_SIZE_X);
     player_chunk.y = floor(player->position.z / CHUNK_SIZE_Z);
 
-    vector3i unloaded_chunks[world->chunk_count]; // DONT USE THIS
+    vector3i
+        unloaded_chunks[linked_list_length(&world->chunks)]; // DONT USE THIS
     int unloaded_chunk_count = 0;
 
-    for (int i = 0; i < world->chunk_count; i++) {
-        chunk *chunk = &world->chunks[i];
+    for (int i = 0; i < linked_list_length(&world->chunks); i++) {
+        chunk *chunk = linked_list_get(&world->chunks, i);
 
         if (chunk->position.x < player_chunk.x - render_distance ||
             chunk->position.x > player_chunk.x + render_distance ||

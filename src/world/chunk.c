@@ -66,6 +66,7 @@ bool is_block_face_active(chunk *chunk, int x, int y, int z, block_face face) {
 }
 
 void chunk_init(chunk *chunk, vector3i position, tilemap *tilemap) {
+    chunk->visible = true;
     chunk->position = position;
     chunk->tilemap = tilemap;
 
@@ -77,9 +78,9 @@ void chunk_init(chunk *chunk, vector3i position, tilemap *tilemap) {
 }
 
 void chunk_update(chunk *chunk) {
-    vao_delete(&chunk->vao);
-    bo_delete(&chunk->vbo);
-    bo_delete(&chunk->ibo);
+    vao_destroy(&chunk->vao);
+    bo_destroy(&chunk->vbo);
+    bo_destroy(&chunk->ibo);
 
     vao_init(&chunk->vao);
     bo_init(&chunk->vbo, BO_TYPE_VERTEX);
@@ -187,6 +188,10 @@ void chunk_update(chunk *chunk) {
 
 // bind texture
 void chunk_draw(chunk *chunk) {
+    if (!chunk->visible) {
+        return;
+    }
+
     vao_bind(&chunk->vao);
     bo_bind(&chunk->ibo);
     bo_bind(&chunk->vbo);

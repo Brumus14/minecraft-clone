@@ -5,11 +5,11 @@
 #include "noise1234.h"
 #include "../math/math_util.h"
 
-pthread_mutex_t chunks_to_generate_mutex = PTHREAD_MUTEX_INITIALIZER;
-
 int get_chunk_index(world *world, vector3i position) {
-    for (int i = 0; i < world->chunk_count; i++) {
-        if (vector3i_equal(world->chunks[i].position, position)) {
+    for (int i = 0; i < world->chunks_count; i++) {
+        chunk *chunk = linked_list_get(&world->chunks, i);
+
+        if (vector3i_equal(chunk->position, position)) {
             return i;
         }
     }
@@ -80,31 +80,26 @@ void generate_chunk_terrain(world *world, chunk *chunk, int stage) {
     }
 }
 
-void *generation_thread_main(void *world_arg) {
-    world *world_pointer = (world *)world_arg;
-
-    // copy the data so dont have to keep chunks to generate locked for main
-    // thread
-    while (true) {
-    }
-
-    return NULL;
-}
+// void *generation_thread_main(void *world_arg) {
+//     world *world_pointer = (world *)world_arg;
+//
+//     // copy the data so dont have to keep chunks to generate locked for main
+//     // thread
+//     while (true) {
+//     }
+//
+//     return NULL;
+// }
 
 void world_init(world *world) {
     tilemap_init(&world->tilemap, "res/textures/atlas.png",
                  TEXTURE_FILTER_NEAREST, 16, 16, 1, 2);
 
-    world->chunk_count = 0;
-    world->chunks = malloc(0);
+    linked_list_init(&world->chunks);
     world->chunks_to_generate_count = 0;
-    world->chunks_to_generate = malloc(0);
+    world->chunks_to_generate = NULL;
 
     world->seed = random_range(0, 100);
-
-    pthread_create(&world->generation_thread, NULL, generation_thread_main,
-                   world);
-    pthread_detach(world->generation_thread);
 }
 
 void world_load_chunk(world *world, vector3i position) {
@@ -112,15 +107,12 @@ void world_load_chunk(world *world, vector3i position) {
         return;
     }
 
-    pthread_mutex_lock(&chunks_to_generate_mutex);
-
-    world->chunk_count++;
-
-    world->chunks = realloc(world->chunks, sizeof(chunk) * world->chunk_count);
-
-    chunk *new_chunk = &world->chunks[world->chunk_count - 1];
+    chunk *new_chunk = malloc(sizeof(chunk));
+    linked_list_insert_end(&world->chunks, new_chunk);
+    world->chunks_count++;
 
     chunk_init(new_chunk, position, &world->tilemap);
+    new_chunk->visible = false;
 
     world->chunks_to_generate_count++;
 
@@ -128,33 +120,32 @@ void world_load_chunk(world *world, vector3i position) {
         realloc(world->chunks_to_generate,
                 sizeof(chunk *) * world->chunks_to_generate_count);
     world->chunks_to_generate[world->chunks_to_generate_count - 1] =
-        world->chunk_count - 1;
-
-    pthread_mutex_unlock(&chunks_to_generate_mutex);
+        world->chunks_count - 1;
 }
 
 // remove chunks from chunks to generate if have moved out of render distance
 // before generated
 void generate_chunks(world *world) {
-    // if (world->chunks_to_generate_count == 0) {
-    //     return;
-    // }
-    //
-    // chunk *chunk =
-    //     &world->chunks
-    //          [world->chunks_to_generate[world->chunks_to_generate_count -
-    //          1]];
-    // generate_chunk_terrain(world, chunk, 0);
-    // generate_chunk_terrain(world, chunk, 1);
-    // chunk_update(chunk);
-    //
-    // world->chunks_to_generate_count--;
-    // world->chunks_to_generate =
-    //     realloc(world->chunks_to_generate,
-    //             sizeof(int) * world->chunks_to_generate_count);
+    if (world->chunks_to_generate_count == 0) {
+        return;
+    }
+
+    chunk *chunk = linked_list_get(
+        &world->chunks,
+        world->chunks_to_generate[world->chunks_to_generate_count - 1]);
+    generate_chunk_terrain(world, chunk, 0);
+    generate_chunk_terrain(world, chunk, 1);
+    chunk_update(chunk);
+    chunk->visible = true;
+
+    world->chunks_to_generate_count--;
+    world->chunks_to_generate =
+        realloc(world->chunks_to_generate,
+                sizeof(int) * world->chunks_to_generate_count);
 
     // for (int i = 0; i < world->chunks_to_generate_count; i++) {
-    //     chunk *chunk = &world->chunks[world->chunks_to_generate[i]];
+    //     chunk *chunk =
+    //         linked_list_get(&world->chunks, world->chunks_to_generate[i]);
     //
     //     generate_chunk_terrain(world, chunk, 0);
     // }
@@ -177,14 +168,8 @@ void world_unload_chunk(world *world, vector3i position) {
         return;
     }
 
-    world->chunk_count--;
-
-    if (chunk_index < world->chunk_count) {
-        memcpy(&world->chunks[chunk_index], &world->chunks[world->chunk_count],
-               sizeof(chunk));
-    }
-
-    world->chunks = realloc(world->chunks, sizeof(chunk) * world->chunk_count);
+    linked_list_remove(&world->chunks, chunk_index);
+    world->chunks_count--;
 }
 
 void world_draw(world *world) {
@@ -192,8 +177,8 @@ void world_draw(world *world) {
 
     texture_bind(&world->tilemap.texture);
 
-    for (int i = 0; i < world->chunk_count; i++) {
-        chunk_draw(&world->chunks[i]);
+    for (int i = 0; i < world->chunks_count; i++) {
+        chunk_draw(linked_list_get(&world->chunks, i));
     }
 }
 
@@ -210,7 +195,7 @@ block_type world_get_block(world *world, vector3d position) {
         return BLOCK_TYPE_EMPTY;
     }
 
-    chunk *chunk = &world->chunks[chunk_index];
+    chunk *chunk = linked_list_get(&world->chunks, chunk_index);
 
     vector3i block_chunk_position = {mod(floor(position.x), CHUNK_SIZE_X),
                                      mod(floor(position.y), CHUNK_SIZE_Y),
@@ -231,7 +216,7 @@ void world_set_block(world *world, block_type type, vector3d position) {
         return;
     }
 
-    chunk *chunk = &world->chunks[chunk_index];
+    chunk *chunk = linked_list_get(&world->chunks, chunk_index);
 
     vector3i block_chunk_position = {mod(floor(position.x), CHUNK_SIZE_X),
                                      mod(floor(position.y), CHUNK_SIZE_Y),

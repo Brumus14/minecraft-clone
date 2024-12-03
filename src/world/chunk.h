@@ -12,6 +12,7 @@
 #define CHUNK_SIZE_Z 32
 
 typedef struct chunk {
+    bool visible;
     vector3i position;
     block_type blocks[CHUNK_SIZE_Z][CHUNK_SIZE_Y][CHUNK_SIZE_X];
     tilemap *tilemap;
