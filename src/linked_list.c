@@ -77,9 +77,9 @@ void linked_list_insert(linked_list *list, void *data, int index) {
     }
 }
 
-void linked_list_remove_beginning(linked_list *list) {
+void *linked_list_remove_beginning(linked_list *list) {
     if (list->head == NULL) {
-        return;
+        return NULL;
     }
 
     list_node *removed_node = list->head;
@@ -91,12 +91,16 @@ void linked_list_remove_beginning(linked_list *list) {
         list->tail = NULL;
     }
 
+    void *removed_data = removed_node->data;
+
     free(removed_node);
+
+    return removed_data;
 }
 
-void linked_list_remove_end(linked_list *list) {
+void *linked_list_remove_end(linked_list *list) {
     if (list->head == NULL) {
-        return;
+        return NULL;
     }
 
     list_node *removed_node = list->tail;
@@ -108,20 +112,24 @@ void linked_list_remove_end(linked_list *list) {
         list->head = NULL;
     }
 
+    void *removed_data = removed_node->data;
+
     free(removed_node);
+
+    return removed_data;
 }
 
-void linked_list_remove(linked_list *list, int index) {
+void *linked_list_remove(linked_list *list, int index) {
     int list_length = linked_list_length(list);
 
     if (index >= list_length) {
-        return;
+        return NULL;
     }
 
     if (index == 0) {
-        linked_list_remove_beginning(list);
+        return linked_list_remove_beginning(list);
     } else if (index == list_length - 1) {
-        linked_list_remove_end(list);
+        return linked_list_remove_end(list);
     } else {
         list_node *removed_node = list->head;
 
@@ -132,7 +140,11 @@ void linked_list_remove(linked_list *list, int index) {
         removed_node->previous->next = removed_node->next;
         removed_node->next->previous = removed_node->previous;
 
+        void *removed_data = removed_node->data;
+
         free(removed_node);
+
+        return removed_data;
     }
 }
 
@@ -173,4 +185,8 @@ void *linked_list_get(linked_list *list, int index) {
     }
 
     return current_node->data;
+}
+
+bool linked_list_is_empty(linked_list *list) {
+    return (list->head == NULL);
 }

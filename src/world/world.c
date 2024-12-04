@@ -5,6 +5,11 @@
 #include "noise1234.h"
 #include "../math/math_util.h"
 
+pthread_mutex_t chunks_to_generate_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t chunks_to_generate_count_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t chunks_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t chunks_count_mutex = PTHREAD_MUTEX_INITIALIZER;
+
 int get_chunk_index(world *world, vector3i position) {
     for (int i = 0; i < world->chunks_count; i++) {
         chunk *chunk = linked_list_get(&world->chunks, i);
@@ -80,106 +85,130 @@ void generate_chunk_terrain(world *world, chunk *chunk, int stage) {
     }
 }
 
-// void *generation_thread_main(void *world_arg) {
-//     world *world_pointer = (world *)world_arg;
-//
-//     // copy the data so dont have to keep chunks to generate locked for main
-//     // thread
-//     while (true) {
-//     }
-//
-//     return NULL;
-// }
+void *generation_thread_main(void *world_arg) {
+    world *world_pointer = (world *)world_arg;
+
+    // copy the data so dont have to keep chunks to generate locked for main
+    // thread
+    while (true) {
+        pthread_mutex_lock(&chunks_mutex);
+        pthread_mutex_lock(&chunks_count_mutex);
+        pthread_mutex_lock(&chunks_to_generate_mutex);
+        pthread_mutex_lock(&chunks_to_generate_count_mutex);
+
+        if (world_pointer->chunks_to_generate_count > 0) {
+            chunk *chunk = queue_dequeue(&world_pointer->chunks_to_generate);
+            world_pointer->chunks_to_generate_count--;
+
+            generate_chunk_terrain(world_pointer, chunk, 0);
+            generate_chunk_terrain(world_pointer, chunk, 1);
+            chunk_update(chunk);
+            chunk->visible = true;
+            printf("Chunk Generated - %d, %d, %d\n", chunk->position.x,
+                   chunk->position.y, chunk->position.z);
+        }
+
+        pthread_mutex_unlock(&chunks_to_generate_count_mutex);
+        pthread_mutex_unlock(&chunks_to_generate_mutex);
+        pthread_mutex_unlock(&chunks_count_mutex);
+        pthread_mutex_unlock(&chunks_mutex);
+    }
+
+    return NULL;
+}
 
 void world_init(world *world) {
     tilemap_init(&world->tilemap, "res/textures/atlas.png",
                  TEXTURE_FILTER_NEAREST, 16, 16, 1, 2);
 
+    world->chunks_count = 0;
     linked_list_init(&world->chunks);
+
     world->chunks_to_generate_count = 0;
-    world->chunks_to_generate = NULL;
+    queue_init(&world->chunks_to_generate);
 
     world->seed = random_range(0, 100);
+
+    pthread_create(&world->generation_thread, NULL, generation_thread_main,
+                   world);
+    pthread_detach(world->generation_thread);
 }
 
 void world_load_chunk(world *world, vector3i position) {
+    pthread_mutex_lock(&chunks_mutex);
+    pthread_mutex_lock(&chunks_count_mutex);
+    pthread_mutex_lock(&chunks_to_generate_mutex);
+    pthread_mutex_lock(&chunks_to_generate_count_mutex);
+
     if (get_chunk_index(world, position) != -1) {
+        pthread_mutex_unlock(&chunks_to_generate_count_mutex);
+        pthread_mutex_unlock(&chunks_to_generate_mutex);
+        pthread_mutex_unlock(&chunks_count_mutex);
+        pthread_mutex_unlock(&chunks_mutex);
+
         return;
     }
 
     chunk *new_chunk = malloc(sizeof(chunk));
-    linked_list_insert_end(&world->chunks, new_chunk);
-    world->chunks_count++;
-
     chunk_init(new_chunk, position, &world->tilemap);
     new_chunk->visible = false;
 
+    linked_list_insert_end(&world->chunks, new_chunk);
+    world->chunks_count++;
+
+    queue_enqueue(&world->chunks_to_generate, new_chunk);
     world->chunks_to_generate_count++;
 
-    world->chunks_to_generate =
-        realloc(world->chunks_to_generate,
-                sizeof(chunk *) * world->chunks_to_generate_count);
-    world->chunks_to_generate[world->chunks_to_generate_count - 1] =
-        world->chunks_count - 1;
+    pthread_mutex_unlock(&chunks_to_generate_count_mutex);
+    pthread_mutex_unlock(&chunks_to_generate_mutex);
+    pthread_mutex_unlock(&chunks_count_mutex);
+    pthread_mutex_unlock(&chunks_mutex);
 }
 
 // remove chunks from chunks to generate if have moved out of render distance
 // before generated
-void generate_chunks(world *world) {
-    if (world->chunks_to_generate_count == 0) {
-        return;
-    }
-
-    chunk *chunk = linked_list_get(
-        &world->chunks,
-        world->chunks_to_generate[world->chunks_to_generate_count - 1]);
-    generate_chunk_terrain(world, chunk, 0);
-    generate_chunk_terrain(world, chunk, 1);
-    chunk_update(chunk);
-    chunk->visible = true;
-
-    world->chunks_to_generate_count--;
-    world->chunks_to_generate =
-        realloc(world->chunks_to_generate,
-                sizeof(int) * world->chunks_to_generate_count);
-
-    // for (int i = 0; i < world->chunks_to_generate_count; i++) {
-    //     chunk *chunk =
-    //         linked_list_get(&world->chunks, world->chunks_to_generate[i]);
-    //
-    //     generate_chunk_terrain(world, chunk, 0);
-    // }
-    //
-    // for (int i = 0; i < world->chunks_to_generate_count; i++) {
-    //     chunk *chunk = &world->chunks[world->chunks_to_generate[i]];
-    //
-    //     generate_chunk_terrain(world, chunk, 1);
-    //     chunk_update(chunk);
-    // }
-    //
-    // world->chunks_to_generate_count = 0;
-    // world->chunks_to_generate = malloc(0);
-}
-
 void world_unload_chunk(world *world, vector3i position) {
+    pthread_mutex_lock(&chunks_mutex);
+    pthread_mutex_lock(&chunks_count_mutex);
+    pthread_mutex_lock(&chunks_to_generate_mutex);
+    pthread_mutex_lock(&chunks_to_generate_count_mutex);
+
     int chunk_index = get_chunk_index(world, position);
 
     if (chunk_index == -1) {
+        pthread_mutex_unlock(&chunks_to_generate_count_mutex);
+        pthread_mutex_unlock(&chunks_to_generate_mutex);
+        pthread_mutex_unlock(&chunks_count_mutex);
+        pthread_mutex_unlock(&chunks_mutex);
+
         return;
     }
 
     linked_list_remove(&world->chunks, chunk_index);
     world->chunks_count--;
+
+    pthread_mutex_unlock(&chunks_to_generate_count_mutex);
+    pthread_mutex_unlock(&chunks_to_generate_mutex);
+    pthread_mutex_unlock(&chunks_count_mutex);
+    pthread_mutex_unlock(&chunks_mutex);
 }
 
 void world_draw(world *world) {
-    generate_chunks(world);
-
     texture_bind(&world->tilemap.texture);
+
+    pthread_mutex_lock(&chunks_mutex);
+    pthread_mutex_lock(&chunks_count_mutex);
+    pthread_mutex_lock(&chunks_to_generate_mutex);
+    pthread_mutex_lock(&chunks_to_generate_count_mutex);
 
     for (int i = 0; i < world->chunks_count; i++) {
         chunk_draw(linked_list_get(&world->chunks, i));
     }
+
+    pthread_mutex_unlock(&chunks_to_generate_count_mutex);
+    pthread_mutex_unlock(&chunks_to_generate_mutex);
+    pthread_mutex_unlock(&chunks_count_mutex);
+    pthread_mutex_unlock(&chunks_mutex);
 }
 
 // use mipmapping

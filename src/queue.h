@@ -9,6 +9,7 @@ typedef struct queue {
 
 void queue_init(queue *queue);
 void queue_enqueue(queue *queue, void *data);
-void queue_dequeue(queue *queue);
+void *queue_dequeue(queue *queue);
+bool queue_is_empty(queue *queue);
 
 #endif

@@ -151,7 +151,7 @@ void player_manage_chunks(player *player, world *world) {
     /*    return;*/
     /*}*/
 
-    int render_distance = 2; // move to a variable
+    int render_distance = 0; // move to a variable
     vector2i player_chunk;
     player_chunk.x = floor(player->position.x / CHUNK_SIZE_X);
     player_chunk.y = floor(player->position.z / CHUNK_SIZE_Z);

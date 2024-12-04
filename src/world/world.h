@@ -4,12 +4,13 @@
 #include <pthread.h>
 #include "chunk.h"
 #include "../linked_list.h"
+#include "../queue.h"
 
 typedef struct world {
     tilemap tilemap;
     int chunks_count;
     linked_list chunks;
-    int *chunks_to_generate;
+    queue chunks_to_generate;
     int chunks_to_generate_count;
     float seed;
     pthread_t generation_thread;
