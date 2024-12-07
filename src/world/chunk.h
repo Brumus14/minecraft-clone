@@ -11,8 +11,15 @@
 #define CHUNK_SIZE_Y 32
 #define CHUNK_SIZE_Z 32
 
+typedef enum chunk_status {
+    CHUNK_STATUS_UNGENERATED,
+    CHUNK_STATUS_GENERATING,
+    CHUNK_STATUS_DONE,
+} chunk_status;
+
 typedef struct chunk {
-    bool visible;
+    // bool visible;
+    chunk_status status;
     vector3i position;
     block_type blocks[CHUNK_SIZE_Z][CHUNK_SIZE_Y][CHUNK_SIZE_X];
     tilemap *tilemap;

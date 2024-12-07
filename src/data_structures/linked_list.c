@@ -190,3 +190,19 @@ void *linked_list_get(linked_list *list, int index) {
 bool linked_list_is_empty(linked_list *list) {
     return (list->head == NULL);
 }
+
+int linked_list_find(linked_list *list, void *data) {
+    list_node *current_node = list->head;
+    int index = 0;
+
+    while (current_node != list->tail && current_node->data != data) {
+        current_node = current_node->next;
+        index++;
+    }
+
+    if (current_node == list->tail) {
+        return -1;
+    }
+
+    return index;
+}

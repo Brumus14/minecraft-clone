@@ -1,6 +1,6 @@
 #include "renderer.h"
 
-#include "gl_util.h"
+#include "../util/gl.h"
 #include "GLFW/glfw3.h"
 
 void renderer_init() {

@@ -91,15 +91,16 @@ void player_update_movement(player *player, window *window) {
     }
 
     if (keyboard_key_down(&window->keyboard, KEYCODE_SPACE)) {
-        velocity_delta.y += 1;
+        relative_velocity_delta.y += 1;
     }
 
     if (keyboard_key_down(&window->keyboard, KEYCODE_LEFT_SHIFT)) {
-        velocity_delta.y -= 1;
+        relative_velocity_delta.y -= 1;
     }
 
-    double velocity_delta_y = velocity_delta.y;
-    velocity_delta.y = 0;
+    if (vector3d_magnitude(relative_velocity_delta) == 0) {
+        player->sprinting = false;
+    }
 
     // Convert relative velocity delta to global velocity delta
     vector3d up = (vector3d){0, 1, 0};
@@ -112,22 +113,28 @@ void player_update_movement(player *player, window *window) {
 
     vector3d right = vector3d_cross_product(up, forwards);
 
+    vector3d_add_to(velocity_delta,
+                    vector3d_scalar_multiply(up, relative_velocity_delta.y),
+                    &velocity_delta);
+
     vector3d_add_to(
         velocity_delta,
         vector3d_scalar_multiply(forwards, relative_velocity_delta.z),
         &velocity_delta);
+
     vector3d_add_to(velocity_delta,
                     vector3d_scalar_multiply(right, relative_velocity_delta.x),
                     &velocity_delta);
 
     vector3d_normalise(&velocity_delta);
-    velocity_delta.y = velocity_delta_y;
 
-    vector3d_scalar_multiply_to(velocity_delta, delta_time, &velocity_delta);
+    vector3d_scalar_multiply_to(velocity_delta, delta_time * 2,
+                                &velocity_delta);
 
     vector3d_add_to(player->velocity, velocity_delta, &player->velocity);
 
-    player->velocity.y = relative_velocity_delta.y * delta_time * player->speed;
+    vector3d_scalar_multiply_to(player->velocity, pow(0.2, delta_time),
+                                &player->velocity);
 
     vector3d_add_to(
         player->position,
@@ -151,17 +158,17 @@ void player_manage_chunks(player *player, world *world) {
     /*    return;*/
     /*}*/
 
-    int render_distance = 0; // move to a variable
+    int render_distance = 2; // move to a variable
     vector2i player_chunk;
     player_chunk.x = floor(player->position.x / CHUNK_SIZE_X);
     player_chunk.y = floor(player->position.z / CHUNK_SIZE_Z);
 
-    vector3i
-        unloaded_chunks[linked_list_length(&world->chunks)]; // DONT USE THIS
+    vector3i unloaded_chunks[safe_linked_list_length(
+        &world->chunks)]; // DONT USE THIS
     int unloaded_chunk_count = 0;
 
-    for (int i = 0; i < linked_list_length(&world->chunks); i++) {
-        chunk *chunk = linked_list_get(&world->chunks, i);
+    for (int i = 0; i < safe_linked_list_length(&world->chunks); i++) {
+        chunk *chunk = safe_linked_list_get(&world->chunks, i);
 
         if (chunk->position.x < player_chunk.x - render_distance ||
             chunk->position.x > player_chunk.x + render_distance ||
@@ -179,21 +186,18 @@ void player_manage_chunks(player *player, world *world) {
     for (int y = -render_distance; y <= render_distance; y++) {
         for (int x = -render_distance; x <= render_distance; x++) {
             // world_load_chunk(
-            //     world, (vector3i){player_chunk.x + x, -3, player_chunk.y +
-            //     y});
-            // world_load_chunk(
-            //     world, (vector3i){player_chunk.x + x, -2, player_chunk.y +
-            //     y});
-            // world_load_chunk(
-            //     world, (vector3i){player_chunk.x + x, -1, player_chunk.y +
-            //     y});
+            //     world, (vector3i){player_chunk.x + x, -3, player_chunk.y
+            //     + y});
+            world_load_chunk(
+                world, (vector3i){player_chunk.x + x, -2, player_chunk.y + y});
+            world_load_chunk(
+                world, (vector3i){player_chunk.x + x, -1, player_chunk.y + y});
             world_load_chunk(
                 world, (vector3i){player_chunk.x + x, 0, player_chunk.y + y});
             world_load_chunk(
                 world, (vector3i){player_chunk.x + x, 1, player_chunk.y + y});
-            // world_load_chunk(
-            //     world, (vector3i){player_chunk.x + x, 2, player_chunk.y +
-            //     y});
+            world_load_chunk(
+                world, (vector3i){player_chunk.x + x, 2, player_chunk.y + y});
         }
     }
 }

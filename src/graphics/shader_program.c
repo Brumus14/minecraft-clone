@@ -1,8 +1,8 @@
 #include "shader_program.h"
 
 #include <stdio.h>
-#include "gl_util.h"
-#include "../util.h"
+#include "../util/gl.h"
+#include "../util/io.h"
 
 void shader_program_init(shader_program *program, shader *vertex_shader,
                          shader *fragment_shader) {

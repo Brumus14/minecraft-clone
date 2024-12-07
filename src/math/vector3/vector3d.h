@@ -23,6 +23,7 @@ vector3d vector3d_normalised(vector3d vector);
 void vector3d_to_glm(vector3d vector, vec3 *destination);
 void vector3d_add_to(vector3d v1, vector3d v2, vector3d *dest);
 vector3d vector3d_add(vector3d v1, vector3d v2);
+void vector3d_sub_to(vector3d v1, vector3d v2, vector3d *dest);
 vector3d vector3d_sub(vector3d v1, vector3d v2);
 void vector3d_scalar_multiply_to(vector3d vector, double scalar,
                                  vector3d *dest);

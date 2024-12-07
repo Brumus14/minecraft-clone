@@ -1,7 +1,7 @@
 #include "bo.h"
 
 #include <stdio.h>
-#include "gl_util.h"
+#include "../util/gl.h"
 
 GLenum to_gl_usage(bo_usage usage) {
     switch (usage) {

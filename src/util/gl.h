@@ -1,5 +1,5 @@
-#ifndef GL_UTIL_H
-#define GL_UTIL_H
+#ifndef UTIL_GL_H
+#define UTIL_GL_H
 
 #include <stdio.h>
 #include "glad/glad.h"

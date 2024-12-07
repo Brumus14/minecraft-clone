@@ -3,15 +3,14 @@
 
 #include <pthread.h>
 #include "chunk.h"
-#include "../linked_list.h"
-#include "../queue.h"
+#include "../data_structures/safe_linked_list.h"
+#include "../data_structures/safe_queue.h"
 
 typedef struct world {
     tilemap tilemap;
-    int chunks_count;
-    linked_list chunks;
-    queue chunks_to_generate;
-    int chunks_to_generate_count;
+    safe_linked_list chunks;
+    safe_queue chunks_to_generate;
+    safe_queue chunks_to_initial_update;
     float seed;
     pthread_t generation_thread;
 } world;

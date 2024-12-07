@@ -56,12 +56,16 @@ vector3d vector3d_add(vector3d v1, vector3d v2) {
     return result;
 }
 
+void vector3d_sub_to(vector3d v1, vector3d v2, vector3d *dest) {
+    dest->x = v1.x - v2.x;
+    dest->y = v1.y - v2.y;
+    dest->z = v1.z - v2.z;
+}
+
 vector3d vector3d_sub(vector3d v1, vector3d v2) {
     vector3d result;
 
-    result.x = v1.x - v2.x;
-    result.y = v1.y - v2.y;
-    result.z = v1.z - v2.z;
+    vector3d_sub_to(v1, v2, &result);
 
     return result;
 }

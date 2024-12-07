@@ -1,5 +1,5 @@
-#ifndef UTIL_H
-#define UTIL_H
+#ifndef UTIL_IO_H
+#define UTIL_IO_H
 
 char *read_file(char *path);
 

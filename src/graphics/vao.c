@@ -1,7 +1,7 @@
 #include "vao.h"
 
 #include <stdio.h>
-#include "gl_util.h"
+#include "../util/gl.h"
 
 void vao_init(vao *vao) {
     GL_CALL(glGenVertexArrays(1, &vao->gl_id));

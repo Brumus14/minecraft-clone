@@ -1,7 +1,7 @@
 #include "shader.h"
 
 #include <stdio.h>
-#include "gl_util.h"
+#include "../util/gl.h"
 
 GLenum to_shader_type_gl(shader_type type) {
     switch (type) {

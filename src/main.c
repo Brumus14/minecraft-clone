@@ -2,7 +2,7 @@
 #include "GLFW/glfw3.h"
 #include <stdio.h>
 #include <unistd.h>
-#include "util.h"
+#include "util/io.h"
 #include "graphics/graphics.h"
 #include "world/block.h"
 #include "world/chunk.h"
@@ -14,7 +14,6 @@
 #include "gui/image.h"
 #include "hotbar.h"
 #include "items.h"
-#include "queue.h"
 
 // REMMEMBER TO AUTO BIND IN FUNCTIONS THAT ITS REQUIRED
 // make arguments const
@@ -171,13 +170,15 @@ int main() {
 
         if (player.sprinting) {
             if (camera.fov < 90 * 1.1) {
-                camera_set_fov(&camera, camera.fov + 0.1);
+                camera_set_fov(
+                    &camera, camera.fov + window_get_delta_time(&window) * 70);
             } else if (camera.fov > 90 * 1.1) {
                 camera_set_fov(&camera, 90 * 1.1);
             }
         } else {
             if (camera.fov > 90) {
-                camera_set_fov(&camera, camera.fov - 0.1);
+                camera_set_fov(
+                    &camera, camera.fov - window_get_delta_time(&window) * 70);
             } else if (camera.fov < 90) {
                 camera_set_fov(&camera, 90);
             }

@@ -1,7 +1,7 @@
 #include "camera.h"
 
 #include "glad/glad.h"
-#include "gl_util.h"
+#include "../util/gl.h"
 #include "../math/math_util.h"
 
 // use frustum culling

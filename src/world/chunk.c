@@ -66,7 +66,8 @@ bool is_block_face_active(chunk *chunk, int x, int y, int z, block_face face) {
 }
 
 void chunk_init(chunk *chunk, vector3i position, tilemap *tilemap) {
-    chunk->visible = true;
+    // chunk->visible = true;
+    chunk->status = CHUNK_STATUS_UNGENERATED;
     chunk->position = position;
     chunk->tilemap = tilemap;
 
@@ -96,7 +97,6 @@ void chunk_update(chunk *chunk) {
         for (int y = 0; y < CHUNK_SIZE_Y; y++) {
             for (int x = 0; x < CHUNK_SIZE_X; x++) {
                 if (chunk->blocks[z][y][x] != BLOCK_TYPE_EMPTY) {
-                    // maybe save these active faces to use later
                     for (int i = 0; i < 6; i++) {
                         if (is_block_face_active(chunk, x, y, z, i)) {
                             faces_active++;
@@ -188,7 +188,7 @@ void chunk_update(chunk *chunk) {
 
 // bind texture
 void chunk_draw(chunk *chunk) {
-    if (!chunk->visible) {
+    if (chunk->status != CHUNK_STATUS_DONE) {
         return;
     }
 

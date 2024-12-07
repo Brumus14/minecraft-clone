@@ -1,7 +1,7 @@
 #include "texture.h"
 
 #include "stb_image.h"
-#include "gl_util.h"
+#include "../util/gl.h"
 
 GLenum to_gl_filter(texture_filter filter) {
     switch (filter) {

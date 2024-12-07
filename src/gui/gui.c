@@ -1,7 +1,7 @@
 #include "gui.h"
 
 #include "cglm/cglm.h"
-#include "../graphics/gl_util.h"
+#include "../util/gl.h"
 #include "image.h"
 
 void gui_init(gui *gui, window *window) {
