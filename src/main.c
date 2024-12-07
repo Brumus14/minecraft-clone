@@ -29,6 +29,7 @@ int main() {
 
     renderer_init();
     renderer_set_clear_colour(0.53, 0.81, 0.92, 1.0);
+    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     camera_init(&camera, VECTOR3D_ZERO, VECTOR3D_ZERO, 90.0,
                 window_get_aspect_ratio(&window), 0.1, 1000.0);
@@ -51,7 +52,6 @@ int main() {
     hotbar_set_item(&hotbar, 3, ITEM_TYPE_COAL_BLOCK);
     hotbar_set_item(&hotbar, 4, ITEM_TYPE_LOG_BLOCK);
     hotbar_set_item(&hotbar, 5, ITEM_TYPE_DIAMOND_BLOCK);
-    hotbar_set_item(&hotbar, 1, ITEM_TYPE_EMPTY);
 
     world world;
     world_init(&world);

@@ -159,9 +159,10 @@ void player_manage_chunks(player *player, world *world) {
     /*}*/
 
     int render_distance = 2; // move to a variable
-    vector2i player_chunk;
+    vector3i player_chunk;
     player_chunk.x = floor(player->position.x / CHUNK_SIZE_X);
-    player_chunk.y = floor(player->position.z / CHUNK_SIZE_Z);
+    player_chunk.y = floor(player->position.y / CHUNK_SIZE_Y);
+    player_chunk.z = floor(player->position.z / CHUNK_SIZE_Z);
 
     vector3i unloaded_chunks[safe_linked_list_length(
         &world->chunks)]; // DONT USE THIS
@@ -172,8 +173,10 @@ void player_manage_chunks(player *player, world *world) {
 
         if (chunk->position.x < player_chunk.x - render_distance ||
             chunk->position.x > player_chunk.x + render_distance ||
-            chunk->position.z < player_chunk.y - render_distance ||
-            chunk->position.z > player_chunk.y + render_distance) {
+            chunk->position.y < player_chunk.y - render_distance ||
+            chunk->position.y > player_chunk.y + render_distance ||
+            chunk->position.z < player_chunk.z - render_distance ||
+            chunk->position.z > player_chunk.z + render_distance) {
             unloaded_chunks[unloaded_chunk_count] = chunk->position;
             unloaded_chunk_count++;
         }
@@ -183,21 +186,13 @@ void player_manage_chunks(player *player, world *world) {
         world_unload_chunk(world, unloaded_chunks[i]);
     }
 
-    for (int y = -render_distance; y <= render_distance; y++) {
-        for (int x = -render_distance; x <= render_distance; x++) {
-            // world_load_chunk(
-            //     world, (vector3i){player_chunk.x + x, -3, player_chunk.y
-            //     + y});
-            world_load_chunk(
-                world, (vector3i){player_chunk.x + x, -2, player_chunk.y + y});
-            world_load_chunk(
-                world, (vector3i){player_chunk.x + x, -1, player_chunk.y + y});
-            world_load_chunk(
-                world, (vector3i){player_chunk.x + x, 0, player_chunk.y + y});
-            world_load_chunk(
-                world, (vector3i){player_chunk.x + x, 1, player_chunk.y + y});
-            world_load_chunk(
-                world, (vector3i){player_chunk.x + x, 2, player_chunk.y + y});
+    for (int z = -render_distance; z <= render_distance; z++) {
+        for (int y = -render_distance; y <= render_distance; y++) {
+            for (int x = -render_distance; x <= render_distance; x++) {
+                world_load_chunk(world, (vector3i){player_chunk.x + x,
+                                                   player_chunk.y + y,
+                                                   player_chunk.z + z});
+            }
         }
     }
 }

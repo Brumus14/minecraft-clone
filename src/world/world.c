@@ -3,8 +3,9 @@
 #include <string.h>
 #include <pthread.h>
 #include <unistd.h>
-#include "noise1234.h"
+#include "FastNoiseLite.h"
 #include "../math/math_util.h"
+#include "../util/stopwatch.h"
 
 // pthread_mutex_t chunks_to_generate_mutex = PTHREAD_MUTEX_INITIALIZER;
 // pthread_cond_t chunk_to_generate_condition = PTHREAD_COND_INITIALIZER;
@@ -29,31 +30,40 @@ int get_chunk_index(world *world, vector3i position) {
 
 void generate_chunk_terrain(world *world, chunk *chunk, int stage) {
     if (stage == 0) {
+        fnl_state height_noise = fnlCreateState();
+        height_noise.noise_type = FNL_NOISE_PERLIN;
+        height_noise.seed = world->seed;
+
+        vector3i chunk_block_position;
+        vector3i_init(&chunk_block_position, chunk->position.x * CHUNK_SIZE_X,
+                      chunk->position.y * CHUNK_SIZE_Y,
+                      chunk->position.z * CHUNK_SIZE_Z);
+
         for (int z = 0; z < CHUNK_SIZE_Z; z++) {
             for (int y = 0; y < CHUNK_SIZE_Y; y++) {
                 for (int x = 0; x < CHUNK_SIZE_X; x++) {
                     vector3i position;
-                    vector3i_init(&position,
-                                  chunk->position.x * CHUNK_SIZE_X + x,
-                                  chunk->position.y * CHUNK_SIZE_Y + y,
-                                  chunk->position.z * CHUNK_SIZE_Z + z);
+                    vector3i_init(&position, chunk_block_position.x + x,
+                                  chunk_block_position.y + y,
+                                  chunk_block_position.z + z);
 
                     block_type type = BLOCK_TYPE_EMPTY;
 
-                    if (position.y < (noise3(position.x * 0.03,
-                                             position.z * 0.03, world->seed)) *
-                                             16 -
-                                         8) {
+                    // float noise_value = noise3(position.x * 0.03,
+                    //                            position.z * 0.03,
+                    //                            world->seed) *
+                    //                     16;
+
+                    float height_value =
+                        fnlGetNoise2D(&height_noise, position.x * 2,
+                                      position.z * 2) *
+                        16;
+
+                    if (position.y < height_value - 8) {
                         type = BLOCK_TYPE_STONE;
-                    } else if (position.y <
-                               (noise3(position.x * 0.03, position.z * 0.03,
-                                       world->seed)) *
-                                   16) {
+                    } else if (position.y < height_value) {
                         type = BLOCK_TYPE_DIRT;
-                    } else if (position.y ==
-                               ceil(noise3(position.x * 0.03, position.z * 0.03,
-                                           world->seed) *
-                                    16)) {
+                    } else if (position.y == ceil(height_value)) {
                         type = BLOCK_TYPE_GRASS;
                     }
 
@@ -66,20 +76,43 @@ void generate_chunk_terrain(world *world, chunk *chunk, int stage) {
     // better ore generation
     // use octaves and make noise generator abstraction
     if (stage == 1) {
+        fnl_state cave_noise = fnlCreateState();
+        cave_noise.noise_type = FNL_NOISE_OPENSIMPLEX2S;
+        cave_noise.seed = world->seed;
+
+        fnl_state coal_noise = fnlCreateState();
+        coal_noise.noise_type = FNL_NOISE_PERLIN;
+        coal_noise.seed = world->seed;
+
+        fnl_state diamond_noise = fnlCreateState();
+        diamond_noise.noise_type = FNL_NOISE_OPENSIMPLEX2S;
+        diamond_noise.seed = world->seed + 1;
+
+        vector3i chunk_block_position;
+        vector3i_init(&chunk_block_position, chunk->position.x * CHUNK_SIZE_X,
+                      chunk->position.y * CHUNK_SIZE_Y,
+                      chunk->position.z * CHUNK_SIZE_Z);
+
         for (int z = 0; z < CHUNK_SIZE_Z; z++) {
             for (int y = 0; y < CHUNK_SIZE_Y; y++) {
                 for (int x = 0; x < CHUNK_SIZE_X; x++) {
-                    vector3i position = {chunk->position.x * CHUNK_SIZE_X + x,
-                                         chunk->position.y * CHUNK_SIZE_Y + y,
-                                         chunk->position.z * CHUNK_SIZE_Z + z};
+                    vector3i position = {chunk_block_position.x + x,
+                                         chunk_block_position.y + y,
+                                         chunk_block_position.z + z};
 
                     if (chunk->blocks[z][y][x] == BLOCK_TYPE_STONE) {
-                        if (noise4(position.x * 0.2, position.y * 0.2,
-                                   position.z * 0.2, world->seed) > 0.6) {
+                        if (fnlGetNoise3D(&cave_noise, position.x * 2,
+                                          position.y * 2,
+                                          position.z * 2) > 0.3) {
+                            chunk->blocks[z][y][x] = BLOCK_TYPE_EMPTY;
+                        } else if (fnlGetNoise3D(&coal_noise, position.x * 20,
+                                                 position.y * 20,
+                                                 position.z * 20) > 0.6) {
                             chunk->blocks[z][y][x] = BLOCK_TYPE_COAL;
-                        } else if (noise4(position.x * 0.2, position.y * 0.2,
-                                          position.z * 0.2,
-                                          world->seed * 1.419198) > 0.6) {
+                        } else if (fnlGetNoise3D(&diamond_noise,
+                                                 position.x * 20,
+                                                 position.y * 20,
+                                                 position.z * 20) > 0.91) {
                             chunk->blocks[z][y][x] = BLOCK_TYPE_DIAMOND;
                         }
                     }
@@ -88,6 +121,9 @@ void generate_chunk_terrain(world *world, chunk *chunk, int stage) {
         }
     }
 }
+
+double total = 0;
+int chunks_generated = 0;
 
 void *generation_thread_main(void *world_arg) {
     world *world_pointer = (world *)world_arg;
@@ -104,8 +140,18 @@ void *generation_thread_main(void *world_arg) {
             pthread_mutex_unlock(&chunks_to_generate_mutex);
 
             chunk->status = CHUNK_STATUS_DONE;
+
+            stopwatch timer;
+            stopwatch_start(&timer);
+
             generate_chunk_terrain(world_pointer, chunk, 0);
             generate_chunk_terrain(world_pointer, chunk, 1);
+
+            stopwatch_end(&timer);
+            total += stopwatch_elapsed(&timer);
+            chunks_generated++;
+            printf("%f\n", total / chunks_generated);
+
             safe_queue_enqueue(&world_pointer->chunks_to_initial_update, chunk);
         } else {
             pthread_mutex_unlock(&chunks_to_generate_mutex);
