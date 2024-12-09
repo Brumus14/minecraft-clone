@@ -107,7 +107,8 @@ void chunk_update(chunk *chunk) {
         }
     }
 
-    float *vertices = malloc(faces_active * 4 * 5 * sizeof(float));
+    float *vertices =
+        malloc(faces_active * 4 * CHUNK_VERTEX_SIZE * sizeof(float));
     unsigned int *indices = malloc(faces_active * 6 * sizeof(unsigned int));
 
     int faces_added = 0;
@@ -129,18 +130,22 @@ void chunk_update(chunk *chunk) {
                             INDEX_ORDER[i] + faces_added * 4;
                     }
 
+                    int face_index = (faces_added * 4) * CHUNK_VERTEX_SIZE;
+
                     for (int i = 0; i < 4; i++) {
-                        memcpy(vertices + (faces_added * 4 + i) * 5,
+                        int vertex_index = face_index + i * CHUNK_VERTEX_SIZE;
+
+                        memcpy(vertices + vertex_index,
                                VERTEX_POSITIONS[FACE_INDICES[f][i]],
                                3 * sizeof(float));
 
                         // dont think blocks are positioned correctly as block
                         // origin back top left but chunk is back bottom left
-                        vertices[(faces_added * 4 + i) * 5] +=
+                        vertices[vertex_index] +=
                             x + chunk->position.x * CHUNK_SIZE_X;
-                        vertices[(faces_added * 4 + i) * 5 + 1] +=
+                        vertices[vertex_index + 1] +=
                             y + chunk->position.y * CHUNK_SIZE_Y;
-                        vertices[(faces_added * 4 + i) * 5 + 2] +=
+                        vertices[vertex_index + 2] +=
                             z + chunk->position.z * CHUNK_SIZE_Z;
                     }
 
@@ -149,25 +154,44 @@ void chunk_update(chunk *chunk) {
                         block_type_to_texture(chunk->blocks[z][y][x])
                             .face_texture_indices[f]);
 
-                    vertices[(faces_added * 4) * 5 + 3] =
+                    int vertex_1_index = face_index;
+                    int vertex_2_index = face_index + CHUNK_VERTEX_SIZE;
+                    int vertex_3_index = face_index + 2 * CHUNK_VERTEX_SIZE;
+                    int vertex_4_index = face_index + 3 * CHUNK_VERTEX_SIZE;
+
+                    vertices[vertex_1_index + 3] =
                         texture_rectangle.x; // save index to variable
-                    vertices[(faces_added * 4) * 5 + 4] =
+                    vertices[vertex_1_index + 4] =
                         texture_rectangle.y + texture_rectangle.height;
 
-                    vertices[(faces_added * 4 + 1) * 5 + 3] =
+                    vertices[vertex_2_index + 3] =
                         texture_rectangle.x + texture_rectangle.width;
-                    vertices[(faces_added * 4 + 1) * 5 + 4] =
+                    vertices[vertex_2_index + 4] =
                         texture_rectangle.y + texture_rectangle.height;
 
-                    vertices[(faces_added * 4 + 2) * 5 + 3] =
+                    vertices[vertex_3_index + 3] =
                         texture_rectangle.x + texture_rectangle.width;
-                    vertices[(faces_added * 4 + 2) * 5 + 4] =
-                        texture_rectangle.y;
+                    vertices[vertex_3_index + 4] = texture_rectangle.y;
 
-                    vertices[(faces_added * 4 + 3) * 5 + 3] =
-                        texture_rectangle.x;
-                    vertices[(faces_added * 4 + 3) * 5 + 4] =
-                        texture_rectangle.y;
+                    vertices[vertex_4_index + 3] = texture_rectangle.x;
+                    vertices[vertex_4_index + 4] = texture_rectangle.y;
+
+                    // Set vertex normals
+                    vertices[vertex_1_index + 5] = FACE_NORMALS[f][0];
+                    vertices[vertex_1_index + 6] = FACE_NORMALS[f][1];
+                    vertices[vertex_1_index + 7] = FACE_NORMALS[f][2];
+
+                    vertices[vertex_2_index + 5] = FACE_NORMALS[f][0];
+                    vertices[vertex_2_index + 6] = FACE_NORMALS[f][1];
+                    vertices[vertex_2_index + 7] = FACE_NORMALS[f][2];
+
+                    vertices[vertex_3_index + 5] = FACE_NORMALS[f][0];
+                    vertices[vertex_3_index + 6] = FACE_NORMALS[f][1];
+                    vertices[vertex_3_index + 7] = FACE_NORMALS[f][2];
+
+                    vertices[vertex_4_index + 5] = FACE_NORMALS[f][0];
+                    vertices[vertex_4_index + 6] = FACE_NORMALS[f][1];
+                    vertices[vertex_4_index + 7] = FACE_NORMALS[f][2];
 
                     faces_added++;
                 }
@@ -175,15 +199,18 @@ void chunk_update(chunk *chunk) {
         }
     }
 
-    bo_upload(&chunk->vbo, faces_active * 4 * 5 * sizeof(float), vertices,
-              BO_USAGE_STATIC_DRAW);
+    bo_upload(&chunk->vbo, faces_active * 4 * CHUNK_VERTEX_SIZE * sizeof(float),
+              vertices, BO_USAGE_STATIC_DRAW);
 
     bo_upload(&chunk->ibo, faces_active * 6 * sizeof(unsigned int), indices,
               BO_USAGE_STATIC_DRAW);
 
-    vao_attrib(&chunk->vao, 0, 3, VAO_TYPE_FLOAT, false, 5 * sizeof(float), 0);
-    vao_attrib(&chunk->vao, 1, 2, VAO_TYPE_FLOAT, false, 5 * sizeof(float),
-               (void *)(3 * sizeof(float)));
+    vao_attrib(&chunk->vao, 0, 3, VAO_TYPE_FLOAT, false,
+               CHUNK_VERTEX_SIZE * sizeof(float), 0);
+    vao_attrib(&chunk->vao, 1, 2, VAO_TYPE_FLOAT, false,
+               CHUNK_VERTEX_SIZE * sizeof(float), (void *)(3 * sizeof(float)));
+    vao_attrib(&chunk->vao, 2, 3, VAO_TYPE_FLOAT, false,
+               CHUNK_VERTEX_SIZE * sizeof(float), (void *)(5 * sizeof(float)));
 }
 
 // bind texture

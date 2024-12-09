@@ -105,6 +105,8 @@ void camera_update_matrix_uniforms(camera *camera) {
         return;
     }
 
+    // abstract setting uniform value
+    // this is bad stuff
     GLint shader_program_id;
     GL_CALL(glGetIntegerv(GL_CURRENT_PROGRAM, &shader_program_id));
 
@@ -125,6 +127,12 @@ void camera_update_matrix_uniforms(camera *camera) {
     mat4 model_matrix = GLM_MAT4_IDENTITY;
     GLint model_loc = GL_CALL(glGetUniformLocation(shader_program_id, "model"));
     GL_CALL(glUniformMatrix4fv(model_loc, 1, GL_FALSE, (float *)model_matrix));
+
+    GLint camera_position_loc = GL_CALL_R(
+        glGetUniformLocation(shader_program_id, "camera_position"), GLint);
+
+    GL_CALL(glUniform3f(camera_position_loc, camera->position.x,
+                        camera->position.y, camera->position.z));
 }
 
 void camera_set_aspect_ratio(camera *camera, double aspect_ratio) {

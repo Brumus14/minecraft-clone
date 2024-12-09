@@ -49,11 +49,6 @@ void generate_chunk_terrain(world *world, chunk *chunk, int stage) {
 
                     block_type type = BLOCK_TYPE_EMPTY;
 
-                    // float noise_value = noise3(position.x * 0.03,
-                    //                            position.z * 0.03,
-                    //                            world->seed) *
-                    //                     16;
-
                     float height_value =
                         fnlGetNoise2D(&height_noise, position.x * 2,
                                       position.z * 2) *
@@ -100,26 +95,67 @@ void generate_chunk_terrain(world *world, chunk *chunk, int stage) {
                                          chunk_block_position.y + y,
                                          chunk_block_position.z + z};
 
-                    if (chunk->blocks[z][y][x] == BLOCK_TYPE_STONE) {
-                        if (fnlGetNoise3D(&cave_noise, position.x * 2,
-                                          position.y * 2,
-                                          position.z * 2) > 0.3) {
-                            chunk->blocks[z][y][x] = BLOCK_TYPE_EMPTY;
-                        } else if (fnlGetNoise3D(&coal_noise, position.x * 20,
-                                                 position.y * 20,
-                                                 position.z * 20) > 0.6) {
-                            chunk->blocks[z][y][x] = BLOCK_TYPE_COAL;
-                        } else if (fnlGetNoise3D(&diamond_noise,
-                                                 position.x * 20,
-                                                 position.y * 20,
-                                                 position.z * 20) > 0.91) {
-                            chunk->blocks[z][y][x] = BLOCK_TYPE_DIAMOND;
+                    if (fnlGetNoise3D(&cave_noise, position.x * 2,
+                                      position.y * 2, position.z * 2) > 0.3) {
+                        chunk->blocks[z][y][x] = BLOCK_TYPE_EMPTY;
+                    } else {
+                        if (chunk->blocks[z][y][x] == BLOCK_TYPE_STONE) {
+                            if (fnlGetNoise3D(&cave_noise, position.x * 2,
+                                              position.y * 2,
+                                              position.z * 2) > 0.3) {
+                                chunk->blocks[z][y][x] = BLOCK_TYPE_EMPTY;
+                            } else if (fnlGetNoise3D(&coal_noise,
+                                                     position.x * 20,
+                                                     position.y * 20,
+                                                     position.z * 20) > 0.6) {
+                                chunk->blocks[z][y][x] = BLOCK_TYPE_COAL;
+                            } else if (fnlGetNoise3D(&diamond_noise,
+                                                     position.x * 20,
+                                                     position.y * 20,
+                                                     position.z * 20) > 0.91) {
+                                chunk->blocks[z][y][x] = BLOCK_TYPE_DIAMOND;
+                            }
+                        } else if (chunk->blocks[z][y][x] == BLOCK_TYPE_DIRT) {
+                            if (fnlGetNoise3D(&cave_noise, position.x * 2,
+                                              (position.y + 1) * 2,
+                                              position.z * 2) > 0.3) {
+                                chunk->blocks[z][y][x] = BLOCK_TYPE_GRASS;
+                            }
                         }
                     }
                 }
             }
         }
     }
+
+    // if (stage == 2) {
+    //     fnl_state tree_noise = fnlCreateState();
+    //     tree_noise.noise_type = FNL_NOISE_OPENSIMPLEX2;
+    //     tree_noise.seed = world->seed;
+    //
+    //     for (int z = 0; z < CHUNK_SIZE_Z; z++) {
+    //         for (int y = 0; y < CHUNK_SIZE_Y - 4; y++) {
+    //             for (int x = 0; x < CHUNK_SIZE_X; x++) {
+    //                 if (chunk->blocks[z][y][x] == BLOCK_TYPE_GRASS) {
+    //                     if (fnlGetNoise2D(&tree_noise, x * 50, z * 50) >
+    //                     0.95) {
+    //                         chunk->blocks[z][y + 1][x] = BLOCK_TYPE_LOG;
+    //                         chunk->blocks[z][y + 2][x] = BLOCK_TYPE_LOG;
+    //                         chunk->blocks[z][y + 3][x] = BLOCK_TYPE_LOG;
+    //                         chunk->blocks[z][y + 4][x] = BLOCK_TYPE_LOG;
+    //
+    //                         chunk->blocks[z][y + 3][x + 1] = BLOCK_TYPE_LEAF;
+    //                         chunk->blocks[z][y + 3][x + 2] = BLOCK_TYPE_LEAF;
+    //                         chunk->blocks[z][y + 3][x + 1] = BLOCK_TYPE_LEAF;
+    //                         chunk->blocks[z][y + 4][x + 2] = BLOCK_TYPE_LEAF;
+    //                         chunk->blocks[z][y + 4][x + 1] = BLOCK_TYPE_LEAF;
+    //                         chunk->blocks[z][y + 4][x + 2] = BLOCK_TYPE_LEAF;
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
 }
 
 double total = 0;
@@ -141,16 +177,16 @@ void *generation_thread_main(void *world_arg) {
 
             chunk->status = CHUNK_STATUS_DONE;
 
-            stopwatch timer;
-            stopwatch_start(&timer);
+            // stopwatch timer;
+            // stopwatch_start(&timer);
 
             generate_chunk_terrain(world_pointer, chunk, 0);
             generate_chunk_terrain(world_pointer, chunk, 1);
 
-            stopwatch_end(&timer);
-            total += stopwatch_elapsed(&timer);
-            chunks_generated++;
-            printf("%f\n", total / chunks_generated);
+            // stopwatch_end(&timer);
+            // total += stopwatch_elapsed(&timer);
+            // chunks_generated++;
+            // printf("%f\n", total / chunks_generated);
 
             safe_queue_enqueue(&world_pointer->chunks_to_initial_update, chunk);
         } else {
@@ -230,7 +266,15 @@ void world_draw(world *world) {
 
     pthread_mutex_lock(&chunks_to_initial_update_mutex);
     while (!safe_queue_is_empty(&world->chunks_to_initial_update)) {
+        stopwatch timer;
+        stopwatch_start(&timer);
+
         chunk_update(safe_queue_dequeue(&world->chunks_to_initial_update));
+
+        stopwatch_end(&timer);
+        total += stopwatch_elapsed(&timer);
+        chunks_generated++;
+        printf("%f\n", total / chunks_generated);
     }
     pthread_mutex_unlock(&chunks_to_initial_update_mutex);
 
