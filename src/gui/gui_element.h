@@ -26,6 +26,7 @@ typedef enum gui_element_origin {
 } gui_element_origin;
 
 // 0 is back 9 is front
+// number for layer instead of enum
 typedef enum gui_element_layer {
     GUI_ELEMENT_LAYER_0,
     GUI_ELEMENT_LAYER_1,

@@ -6,12 +6,10 @@
 #include "FastNoiseLite.h"
 #include "../math/math_util.h"
 #include "../util/stopwatch.h"
+#include "worker.h"
 
-// pthread_mutex_t chunks_to_generate_mutex = PTHREAD_MUTEX_INITIALIZER;
-// pthread_cond_t chunk_to_generate_condition = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t chunks_mutex = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t chunks_to_generate_mutex = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t chunks_to_initial_update_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t worker_jobs_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 int get_chunk_index(world *world, vector3i position) {
     pthread_mutex_lock(&chunks_mutex);
@@ -28,7 +26,7 @@ int get_chunk_index(world *world, vector3i position) {
     return -1;
 }
 
-void generate_chunk_terrain(world *world, chunk *chunk, int stage) {
+void world_generate_chunk_terrain(world *world, chunk *chunk, int stage) {
     if (stage == 0) {
         fnl_state height_noise = fnlCreateState();
         height_noise.noise_type = FNL_NOISE_PERLIN;
@@ -127,89 +125,59 @@ void generate_chunk_terrain(world *world, chunk *chunk, int stage) {
             }
         }
     }
-
-    // if (stage == 2) {
-    //     fnl_state tree_noise = fnlCreateState();
-    //     tree_noise.noise_type = FNL_NOISE_OPENSIMPLEX2;
-    //     tree_noise.seed = world->seed;
-    //
-    //     for (int z = 0; z < CHUNK_SIZE_Z; z++) {
-    //         for (int y = 0; y < CHUNK_SIZE_Y - 4; y++) {
-    //             for (int x = 0; x < CHUNK_SIZE_X; x++) {
-    //                 if (chunk->blocks[z][y][x] == BLOCK_TYPE_GRASS) {
-    //                     if (fnlGetNoise2D(&tree_noise, x * 50, z * 50) >
-    //                     0.95) {
-    //                         chunk->blocks[z][y + 1][x] = BLOCK_TYPE_LOG;
-    //                         chunk->blocks[z][y + 2][x] = BLOCK_TYPE_LOG;
-    //                         chunk->blocks[z][y + 3][x] = BLOCK_TYPE_LOG;
-    //                         chunk->blocks[z][y + 4][x] = BLOCK_TYPE_LOG;
-    //
-    //                         chunk->blocks[z][y + 3][x + 1] = BLOCK_TYPE_LEAF;
-    //                         chunk->blocks[z][y + 3][x + 2] = BLOCK_TYPE_LEAF;
-    //                         chunk->blocks[z][y + 3][x + 1] = BLOCK_TYPE_LEAF;
-    //                         chunk->blocks[z][y + 4][x + 2] = BLOCK_TYPE_LEAF;
-    //                         chunk->blocks[z][y + 4][x + 1] = BLOCK_TYPE_LEAF;
-    //                         chunk->blocks[z][y + 4][x + 2] = BLOCK_TYPE_LEAF;
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
 }
 
 double total = 0;
 int chunks_generated = 0;
 
-void *generation_thread_main(void *world_arg) {
-    world *world_pointer = (world *)world_arg;
-
-    // copy the data so dont have to keep chunks to generate locked for main
-    // thread
-    while (true) {
-        pthread_mutex_lock(&chunks_to_generate_mutex);
-        if (safe_queue_length(&world_pointer->chunks_to_generate) > 0) {
-            chunk *chunk =
-                safe_queue_dequeue(&world_pointer->chunks_to_generate);
-
-            safe_linked_list_insert_end(&world_pointer->chunks, chunk);
-            pthread_mutex_unlock(&chunks_to_generate_mutex);
-
-            chunk->status = CHUNK_STATUS_DONE;
-
-            // stopwatch timer;
-            // stopwatch_start(&timer);
-
-            generate_chunk_terrain(world_pointer, chunk, 0);
-            generate_chunk_terrain(world_pointer, chunk, 1);
-
-            // stopwatch_end(&timer);
-            // total += stopwatch_elapsed(&timer);
-            // chunks_generated++;
-            // printf("%f\n", total / chunks_generated);
-
-            safe_queue_enqueue(&world_pointer->chunks_to_initial_update, chunk);
-        } else {
-            pthread_mutex_unlock(&chunks_to_generate_mutex);
-        }
-    }
-
-    pthread_exit(NULL);
-}
+// void *worker_thread_main(void *world_arg) {
+//     world *world_pointer = (world *)world_arg;
+//
+//     // copy the data so dont have to keep chunks to generate locked for main
+//     // thread
+//     while (true) {
+//         pthread_mutex_lock(&worker_jobs_mutex);
+//         if (safe_queue_length(&world_pointer->worker_jobs) > 0) {
+//             chunk *chunk = safe_queue_dequeue(&world_pointer->worker_jobs);
+//
+//             safe_linked_list_insert_end(&world_pointer->chunks, chunk);
+//             pthread_mutex_unlock(&chunks_to_generate_mutex);
+//
+//             chunk->status = CHUNK_STATUS_DONE;
+//
+//             // stopwatch timer;
+//             // stopwatch_start(&timer);
+//
+//             generate_chunk_terrain(world_pointer, chunk, 0);
+//             generate_chunk_terrain(world_pointer, chunk, 1);
+//
+//             // stopwatch_end(&timer);
+//             // total += stopwatch_elapsed(&timer);
+//             // chunks_generated++;
+//             // printf("%f\n", total / chunks_generated);
+//
+//             safe_queue_enqueue(&world_pointer->chunks_to_initial_update,
+//             chunk);
+//         } else {
+//             pthread_mutex_unlock(&chunks_to_generate_mutex);
+//         }
+//     }
+//
+//     pthread_exit(NULL);
+// }
 
 void world_init(world *world) {
     tilemap_init(&world->tilemap, "res/textures/atlas.png",
                  TEXTURE_FILTER_NEAREST, 16, 16, 1, 2);
 
     safe_linked_list_init(&world->chunks);
-    safe_queue_init(&world->chunks_to_generate);
-    safe_queue_init(&world->chunks_to_initial_update);
 
     world->seed = random_range(0, 100);
 
-    pthread_create(&world->generation_thread, NULL, generation_thread_main,
-                   world);
-    pthread_detach(world->generation_thread);
+    worker_init(&world->worker);
+
+    pthread_create(&world->worker_thread, NULL, worker_thread_main, world);
+    pthread_detach(world->worker_thread);
 }
 
 void world_load_chunk(world *world, vector3i position) {
@@ -224,29 +192,32 @@ void world_load_chunk(world *world, vector3i position) {
     }
     pthread_mutex_unlock(&chunks_mutex);
 
-    pthread_mutex_lock(&chunks_to_generate_mutex);
-    for (int i = 0; i < safe_queue_length(&world->chunks_to_generate); i++) {
-        chunk *current_chunk =
-            (chunk *)safe_queue_get(&world->chunks_to_generate, i);
+    job_data_generate_terrain *job_data =
+        malloc(sizeof(job_data_generate_terrain));
+    job_data->stage = 0;
 
-        if (vector3i_equal(current_chunk->position, position)) {
-            pthread_mutex_unlock(&chunks_to_generate_mutex);
-            return;
-        }
+    pthread_mutex_lock(&world->worker.jobs_mutex);
+    bool generation_job_exists = worker_job_exists(
+        &world->worker, position, JOB_TYPE_GENERATE_TERRAIN, job_data);
+    pthread_mutex_unlock(&world->worker.jobs_mutex);
+
+    if (generation_job_exists) {
+        return;
     }
-    pthread_mutex_unlock(&chunks_to_generate_mutex);
 
     printf("added ");
     vector3i_print(position);
 
+    // memory leak
     chunk *new_chunk = malloc(sizeof(chunk));
     chunk_init(new_chunk, position, &world->tilemap);
 
-    safe_queue_enqueue(&world->chunks_to_generate, new_chunk);
+    job *chunk_generation_job = malloc(sizeof(job));
 
-    printf("%d\n", safe_queue_length(&world->chunks_to_generate));
+    job_init(chunk_generation_job, new_chunk, JOB_TYPE_GENERATE_TERRAIN,
+             job_data);
 
-    // vector3i_print(new_chunk->position);
+    worker_enqueue_job(&world->worker, chunk_generation_job);
 }
 
 // remove chunks from chunks to generate if have moved out of render distance
@@ -264,23 +235,29 @@ void world_unload_chunk(world *world, vector3i position) {
 void world_draw(world *world) {
     texture_bind(&world->tilemap.texture);
 
-    pthread_mutex_lock(&chunks_to_initial_update_mutex);
-    while (!safe_queue_is_empty(&world->chunks_to_initial_update)) {
-        stopwatch timer;
-        stopwatch_start(&timer);
-
-        chunk_update(safe_queue_dequeue(&world->chunks_to_initial_update));
-
-        stopwatch_end(&timer);
-        total += stopwatch_elapsed(&timer);
-        chunks_generated++;
-        printf("%f\n", total / chunks_generated);
-    }
-    pthread_mutex_unlock(&chunks_to_initial_update_mutex);
+    // pthread_mutex_lock(&chunks_to_initial_update_mutex);
+    // while (!safe_queue_is_empty(&world->chunks_to_initial_update)) {
+    //     stopwatch timer;
+    //     stopwatch_start(&timer);
+    //
+    //     chunk_update(safe_queue_dequeue(&world->chunks_to_initial_update));
+    //
+    //     stopwatch_end(&timer);
+    //     total += stopwatch_elapsed(&timer);
+    //     chunks_generated++;
+    //     printf("%f\n", total / chunks_generated);
+    // }
+    // pthread_mutex_unlock(&chunks_to_initial_update_mutex);
 
     pthread_mutex_lock(&chunks_mutex);
     for (int i = 0; i < safe_linked_list_length(&world->chunks); i++) {
-        chunk_draw(safe_linked_list_get(&world->chunks, i));
+        chunk *chunk = safe_linked_list_get(&world->chunks, i);
+        printf("%d\n", safe_linked_list_length(&world->chunks));
+
+        // generate vertices and indices on worker thread then upload to buffers
+        // on main thread
+        chunk_update(chunk);
+        chunk_draw(chunk);
     }
     pthread_mutex_unlock(&chunks_mutex);
 }
