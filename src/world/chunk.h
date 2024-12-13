@@ -5,6 +5,7 @@
 #include "../math/vector3.h"
 #include "../graphics/graphics.h"
 #include "../tilemap.h"
+#include <pthread.h>
 
 #define CHUNK_SIZE_X 32
 #define CHUNK_SIZE_Y 32
@@ -12,20 +13,19 @@
 
 #define CHUNK_VERTEX_SIZE 8
 
-typedef enum chunk_status {
-    CHUNK_STATUS_UNGENERATED,
-    CHUNK_STATUS_GENERATING,
-    CHUNK_STATUS_DONE,
-} chunk_status;
-
 typedef struct chunk {
-    chunk_status status;
+    bool visible;
+    int generation_stage;
     vector3i position;
     block_type blocks[CHUNK_SIZE_Z][CHUNK_SIZE_Y][CHUNK_SIZE_X];
     tilemap *tilemap;
+    float *vertices;
+    unsigned int *indices;
+    int face_count;
     bo vbo;
     bo ibo;
     vao vao;
+    pthread_mutex_t mesh_mutex;
 } chunk;
 
 static const float VERTEX_POSITIONS[8][3] = {
@@ -60,7 +60,8 @@ static const float FACE_NORMALS[6][3] = {
 static const int INDEX_ORDER[6] = {0, 1, 2, 0, 2, 3};
 
 void chunk_init(chunk *chunk, vector3i position, tilemap *tilemap);
-void chunk_update(chunk *chunk);
+void chunk_update_mesh(chunk *chunk);
+void chunk_update_buffers(chunk *chunk);
 void chunk_draw(chunk *chunk);
 
 #endif

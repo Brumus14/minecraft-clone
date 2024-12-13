@@ -6,6 +6,7 @@
 
 typedef enum job_type {
     JOB_TYPE_GENERATE_TERRAIN,
+    JOB_TYPE_GENERATE_MESH,
 } job_type;
 
 typedef struct job_data_generate_terrain {

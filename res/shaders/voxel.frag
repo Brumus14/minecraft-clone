@@ -39,7 +39,6 @@ void main()
     if (normal_frag.y == 1) {
         brightness = 6.0 / 6;
     }
-
     vec4 texture_colour = texture(texture_sampler, texture_coordinate_frag);
 
     // refactor this
@@ -53,7 +52,7 @@ void main()
     float spec = pow(max(dot(view_direction, reflect_direction), 0.0), 32);
     vec3 specular = 0.0 * spec * vec3(1,1,1);
 
-    vec3 result = (diffuse + specular) * texture_colour.xyz;
+    vec3 result = (diffuse + specular) * texture_colour.rgb;
 
     frag_color_out = vec4(result, 1.0);
 

@@ -4,6 +4,7 @@
 #include "math/math_util.h"
 #include "collision.h"
 #include "math/cuboid.h"
+#include "util/gl.h"
 
 void player_init(player *player, vector3d position, vector3d rotation,
                  double sensitivity, camera *camera) {
@@ -146,11 +147,6 @@ void player_update(player *player, window *window, world *world) {
     player_update_rotation(player, window);
     player_update_movement(player, window);
     player_manage_chunks(player, world);
-
-    // printf("pos:\n");
-    // vector3d_print(player->position);
-    // printf("vel:\n");
-    // vector3d_print(player->velocity);
 }
 
 void player_manage_chunks(player *player, world *world) {

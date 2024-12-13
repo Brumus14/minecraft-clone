@@ -4,15 +4,17 @@
 #include <pthread.h>
 #include "chunk.h"
 #include "../data_structures/safe_linked_list.h"
-#include "../data_structures/safe_queue.h"
 #include "worker.h"
 
 typedef struct world {
     safe_linked_list chunks;
+    safe_queue chunks_to_update_buffers;
     worker worker;
     tilemap tilemap;
     float seed;
     pthread_t worker_thread;
+    pthread_mutex_t chunks_mutex;
+    pthread_mutex_t chunks_to_update_buffers_mutex;
 } world;
 
 void world_init(world *world);

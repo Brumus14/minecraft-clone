@@ -66,8 +66,8 @@ bool is_block_face_active(chunk *chunk, int x, int y, int z, block_face face) {
 }
 
 void chunk_init(chunk *chunk, vector3i position, tilemap *tilemap) {
-    // chunk->visible = true;
-    chunk->status = CHUNK_STATUS_UNGENERATED;
+    chunk->visible = true;
+    chunk->generation_stage = 0;
     chunk->position = position;
     chunk->tilemap = tilemap;
 
@@ -75,31 +75,21 @@ void chunk_init(chunk *chunk, vector3i position, tilemap *tilemap) {
     chunk->vbo.gl_id = 0;
     chunk->ibo.gl_id = 0;
 
-    chunk_update(chunk);
+    pthread_mutex_init(&chunk->mesh_mutex, NULL);
+
+    chunk_update_mesh(chunk);
+    chunk_update_buffers(chunk);
 }
 
-void chunk_update(chunk *chunk) {
-    vao_destroy(&chunk->vao);
-    bo_destroy(&chunk->vbo);
-    bo_destroy(&chunk->ibo);
-
-    vao_init(&chunk->vao);
-    bo_init(&chunk->vbo, BO_TYPE_VERTEX);
-    bo_init(&chunk->ibo, BO_TYPE_INDEX);
-
-    vao_bind(&chunk->vao);
-    bo_bind(&chunk->vbo);
-    bo_bind(&chunk->ibo);
-
-    int faces_active = 0;
-
+void chunk_update_mesh(chunk *chunk) {
+    pthread_mutex_lock(&chunk->mesh_mutex);
     for (int z = 0; z < CHUNK_SIZE_Z; z++) {
         for (int y = 0; y < CHUNK_SIZE_Y; y++) {
             for (int x = 0; x < CHUNK_SIZE_X; x++) {
                 if (chunk->blocks[z][y][x] != BLOCK_TYPE_EMPTY) {
                     for (int i = 0; i < 6; i++) {
                         if (is_block_face_active(chunk, x, y, z, i)) {
-                            faces_active++;
+                            chunk->face_count++;
                         }
                     }
                 }
@@ -107,9 +97,9 @@ void chunk_update(chunk *chunk) {
         }
     }
 
-    float *vertices =
-        malloc(faces_active * 4 * CHUNK_VERTEX_SIZE * sizeof(float));
-    unsigned int *indices = malloc(faces_active * 6 * sizeof(unsigned int));
+    chunk->vertices =
+        malloc(chunk->face_count * 4 * CHUNK_VERTEX_SIZE * sizeof(float));
+    chunk->indices = malloc(chunk->face_count * 6 * sizeof(unsigned int));
 
     int faces_added = 0;
 
@@ -126,7 +116,7 @@ void chunk_update(chunk *chunk) {
                     }
 
                     for (int i = 0; i < 6; i++) {
-                        indices[faces_added * 6 + i] =
+                        chunk->indices[faces_added * 6 + i] =
                             INDEX_ORDER[i] + faces_added * 4;
                     }
 
@@ -135,17 +125,17 @@ void chunk_update(chunk *chunk) {
                     for (int i = 0; i < 4; i++) {
                         int vertex_index = face_index + i * CHUNK_VERTEX_SIZE;
 
-                        memcpy(vertices + vertex_index,
+                        memcpy(chunk->vertices + vertex_index,
                                VERTEX_POSITIONS[FACE_INDICES[f][i]],
                                3 * sizeof(float));
 
                         // dont think blocks are positioned correctly as block
                         // origin back top left but chunk is back bottom left
-                        vertices[vertex_index] +=
+                        chunk->vertices[vertex_index] +=
                             x + chunk->position.x * CHUNK_SIZE_X;
-                        vertices[vertex_index + 1] +=
+                        chunk->vertices[vertex_index + 1] +=
                             y + chunk->position.y * CHUNK_SIZE_Y;
-                        vertices[vertex_index + 2] +=
+                        chunk->vertices[vertex_index + 2] +=
                             z + chunk->position.z * CHUNK_SIZE_Z;
                     }
 
@@ -159,51 +149,68 @@ void chunk_update(chunk *chunk) {
                     int vertex_3_index = face_index + 2 * CHUNK_VERTEX_SIZE;
                     int vertex_4_index = face_index + 3 * CHUNK_VERTEX_SIZE;
 
-                    vertices[vertex_1_index + 3] =
+                    chunk->vertices[vertex_1_index + 3] =
                         texture_rectangle.x; // save index to variable
-                    vertices[vertex_1_index + 4] =
+                    chunk->vertices[vertex_1_index + 4] =
                         texture_rectangle.y + texture_rectangle.height;
 
-                    vertices[vertex_2_index + 3] =
+                    chunk->vertices[vertex_2_index + 3] =
                         texture_rectangle.x + texture_rectangle.width;
-                    vertices[vertex_2_index + 4] =
+                    chunk->vertices[vertex_2_index + 4] =
                         texture_rectangle.y + texture_rectangle.height;
 
-                    vertices[vertex_3_index + 3] =
+                    chunk->vertices[vertex_3_index + 3] =
                         texture_rectangle.x + texture_rectangle.width;
-                    vertices[vertex_3_index + 4] = texture_rectangle.y;
+                    chunk->vertices[vertex_3_index + 4] = texture_rectangle.y;
 
-                    vertices[vertex_4_index + 3] = texture_rectangle.x;
-                    vertices[vertex_4_index + 4] = texture_rectangle.y;
+                    chunk->vertices[vertex_4_index + 3] = texture_rectangle.x;
+                    chunk->vertices[vertex_4_index + 4] = texture_rectangle.y;
 
                     // Set vertex normals
-                    vertices[vertex_1_index + 5] = FACE_NORMALS[f][0];
-                    vertices[vertex_1_index + 6] = FACE_NORMALS[f][1];
-                    vertices[vertex_1_index + 7] = FACE_NORMALS[f][2];
+                    chunk->vertices[vertex_1_index + 5] = FACE_NORMALS[f][0];
+                    chunk->vertices[vertex_1_index + 6] = FACE_NORMALS[f][1];
+                    chunk->vertices[vertex_1_index + 7] = FACE_NORMALS[f][2];
 
-                    vertices[vertex_2_index + 5] = FACE_NORMALS[f][0];
-                    vertices[vertex_2_index + 6] = FACE_NORMALS[f][1];
-                    vertices[vertex_2_index + 7] = FACE_NORMALS[f][2];
+                    chunk->vertices[vertex_2_index + 5] = FACE_NORMALS[f][0];
+                    chunk->vertices[vertex_2_index + 6] = FACE_NORMALS[f][1];
+                    chunk->vertices[vertex_2_index + 7] = FACE_NORMALS[f][2];
 
-                    vertices[vertex_3_index + 5] = FACE_NORMALS[f][0];
-                    vertices[vertex_3_index + 6] = FACE_NORMALS[f][1];
-                    vertices[vertex_3_index + 7] = FACE_NORMALS[f][2];
+                    chunk->vertices[vertex_3_index + 5] = FACE_NORMALS[f][0];
+                    chunk->vertices[vertex_3_index + 6] = FACE_NORMALS[f][1];
+                    chunk->vertices[vertex_3_index + 7] = FACE_NORMALS[f][2];
 
-                    vertices[vertex_4_index + 5] = FACE_NORMALS[f][0];
-                    vertices[vertex_4_index + 6] = FACE_NORMALS[f][1];
-                    vertices[vertex_4_index + 7] = FACE_NORMALS[f][2];
+                    chunk->vertices[vertex_4_index + 5] = FACE_NORMALS[f][0];
+                    chunk->vertices[vertex_4_index + 6] = FACE_NORMALS[f][1];
+                    chunk->vertices[vertex_4_index + 7] = FACE_NORMALS[f][2];
 
                     faces_added++;
                 }
             }
         }
     }
+    pthread_mutex_unlock(&chunk->mesh_mutex);
+}
 
-    bo_upload(&chunk->vbo, faces_active * 4 * CHUNK_VERTEX_SIZE * sizeof(float),
-              vertices, BO_USAGE_STATIC_DRAW);
+void chunk_update_buffers(chunk *chunk) {
+    pthread_mutex_lock(&chunk->mesh_mutex);
+    vao_destroy(&chunk->vao);
+    bo_destroy(&chunk->vbo);
+    bo_destroy(&chunk->ibo);
 
-    bo_upload(&chunk->ibo, faces_active * 6 * sizeof(unsigned int), indices,
-              BO_USAGE_STATIC_DRAW);
+    vao_init(&chunk->vao);
+    bo_init(&chunk->vbo, BO_TYPE_VERTEX);
+    bo_init(&chunk->ibo, BO_TYPE_INDEX);
+
+    vao_bind(&chunk->vao);
+    bo_bind(&chunk->vbo);
+    bo_bind(&chunk->ibo);
+
+    bo_upload(&chunk->vbo,
+              chunk->face_count * 4 * CHUNK_VERTEX_SIZE * sizeof(float),
+              chunk->vertices, BO_USAGE_STATIC_DRAW);
+
+    bo_upload(&chunk->ibo, chunk->face_count * 6 * sizeof(unsigned int),
+              chunk->indices, BO_USAGE_STATIC_DRAW);
 
     vao_attrib(&chunk->vao, 0, 3, VAO_TYPE_FLOAT, false,
                CHUNK_VERTEX_SIZE * sizeof(float), 0);
@@ -211,11 +218,14 @@ void chunk_update(chunk *chunk) {
                CHUNK_VERTEX_SIZE * sizeof(float), (void *)(3 * sizeof(float)));
     vao_attrib(&chunk->vao, 2, 3, VAO_TYPE_FLOAT, false,
                CHUNK_VERTEX_SIZE * sizeof(float), (void *)(5 * sizeof(float)));
+    pthread_mutex_unlock(&chunk->mesh_mutex);
 }
 
 // bind texture
 void chunk_draw(chunk *chunk) {
-    if (chunk->status != CHUNK_STATUS_DONE) {
+    pthread_mutex_lock(&chunk->mesh_mutex);
+    if (!chunk->visible) {
+        pthread_mutex_unlock(&chunk->mesh_mutex);
         return;
     }
 
@@ -227,4 +237,5 @@ void chunk_draw(chunk *chunk) {
 
     renderer_draw_elements(DRAW_MODE_TRIANGLES, index_count,
                            INDEX_TYPE_UNSIGNED_INT);
+    pthread_mutex_unlock(&chunk->mesh_mutex);
 }

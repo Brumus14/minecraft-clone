@@ -1,6 +1,7 @@
 #include "worker.h"
 
 #include "world.h"
+#include "chunk.h"
 #include "../math/math_util.h"
 
 void job_init(job *job, chunk *chunk, job_type type, void *data) {
@@ -11,28 +12,59 @@ void job_init(job *job, chunk *chunk, job_type type, void *data) {
 
 void *worker_thread_main(void *world_argument) {
     world *world = world_argument;
+    worker *worker = &world->worker;
 
     while (true) {
-        // printf("jobs: %d\n", safe_queue_length(&world->worker.jobs));
         // worker pointer
-        pthread_mutex_lock(&world->worker.jobs_mutex);
-        if (!safe_queue_is_empty(&world->worker.jobs)) {
-            job *job = safe_queue_dequeue(&world->worker.jobs);
+        pthread_mutex_lock(&worker->jobs_mutex);
+        if (!safe_queue_is_empty(&worker->jobs)) {
+            job *current_job = safe_queue_dequeue(&worker->jobs);
 
-            safe_linked_list_insert_end(&world->chunks, job->chunk);
+            safe_linked_list_insert_end(&world->chunks, current_job->chunk);
 
-            pthread_mutex_unlock(&world->worker.jobs_mutex);
+            pthread_mutex_unlock(&worker->jobs_mutex);
 
-            switch (job->type) {
+            switch (current_job->type) {
             case JOB_TYPE_GENERATE_TERRAIN:
-                world_generate_chunk_terrain(world, job->chunk, 0);
-                job->chunk->status = CHUNK_STATUS_DONE;
+                world_generate_chunk_terrain(
+                    world, current_job->chunk,
+                    ((job_data_generate_terrain *)current_job->data)->stage);
+
+                int stage =
+                    ((job_data_generate_terrain *)current_job->data)->stage;
+
+                if (stage < 2) {
+
+                    job_data_generate_terrain *job_data =
+                        malloc(sizeof(job_data_generate_terrain));
+                    job_data->stage = 2;
+
+                    pthread_mutex_lock(&worker->jobs_mutex);
+                    bool generation_job_exists =
+                        worker_job_exists(worker, current_job->chunk->position,
+                                          JOB_TYPE_GENERATE_TERRAIN, job_data);
+                    pthread_mutex_unlock(&worker->jobs_mutex);
+                } else {
+                    job *mesh_job = malloc(sizeof(job));
+                    job_init(mesh_job, current_job->chunk,
+                             JOB_TYPE_GENERATE_MESH, NULL);
+                }
+
+                // worker_enqueue_job(&worker, mesh_job);
 
                 printf("generating chunk terrain at pos ");
-                vector3i_print(job->chunk->position);
+                vector3i_print(current_job->chunk->position);
+
+            case JOB_TYPE_GENERATE_MESH:
+                chunk_update_mesh(current_job->chunk);
+
+                pthread_mutex_lock(&world->chunks_to_update_buffers_mutex);
+                safe_queue_enqueue(&world->chunks_to_update_buffers,
+                                   current_job->chunk);
+                pthread_mutex_unlock(&world->chunks_to_update_buffers_mutex);
             }
         } else {
-            pthread_mutex_unlock(&world->worker.jobs_mutex);
+            pthread_mutex_unlock(&worker->jobs_mutex);
         }
     }
 
@@ -72,6 +104,9 @@ bool worker_job_exists(worker *worker, vector3i chunk_position, job_type type,
                     ((job_data_generate_terrain *)data)->stage) {
                     return true;
                 }
+
+            default:
+                return true;
             }
         }
     }

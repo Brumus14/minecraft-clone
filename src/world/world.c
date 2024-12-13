@@ -8,26 +8,23 @@
 #include "../util/stopwatch.h"
 #include "worker.h"
 
-pthread_mutex_t chunks_mutex = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t worker_jobs_mutex = PTHREAD_MUTEX_INITIALIZER;
-
 int get_chunk_index(world *world, vector3i position) {
-    pthread_mutex_lock(&chunks_mutex);
+    pthread_mutex_lock(&world->chunks_mutex);
     for (int i = 0; i < safe_linked_list_length(&world->chunks); i++) {
         chunk *current_chunk = (chunk *)safe_linked_list_get(&world->chunks, i);
 
         if (vector3i_equal(current_chunk->position, position)) {
-            pthread_mutex_unlock(&chunks_mutex);
+            pthread_mutex_unlock(&world->chunks_mutex);
             return i;
         }
     }
-    pthread_mutex_unlock(&chunks_mutex);
+    pthread_mutex_unlock(&world->chunks_mutex);
 
     return -1;
 }
 
 void world_generate_chunk_terrain(world *world, chunk *chunk, int stage) {
-    if (stage == 0) {
+    if (stage == 1) {
         fnl_state height_noise = fnlCreateState();
         height_noise.noise_type = FNL_NOISE_PERLIN;
         height_noise.seed = world->seed;
@@ -68,7 +65,7 @@ void world_generate_chunk_terrain(world *world, chunk *chunk, int stage) {
 
     // better ore generation
     // use octaves and make noise generator abstraction
-    if (stage == 1) {
+    if (stage == 2) {
         fnl_state cave_noise = fnlCreateState();
         cave_noise.noise_type = FNL_NOISE_OPENSIMPLEX2S;
         cave_noise.seed = world->seed;
@@ -125,6 +122,8 @@ void world_generate_chunk_terrain(world *world, chunk *chunk, int stage) {
             }
         }
     }
+
+    chunk->generation_stage = stage;
 }
 
 double total = 0;
@@ -171,30 +170,34 @@ void world_init(world *world) {
                  TEXTURE_FILTER_NEAREST, 16, 16, 1, 2);
 
     safe_linked_list_init(&world->chunks);
+    safe_queue_init(&world->chunks_to_update_buffers);
 
     world->seed = random_range(0, 100);
 
     worker_init(&world->worker);
+
+    pthread_mutex_init(&world->chunks_mutex, NULL);
+    pthread_mutex_init(&world->chunks_to_update_buffers_mutex, NULL);
 
     pthread_create(&world->worker_thread, NULL, worker_thread_main, world);
     pthread_detach(world->worker_thread);
 }
 
 void world_load_chunk(world *world, vector3i position) {
-    pthread_mutex_lock(&chunks_mutex);
+    pthread_mutex_lock(&world->chunks_mutex);
     for (int i = 0; i < safe_linked_list_length(&world->chunks); i++) {
         chunk *current_chunk = (chunk *)safe_linked_list_get(&world->chunks, i);
 
         if (vector3i_equal(current_chunk->position, position)) {
-            pthread_mutex_unlock(&chunks_mutex);
+            pthread_mutex_unlock(&world->chunks_mutex);
             return;
         }
     }
-    pthread_mutex_unlock(&chunks_mutex);
+    pthread_mutex_unlock(&world->chunks_mutex);
 
     job_data_generate_terrain *job_data =
         malloc(sizeof(job_data_generate_terrain));
-    job_data->stage = 0;
+    job_data->stage = 1;
 
     pthread_mutex_lock(&world->worker.jobs_mutex);
     bool generation_job_exists = worker_job_exists(
@@ -211,6 +214,7 @@ void world_load_chunk(world *world, vector3i position) {
     // memory leak
     chunk *new_chunk = malloc(sizeof(chunk));
     chunk_init(new_chunk, position, &world->tilemap);
+    new_chunk->visible = false;
 
     job *chunk_generation_job = malloc(sizeof(job));
 
@@ -235,31 +239,29 @@ void world_unload_chunk(world *world, vector3i position) {
 void world_draw(world *world) {
     texture_bind(&world->tilemap.texture);
 
-    // pthread_mutex_lock(&chunks_to_initial_update_mutex);
-    // while (!safe_queue_is_empty(&world->chunks_to_initial_update)) {
-    //     stopwatch timer;
-    //     stopwatch_start(&timer);
-    //
-    //     chunk_update(safe_queue_dequeue(&world->chunks_to_initial_update));
-    //
-    //     stopwatch_end(&timer);
-    //     total += stopwatch_elapsed(&timer);
-    //     chunks_generated++;
-    //     printf("%f\n", total / chunks_generated);
-    // }
-    // pthread_mutex_unlock(&chunks_to_initial_update_mutex);
+    pthread_mutex_lock(&world->chunks_to_update_buffers_mutex);
+    for (int i = 0; i < safe_queue_length(&world->chunks_to_update_buffers);
+         i++) {
+        chunk *chunk = safe_queue_dequeue(&world->chunks_to_update_buffers);
 
-    pthread_mutex_lock(&chunks_mutex);
+        chunk_update_buffers(chunk);
+
+        if (!chunk->visible) {
+            chunk->visible = true;
+        }
+        printf("updating buffers for ");
+        vector3i_print(chunk->position);
+    }
+    pthread_mutex_unlock(&world->chunks_to_update_buffers_mutex);
+
+    pthread_mutex_lock(&world->chunks_mutex);
     for (int i = 0; i < safe_linked_list_length(&world->chunks); i++) {
         chunk *chunk = safe_linked_list_get(&world->chunks, i);
-        printf("%d\n", safe_linked_list_length(&world->chunks));
 
-        // generate vertices and indices on worker thread then upload to buffers
-        // on main thread
-        chunk_update(chunk);
+        // chunk_update_buffers(chunk);
         chunk_draw(chunk);
     }
-    pthread_mutex_unlock(&chunks_mutex);
+    pthread_mutex_unlock(&world->chunks_mutex);
 }
 
 // use mipmapping
@@ -308,5 +310,6 @@ void world_set_block(world *world, block_type type, vector3d position) {
     chunk->blocks[block_chunk_position.z][block_chunk_position.y]
                  [block_chunk_position.x] = type;
 
-    chunk_update(chunk);
+    chunk_update_mesh(chunk);
+    chunk_update_buffers(chunk);
 }
