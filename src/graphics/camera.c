@@ -64,6 +64,7 @@ void camera_set_position(camera *camera, vector3d position) {
     camera->position = position;
 }
 
+// Relative to rotation
 void camera_move(camera *camera, vector3d movement_delta) {
     if (camera == NULL) {
         fprintf(stderr, "camera_translate: camera is null\n");

@@ -4,6 +4,7 @@ block_texture block_type_to_texture(block_type type) {
     // front, top, right, bottom, left, back
     switch (type) {
     case BLOCK_TYPE_EMPTY:
+        // Use enums instead?
         return (block_texture){0, 0, 0, 0, 0, 0};
     case BLOCK_TYPE_GRASS:
         return (block_texture){1, 0, 1, 2, 1, 1};

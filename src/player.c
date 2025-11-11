@@ -150,9 +150,9 @@ void player_update(player *player, window *window, world *world) {
 }
 
 void player_manage_chunks(player *player, world *world) {
-    /*if (!player->moved_this_frame) {*/
-    /*    return;*/
-    /*}*/
+    // if (!player->moved_this_frame) {
+    //     return;
+    // }
 
     int render_distance = 2; // move to a variable
     vector3i player_chunk;
@@ -160,12 +160,13 @@ void player_manage_chunks(player *player, world *world) {
     player_chunk.y = floor(player->position.y / CHUNK_SIZE_Y);
     player_chunk.z = floor(player->position.z / CHUNK_SIZE_Z);
 
-    vector3i unloaded_chunks[safe_linked_list_length(
-        &world->chunks)]; // DONT USE THIS
+    vector3i
+        unloaded_chunks[linked_list_length(&world->chunks)]; // DONT USE THIS
     int unloaded_chunk_count = 0;
 
-    for (int i = 0; i < safe_linked_list_length(&world->chunks); i++) {
-        chunk *chunk = safe_linked_list_get(&world->chunks, i);
+    // Lots of unsafe chunk loops
+    for (int i = 0; i < linked_list_length(&world->chunks); i++) {
+        chunk *chunk = linked_list_get(&world->chunks, i);
 
         if (chunk->position.x < player_chunk.x - render_distance ||
             chunk->position.x > player_chunk.x + render_distance ||

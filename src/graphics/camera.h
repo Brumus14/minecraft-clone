@@ -7,6 +7,7 @@
 // create custom matrix4 implementation
 typedef struct camera {
     vector3d position;
+    // TODO: Use quaternion instead potentially or maybe over the top
     vector3d rotation;
     double fov;
     double aspect_ratio;
@@ -14,6 +15,7 @@ typedef struct camera {
     double far_plane;
     mat4 view_matrix;
     mat4 projection_matrix;
+    // TODO: Why is this here
     shader_program shader_program;
 } camera;
 

@@ -161,7 +161,7 @@ void linked_list_destroy(linked_list *list) {
     list->tail = NULL;
 }
 
-int linked_list_length(linked_list *list) {
+unsigned int linked_list_length(linked_list *list) {
     int length = 0;
     list_node *current_node = list->head;
 
@@ -191,7 +191,7 @@ bool linked_list_is_empty(linked_list *list) {
     return (list->head == NULL);
 }
 
-int linked_list_find(linked_list *list, void *data) {
+unsigned int linked_list_find(linked_list *list, void *data) {
     list_node *current_node = list->head;
     int index = 0;
 

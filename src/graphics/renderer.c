@@ -12,8 +12,9 @@ void renderer_init() {
 
     GL_CALL(glEnable(GL_DEPTH_TEST));
 
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    // TODO: What is this
+    GL_CALL(glEnable(GL_BLEND));
+    GL_CALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 }
 
 void renderer_clear_buffers() {
@@ -40,6 +41,15 @@ GLenum to_gl_draw_mode(draw_mode mode) {
     }
 }
 
+GLenum to_gl_polygon_mode(polygon_mode mode) {
+    switch (mode) {
+    case POLYGON_MODE_FILL:
+        return GL_FILL;
+    case POLYGON_MODE_LINE:
+        return GL_LINE;
+    }
+}
+
 GLenum to_gl_index_type(index_type type) {
     switch (type) {
     case INDEX_TYPE_UNSIGNED_INT:
@@ -54,15 +64,6 @@ GLenum to_gl_index_type(index_type type) {
 void renderer_draw_elements(draw_mode mode, int count, index_type type) {
     GL_CALL(glDrawElements(to_gl_draw_mode(mode), count, to_gl_index_type(type),
                            0));
-}
-
-GLenum to_gl_polygon_mode(polygon_mode mode) {
-    switch (mode) {
-    case POLYGON_MODE_FILL:
-        return GL_FILL;
-    case POLYGON_MODE_LINE:
-        return GL_LINE;
-    }
 }
 
 void renderer_set_polygon_mode(polygon_mode mode) {

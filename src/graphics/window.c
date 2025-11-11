@@ -125,12 +125,14 @@ void window_init(window *window, int width, int height, char *title,
     window->camera = camera;
     // work on callbacks
     window->scroll_callback = NULL;
+    window_update_delta_time(window); // ADDEDD
 
     keyboard_init(&window->keyboard);
     mouse_init(&window->mouse);
 
     if (!glfw_initialised) {
         glfw_init();
+        glfw_initialised = true;
     }
 
     window->glfw_window = glfwCreateWindow(window->width, window->height,

@@ -13,9 +13,18 @@
 
 #define CHUNK_VERTEX_SIZE 8
 
+typedef enum chunk_state {
+    CHUNK_STATE_NEEDS_TERRAIN,
+    CHUNK_STATE_GENERATING_TERRAIN,
+    CHUNK_STATE_NEEDS_MESH,
+    CHUNK_STATE_GENERATING_MESH,
+    CHUNK_STATE_NEEDS_BUFFERS,
+    CHUNK_STATE_READY,
+} chunk_state;
+
 typedef struct chunk {
     bool visible;
-    int generation_stage;
+    chunk_state state;
     vector3i position;
     block_type blocks[CHUNK_SIZE_Z][CHUNK_SIZE_Y][CHUNK_SIZE_X];
     tilemap *tilemap;
@@ -25,9 +34,11 @@ typedef struct chunk {
     bo vbo;
     bo ibo;
     vao vao;
-    pthread_mutex_t mesh_mutex;
+    pthread_mutex_t mutex; // REMOVE?
 } chunk;
 
+// What even are these
+// clang-format off
 static const float VERTEX_POSITIONS[8][3] = {
     {0, 0, 1},
     {1, 0, 1},
@@ -60,6 +71,7 @@ static const float FACE_NORMALS[6][3] = {
 static const int INDEX_ORDER[6] = {0, 1, 2, 0, 2, 3};
 
 void chunk_init(chunk *chunk, vector3i position, tilemap *tilemap);
+void chunk_destroy(chunk *chunk);
 void chunk_update_mesh(chunk *chunk);
 void chunk_update_buffers(chunk *chunk);
 void chunk_draw(chunk *chunk);

@@ -6,6 +6,12 @@ void queue_init(queue *queue) {
     linked_list_init(&queue->list);
 }
 
+void queue_destroy(queue *queue) {
+    while (!queue_is_empty(queue)) {
+        queue_dequeue(queue);
+    }
+}
+
 void queue_enqueue(queue *queue, void *data) {
     linked_list_insert_end(&queue->list, data);
 }
@@ -18,7 +24,7 @@ bool queue_is_empty(queue *queue) {
     return linked_list_is_empty(&queue->list);
 }
 
-int queue_length(queue *queue) {
+unsigned int queue_length(queue *queue) {
     return linked_list_length(&queue->list);
 }
 
@@ -26,6 +32,6 @@ void *queue_get(queue *queue, int index) {
     return linked_list_get(&queue->list, index);
 }
 
-int queue_find(queue *queue, void *data) {
+unsigned int queue_find(queue *queue, void *data) {
     return linked_list_find(&queue->list, data);
 }

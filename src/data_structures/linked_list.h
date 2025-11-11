@@ -26,9 +26,9 @@ void *linked_list_remove_beginning(linked_list *list);
 void *linked_list_remove_end(linked_list *list);
 void *linked_list_remove(linked_list *list, int index);
 void linked_list_destroy(linked_list *list);
-int linked_list_length(linked_list *list);
+unsigned int linked_list_length(linked_list *list);
 void *linked_list_get(linked_list *list, int index);
 bool linked_list_is_empty(linked_list *list);
-int linked_list_find(linked_list *list, void *data);
+unsigned int linked_list_find(linked_list *list, void *data);
 
 #endif

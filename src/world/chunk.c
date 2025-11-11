@@ -66,23 +66,29 @@ bool is_block_face_active(chunk *chunk, int x, int y, int z, block_face face) {
 }
 
 void chunk_init(chunk *chunk, vector3i position, tilemap *tilemap) {
-    chunk->visible = true;
-    chunk->generation_stage = 0;
     chunk->position = position;
+    chunk->state = CHUNK_STATE_NEEDS_TERRAIN;
+    chunk->visible = true; // default false?
     chunk->tilemap = tilemap;
 
-    chunk->vao.gl_id = 0;
+    chunk->vertices = NULL;
+    chunk->indices = NULL;
+    chunk->face_count = 0;
+
+    chunk->vao.gl_id = 0; // DELETE THESE
     chunk->vbo.gl_id = 0;
     chunk->ibo.gl_id = 0;
+}
 
-    pthread_mutex_init(&chunk->mesh_mutex, NULL);
-
-    chunk_update_mesh(chunk);
-    chunk_update_buffers(chunk);
+void chunk_destroy(chunk *chunk) {
+    free(chunk->vertices);
+    free(chunk->indices);
 }
 
 void chunk_update_mesh(chunk *chunk) {
-    pthread_mutex_lock(&chunk->mesh_mutex);
+    chunk->face_count = 0;
+
+    // Probably not efficient
     for (int z = 0; z < CHUNK_SIZE_Z; z++) {
         for (int y = 0; y < CHUNK_SIZE_Y; y++) {
             for (int x = 0; x < CHUNK_SIZE_X; x++) {
@@ -98,8 +104,10 @@ void chunk_update_mesh(chunk *chunk) {
     }
 
     chunk->vertices =
-        malloc(chunk->face_count * 4 * CHUNK_VERTEX_SIZE * sizeof(float));
-    chunk->indices = malloc(chunk->face_count * 6 * sizeof(unsigned int));
+        realloc(chunk->vertices, chunk->face_count * 4 * CHUNK_VERTEX_SIZE *
+                                     sizeof(float)); // ADDEDD
+    chunk->indices =
+        realloc(chunk->indices, chunk->face_count * 6 * sizeof(unsigned int));
 
     int faces_added = 0;
 
@@ -188,11 +196,9 @@ void chunk_update_mesh(chunk *chunk) {
             }
         }
     }
-    pthread_mutex_unlock(&chunk->mesh_mutex);
 }
 
 void chunk_update_buffers(chunk *chunk) {
-    pthread_mutex_lock(&chunk->mesh_mutex);
     vao_destroy(&chunk->vao);
     bo_destroy(&chunk->vbo);
     bo_destroy(&chunk->ibo);
@@ -218,14 +224,11 @@ void chunk_update_buffers(chunk *chunk) {
                CHUNK_VERTEX_SIZE * sizeof(float), (void *)(3 * sizeof(float)));
     vao_attrib(&chunk->vao, 2, 3, VAO_TYPE_FLOAT, false,
                CHUNK_VERTEX_SIZE * sizeof(float), (void *)(5 * sizeof(float)));
-    pthread_mutex_unlock(&chunk->mesh_mutex);
 }
 
 // bind texture
 void chunk_draw(chunk *chunk) {
-    pthread_mutex_lock(&chunk->mesh_mutex);
     if (!chunk->visible) {
-        pthread_mutex_unlock(&chunk->mesh_mutex);
         return;
     }
 
@@ -233,9 +236,9 @@ void chunk_draw(chunk *chunk) {
     bo_bind(&chunk->ibo);
     bo_bind(&chunk->vbo);
 
+    // Potentially inefficient
     int index_count = bo_get_size(&chunk->ibo) / sizeof(unsigned int);
 
     renderer_draw_elements(DRAW_MODE_TRIANGLES, index_count,
                            INDEX_TYPE_UNSIGNED_INT);
-    pthread_mutex_unlock(&chunk->mesh_mutex);
 }

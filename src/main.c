@@ -1,7 +1,10 @@
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
+#include <pthread.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
+#include "thread_pool.h"
 #include "util/io.h"
 #include "graphics/graphics.h"
 #include "world/block.h"
@@ -25,7 +28,6 @@ int main() {
     gui gui;
 
     window_init(&window, 400, 400, "minecraft!", &camera);
-    glfwSwapInterval(0);
 
     renderer_init();
     renderer_set_clear_colour(0.53, 0.81, 0.92, 1.0);
@@ -62,8 +64,12 @@ int main() {
     player_init(&player, (vector3d){8.0, 4.0, 8.0}, VECTOR3D_ZERO, 0.05,
                 &camera);
 
+    // world_load_chunk(&world, (vector3i){0, 0, 0});
+    // world_load_chunk(&world, (vector3i){1, 0, 0});
+    // world_load_chunk(&world, (vector3i){0, 1, 0});
+    // world_load_chunk(&world, (vector3i){1, 1, 0});
+
     while (!window_should_close(&window)) {
-        glfwSwapInterval(0);
         renderer_clear_buffers();
 
         window_update_delta_time(&window);
@@ -86,9 +92,8 @@ int main() {
         player_manage_chunks(&player,
                              &world); // create chunk manager? ecs? SLOW
 
-        /*printf("%f\n", 1.0 / window_get_delta_time(&window));*/
+        // printf("%f\n", 1.0 / window_get_delta_time(&window));
 
-        // use sprinting boolean
         if (keyboard_key_just_down(&window.keyboard, KEYCODE_LEFT_CONTROL)) {
             player.sprinting = !player.sprinting;
         }

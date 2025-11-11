@@ -1,0 +1,9 @@
+Implement hashmap instead of linked list for chunks
+Check for any race conditions / multithreading bugs (potentially to do with chunk iteration)
+Improve meshing like greedy meshing
+Sometimes get invalid frees probably due to multithreading issues
+Reimplement collision
+Gravity
+Make flying more responsive
+Better lighting
+Blocks orient correctly when placed

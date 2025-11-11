@@ -1,6 +1,7 @@
 #include "shader_program.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include "../util/gl.h"
 #include "../util/io.h"
 
@@ -44,6 +45,9 @@ void shader_program_from_files(shader_program *program, char *vertex_path,
     shader_compile(&fragment_shader);
 
     shader_program_init(program, &vertex_shader, &fragment_shader);
+
+    free(vertex_source); // ADDEDD
+    free(fragment_source);
 }
 
 void shader_program_bind_attribute(shader_program *program, int index,
