@@ -3,13 +3,16 @@
 
 #include "chunk.h"
 #include "../data_structures/linked_list.h"
+#include "../data_structures/hash_map.h"
 #include "../thread_pool.h"
 
 #define WORLD_WORKER_COUNT 4
+#define CHUNKS_BUCKET_COUNT 1000
 
 typedef struct world {
     // Use hashmap
-    linked_list chunks; // Should this have a mutex?
+    // linked_list chunks;
+    hash_map chunks;
     tilemap tilemap;
     float seed;
     thread_pool workers;

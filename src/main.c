@@ -17,6 +17,7 @@
 #include "gui/image.h"
 #include "hotbar.h"
 #include "items.h"
+#include "data_structures/hash_map.h"
 
 // REMMEMBER TO AUTO BIND IN FUNCTIONS THAT ITS REQUIRED
 // make arguments const
@@ -89,8 +90,8 @@ int main() {
                                        2}); // only run when window size changed
         hotbar_update_gui(&hotbar);
 
-        player_manage_chunks(&player,
-                             &world); // create chunk manager? ecs? SLOW
+        // player_manage_chunks(&player,
+        //                      &world); // create chunk manager? ecs? SLOW
 
         // printf("%f\n", 1.0 / window_get_delta_time(&window));
 
@@ -167,7 +168,7 @@ int main() {
             hotbar.current_slot = mod(hotbar.current_slot, 9);
         }
 
-        player_update(&player, &window, &world);
+        // player_update(&player, &window, &world);
 
         camera_set_rotation(&camera, player.rotation);
         camera_set_position(

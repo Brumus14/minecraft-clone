@@ -21,8 +21,15 @@ int get_chunk_index(world *world, vector3i position) {
     return -1;
 }
 
+unsigned int chunk_hasher(void *key) {
+    vector3i position = *(vector3i *)key;
+    return 0;
+}
+
 void world_init(world *world) {
-    linked_list_init(&world->chunks);
+    // linked_list_init(&world->chunks);
+    hash_map_init(&world->chunks, CHUNKS_BUCKET_COUNT, sizeof(vector3i),
+                  sizeof(), chunk_hasher);
 
     tilemap_init(&world->tilemap, "res/textures/atlas.png",
                  TEXTURE_FILTER_NEAREST, 16, 16, 1, 2);

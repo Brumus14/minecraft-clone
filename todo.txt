@@ -7,3 +7,4 @@ Gravity
 Make flying more responsive
 Better lighting
 Blocks orient correctly when placed
+Bug when moving fast: malloc(): unsorted double linked list corrupted
