@@ -7,10 +7,10 @@
 
 typedef struct safe_queue {
     queue queue;
-    pthread_mutex_t mutex;
+    pthread_mutex_t lock;
 } safe_queue;
 
-void safe_queue_init(safe_queue *queue);
+void safe_queue_init(safe_queue *queue, unsigned long data_size);
 void safe_queue_destroy(safe_queue *queue);
 void safe_queue_enqueue(safe_queue *queue, void *data);
 void *safe_queue_dequeue(safe_queue *queue);

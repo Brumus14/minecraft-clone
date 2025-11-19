@@ -5,6 +5,8 @@
 #include "collision.h"
 #include "math/cuboid.h"
 #include "util/gl.h"
+#include "data_structures/linked_list.h"
+#include "data_structures/hash_map.h"
 
 void player_init(player *player, vector3d position, vector3d rotation,
                  double sensitivity, camera *camera) {
@@ -149,35 +151,82 @@ void player_update(player *player, window *window, world *world) {
     player_manage_chunks(player, world);
 }
 
+typedef struct player_manage_chunks_chunk_context {
+    vector3i *player_chunk;
+    int *render_distance;
+    vector3i **unloaded_chunks;
+    int *unloaded_chunk_count;
+} player_manage_chunks_chunk_context;
+
+void player_manage_chunks_chunk(void *key, void *value, void *context) {
+    // TODO: Potentially quite unperformant to do this every time
+    vector3i *chunk_position = key;
+    chunk *chunk = value;
+
+    player_manage_chunks_chunk_context *c = context;
+    int *render_distance = c->render_distance;
+    vector3i *player_chunk = c->player_chunk;
+    vector3i **unloaded_chunks = c->unloaded_chunks;
+    int *unloaded_chunk_count = c->unloaded_chunk_count;
+
+    // if (chunk == NULL) {
+    //     return;
+    // }
+
+    if (chunk->position.x < player_chunk->x - *render_distance ||
+        chunk->position.x > player_chunk->x + *render_distance ||
+        chunk->position.y < player_chunk->y - *render_distance ||
+        chunk->position.y > player_chunk->y + *render_distance ||
+        chunk->position.z < player_chunk->z - *render_distance ||
+        chunk->position.z > player_chunk->z + *render_distance) {
+        (*unloaded_chunk_count)++;
+        *unloaded_chunks =
+            realloc(*unloaded_chunks, *unloaded_chunk_count * sizeof(vector3i));
+        (*unloaded_chunks)[*unloaded_chunk_count - 1] = chunk->position;
+    }
+}
+
 void player_manage_chunks(player *player, world *world) {
     // if (!player->moved_this_frame) {
     //     return;
     // }
 
-    int render_distance = 2; // move to a variable
+    int render_distance = 4; // move to a variable
     vector3i player_chunk;
     player_chunk.x = floor(player->position.x / CHUNK_SIZE_X);
     player_chunk.y = floor(player->position.y / CHUNK_SIZE_Y);
     player_chunk.z = floor(player->position.z / CHUNK_SIZE_Z);
 
-    vector3i
-        unloaded_chunks[linked_list_length(&world->chunks)]; // DONT USE THIS
+    vector3i *unloaded_chunks = NULL; // TODO: DONT USE THIS
     int unloaded_chunk_count = 0;
 
     // Lots of unsafe chunk loops
-    for (int i = 0; i < linked_list_length(&world->chunks); i++) {
-        chunk *chunk = linked_list_get(&world->chunks, i);
+    player_manage_chunks_chunk_context context = {
+        &player_chunk, &render_distance, &unloaded_chunks,
+        &unloaded_chunk_count};
+    hash_map_for_each(&world->chunks, player_manage_chunks_chunk, &context);
 
-        if (chunk->position.x < player_chunk.x - render_distance ||
-            chunk->position.x > player_chunk.x + render_distance ||
-            chunk->position.y < player_chunk.y - render_distance ||
-            chunk->position.y > player_chunk.y + render_distance ||
-            chunk->position.z < player_chunk.z - render_distance ||
-            chunk->position.z > player_chunk.z + render_distance) {
-            unloaded_chunks[unloaded_chunk_count] = chunk->position;
-            unloaded_chunk_count++;
-        }
-    }
+    // for (int i = 0; i < linked_list_length(&world->chunk_positions);
+    //      i++) { // TODO: Hash map iteration
+    //     vector3i *chunk_position = linked_list_get(&world->chunk_positions,
+    //     i); chunk *chunk = hash_map_get(&world->chunks, chunk_position);
+    //
+    //     if (chunk == NULL) {
+    //         continue;
+    //     }
+    //
+    //     // chunk *chunk = linked_list_get(&world->chunk_positions, i);
+    //
+    //     if (chunk->position.x < player_chunk.x - render_distance ||
+    //         chunk->position.x > player_chunk.x + render_distance ||
+    //         chunk->position.y < player_chunk.y - render_distance ||
+    //         chunk->position.y > player_chunk.y + render_distance ||
+    //         chunk->position.z < player_chunk.z - render_distance ||
+    //         chunk->position.z > player_chunk.z + render_distance) {
+    //         unloaded_chunks[unloaded_chunk_count] = chunk->position;
+    //         unloaded_chunk_count++;
+    //     }
+    // }
 
     for (int i = 0; i < unloaded_chunk_count; i++) {
         world_unload_chunk(world, unloaded_chunks[i]);

@@ -6,10 +6,11 @@
 #include "../graphics/graphics.h"
 #include "../tilemap.h"
 #include <pthread.h>
+#include <stdatomic.h>
 
-#define CHUNK_SIZE_X 32
-#define CHUNK_SIZE_Y 32
-#define CHUNK_SIZE_Z 32
+#define CHUNK_SIZE_X 16
+#define CHUNK_SIZE_Y 16
+#define CHUNK_SIZE_Z 16
 
 #define CHUNK_VERTEX_SIZE 8
 
@@ -23,8 +24,11 @@ typedef enum chunk_state {
 } chunk_state;
 
 typedef struct chunk {
-    bool visible;
-    chunk_state state;
+    atomic_bool visible;
+    _Atomic chunk_state state;
+    atomic_bool unloaded;
+    atomic_int in_use;
+    pthread_mutex_t lock;
     vector3i position;
     block_type blocks[CHUNK_SIZE_Z][CHUNK_SIZE_Y][CHUNK_SIZE_X];
     tilemap *tilemap;
@@ -34,7 +38,6 @@ typedef struct chunk {
     bo vbo;
     bo ibo;
     vao vao;
-    pthread_mutex_t mutex; // REMOVE?
 } chunk;
 
 // What even are these

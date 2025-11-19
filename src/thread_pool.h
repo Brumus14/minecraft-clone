@@ -16,7 +16,7 @@ typedef struct thread_pool {
     unsigned int thread_count;
     pthread_t *threads;
     queue tasks;
-    pthread_mutex_t tasks_mutex;
+    pthread_mutex_t tasks_lock;
     pthread_cond_t task_available;
 } thread_pool;
 

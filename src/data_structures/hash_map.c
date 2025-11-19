@@ -10,9 +10,9 @@ void hash_map_node_init(hash_map_node *node, void *key, void *value) {
     node->next = NULL;
 }
 
-void hash_map_node_destroy(hash_map_node *node) {
+void *hash_map_node_destroy(hash_map_node *node) {
     free(node->key);
-    free(node->value);
+    return node->value;
 }
 
 void hash_map_init(hash_map *map, int bucket_count, unsigned long key_size,
@@ -23,6 +23,8 @@ void hash_map_init(hash_map *map, int bucket_count, unsigned long key_size,
     map->value_size = value_size;
     map->hash_function = hash_function;
     map->buckets = malloc(bucket_count * sizeof(hash_map_node *));
+    map->iter_bucket = 0;
+    map->iter_current_node = NULL;
 
     for (int i = 0; i < bucket_count; i++) {
         map->buckets[i] = NULL;
@@ -44,22 +46,22 @@ void hash_map_destroy(hash_map *map) {
     free(map->buckets);
 }
 
-void hash_map_put(hash_map *map, void *key, void *value) {
+void *hash_map_put(hash_map *map, void *key, void *value) {
     // Should avoid copying them maybe implement arena allocator
     void *owned_key = malloc(map->key_size);
     memcpy(owned_key, key, map->key_size);
 
-    void *owned_value = malloc(map->value_size);
-    memcpy(owned_value, value, map->value_size);
+    // void *owned_value = malloc(map->value_size);
+    // memcpy(owned_value, value, map->value_size);
 
     int index = map->hash_function(owned_key) % map->bucket_count;
     hash_map_node *bucket_head = map->buckets[index];
 
     if (bucket_head == NULL) {
         hash_map_node *new_node = malloc(sizeof(hash_map_node));
-        hash_map_node_init(new_node, owned_key, owned_value);
+        hash_map_node_init(new_node, owned_key, value);
         map->buckets[index] = new_node;
-        return;
+        return NULL;
     }
 
     hash_map_node *current_node = bucket_head;
@@ -67,22 +69,24 @@ void hash_map_put(hash_map *map, void *key, void *value) {
     while (current_node != NULL) {
         if (memcmp(current_node->key, owned_key, map->key_size) == 0) {
             hash_map_node *next_node = current_node->next;
-            hash_map_node_destroy(current_node);
-            hash_map_node_init(current_node, owned_key, owned_value);
+            void *old_value = hash_map_node_destroy(current_node);
+            hash_map_node_init(current_node, owned_key, value);
             current_node->next = next_node;
-            return;
+            return old_value;
         }
 
         if (current_node->next == NULL) {
             hash_map_node *new_node = malloc(sizeof(hash_map_node));
-            hash_map_node_init(new_node, owned_key, owned_value);
+            hash_map_node_init(new_node, owned_key, value);
             new_node->next = NULL;
             current_node->next = new_node;
-            return;
+            return NULL;
         }
 
         current_node = current_node->next;
     }
+
+    return NULL;
 }
 
 void *hash_map_get(hash_map *map, void *key) {
@@ -101,7 +105,7 @@ void *hash_map_get(hash_map *map, void *key) {
     return NULL;
 }
 
-void hash_map_remove(hash_map *map, void *key) {
+void *hash_map_remove(hash_map *map, void *key) {
     int index = map->hash_function(key) % map->bucket_count;
 
     hash_map_node *current_node = map->buckets[index];
@@ -111,7 +115,7 @@ void hash_map_remove(hash_map *map, void *key) {
         hash_map_node *next_node = current_node->next;
 
         if (memcmp(current_node->key, key, map->key_size) == 0) {
-            hash_map_node_destroy(current_node);
+            void *value = hash_map_node_destroy(current_node);
             free(current_node);
 
             if (previous_node != NULL) {
@@ -120,10 +124,24 @@ void hash_map_remove(hash_map *map, void *key) {
                 map->buckets[index] = next_node;
             }
 
-            return;
+            return value;
         }
 
         previous_node = current_node;
         current_node = next_node;
+    }
+
+    return NULL;
+}
+
+void hash_map_for_each(hash_map *map, hash_map_for_each_function function,
+                       void *context) {
+    for (int i = 0; i < map->bucket_count; i++) {
+        hash_map_node *current_node = map->buckets[i];
+
+        while (current_node != NULL) {
+            function(current_node->key, current_node->value, context);
+            current_node = current_node->next;
+        }
     }
 }

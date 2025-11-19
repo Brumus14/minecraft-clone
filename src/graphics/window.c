@@ -125,6 +125,7 @@ void window_init(window *window, int width, int height, char *title,
     window->camera = camera;
     // work on callbacks
     window->scroll_callback = NULL;
+
     window_update_delta_time(window); // ADDEDD
 
     keyboard_init(&window->keyboard);
@@ -149,6 +150,9 @@ void window_init(window *window, int width, int height, char *title,
     /*glfwSetCursorPosCallback(window->glfw_window, glfw_cursor_pos_callback);*/
     /*glfwSetKeyCallback(window->glfw_window, glfw_key_callback);*/
     glfwSetScrollCallback(window->glfw_window, glfw_scroll_callback);
+
+    // TODO: Move to window setting
+    glfwSwapInterval(0);
 }
 
 bool window_should_close(window *window) {

@@ -1,6 +1,7 @@
 #include "linked_list.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 void list_node_init(list_node *node, void *data) {
     node->data = data;
@@ -8,9 +9,10 @@ void list_node_init(list_node *node, void *data) {
     node->next = NULL;
 }
 
-void linked_list_init(linked_list *list) {
+void linked_list_init(linked_list *list, unsigned long data_size) {
     list->head = NULL;
     list->tail = NULL;
+    list->data_size = data_size;
 }
 
 void linked_list_insert_beginning(linked_list *list, void *data) {
@@ -195,7 +197,8 @@ unsigned int linked_list_find(linked_list *list, void *data) {
     list_node *current_node = list->head;
     int index = 0;
 
-    while (current_node != list->tail && current_node->data != data) {
+    while (current_node != list->tail &&
+           memcmp(current_node->data, data, list->data_size) == 0) {
         current_node = current_node->next;
         index++;
     }

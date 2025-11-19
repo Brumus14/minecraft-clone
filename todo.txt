@@ -1,4 +1,3 @@
-Implement hashmap instead of linked list for chunks
 Check for any race conditions / multithreading bugs (potentially to do with chunk iteration)
 Improve meshing like greedy meshing
 Sometimes get invalid frees probably due to multithreading issues
@@ -8,3 +7,8 @@ Make flying more responsive
 Better lighting
 Blocks orient correctly when placed
 Bug when moving fast: malloc(): unsorted double linked list corrupted
+Frustum culling
+Hashmap not copy value instead take malloc'd pointer and return to free
+Allow workers to schedule tasks for chain tasking
+Don't mesh blocks on chunk borders so wait for bordering chunks to generate terrain
+Maybe when modifying chunk don't re-mesh entire chunk just modified part

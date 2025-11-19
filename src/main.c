@@ -32,7 +32,7 @@ int main() {
 
     renderer_init();
     renderer_set_clear_colour(0.53, 0.81, 0.92, 1.0);
-    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    // renderer_set_polygon_mode(POLYGON_MODE_LINE);
 
     camera_init(&camera, VECTOR3D_ZERO, VECTOR3D_ZERO, 90.0,
                 window_get_aspect_ratio(&window), 0.1, 1000.0);
@@ -90,10 +90,7 @@ int main() {
                                        2}); // only run when window size changed
         hotbar_update_gui(&hotbar);
 
-        // player_manage_chunks(&player,
-        //                      &world); // create chunk manager? ecs? SLOW
-
-        // printf("%f\n", 1.0 / window_get_delta_time(&window));
+        printf("%f\n", 1.0 / window_get_delta_time(&window));
 
         if (keyboard_key_just_down(&window.keyboard, KEYCODE_LEFT_CONTROL)) {
             player.sprinting = !player.sprinting;
@@ -168,7 +165,7 @@ int main() {
             hotbar.current_slot = mod(hotbar.current_slot, 9);
         }
 
-        // player_update(&player, &window, &world);
+        player_update(&player, &window, &world);
 
         camera_set_rotation(&camera, player.rotation);
         camera_set_position(

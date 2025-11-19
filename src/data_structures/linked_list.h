@@ -16,9 +16,10 @@ void list_node_init(list_node *node, void *data);
 typedef struct linked_list {
     list_node *head;
     list_node *tail;
+    unsigned long data_size;
 } linked_list;
 
-void linked_list_init(linked_list *list);
+void linked_list_init(linked_list *list, unsigned long data_size);
 void linked_list_insert_beginning(linked_list *list, void *data);
 void linked_list_insert_end(linked_list *list, void *data);
 void linked_list_insert(linked_list *list, void *data, int index);

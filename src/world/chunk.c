@@ -2,6 +2,7 @@
 
 #include "string.h"
 
+// Should these lock mutex
 bool is_block_face_active(chunk *chunk, int x, int y, int z, block_face face) {
     // XRAY MODE
     if (chunk->blocks[z][y][x] == BLOCK_TYPE_COAL) {
@@ -67,8 +68,11 @@ bool is_block_face_active(chunk *chunk, int x, int y, int z, block_face face) {
 
 void chunk_init(chunk *chunk, vector3i position, tilemap *tilemap) {
     chunk->position = position;
-    chunk->state = CHUNK_STATE_NEEDS_TERRAIN;
-    chunk->visible = true; // default false?
+    atomic_init(&chunk->state, CHUNK_STATE_NEEDS_TERRAIN);
+    atomic_init(&chunk->unloaded, false);
+    atomic_init(&chunk->in_use, 0);
+    pthread_mutex_init(&chunk->lock, NULL);
+    atomic_init(&chunk->visible, true); // default false?
     chunk->tilemap = tilemap;
 
     chunk->vertices = NULL;
@@ -81,6 +85,7 @@ void chunk_init(chunk *chunk, vector3i position, tilemap *tilemap) {
 }
 
 void chunk_destroy(chunk *chunk) {
+    pthread_mutex_destroy(&chunk->lock);
     free(chunk->vertices);
     free(chunk->indices);
 }
@@ -228,7 +233,7 @@ void chunk_update_buffers(chunk *chunk) {
 
 // bind texture
 void chunk_draw(chunk *chunk) {
-    if (!chunk->visible) {
+    if (atomic_load(&chunk->visible) == false) {
         return;
     }
 

@@ -2,8 +2,8 @@
 
 #include <stddef.h>
 
-void queue_init(queue *queue) {
-    linked_list_init(&queue->list);
+void queue_init(queue *queue, unsigned long data_size) {
+    linked_list_init(&queue->list, data_size);
 }
 
 void queue_destroy(queue *queue) {

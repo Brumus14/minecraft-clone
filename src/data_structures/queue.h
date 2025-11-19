@@ -7,7 +7,7 @@ typedef struct queue {
     linked_list list;
 } queue;
 
-void queue_init(queue *queue);
+void queue_init(queue *queue, unsigned long data_size);
 void queue_destroy(queue *queue);
 void queue_enqueue(queue *queue, void *data);
 void *queue_dequeue(queue *queue);
