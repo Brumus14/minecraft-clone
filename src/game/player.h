@@ -1,10 +1,10 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#include "math/vector3.h"
-#include "graphics/camera.h"
-#include "graphics/window.h"
-#include "world/world.h"
+#include "../math/vector3.h"
+#include "../graphics/camera.h"
+#include "../graphics/window.h"
+#include "../world/world.h"
 
 #define DEFAULT_SPEED 10.92
 #define SPRINTING_SPEED 21.6

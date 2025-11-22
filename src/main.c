@@ -4,19 +4,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "thread_pool.h"
+#include "util/thread_pool.h"
 #include "util/io.h"
 #include "graphics/graphics.h"
 #include "world/block.h"
 #include "world/chunk.h"
-#include "tilemap.h"
-#include "player.h"
+#include "graphics/tilemap.h"
+#include "game/player.h"
 #include "world/world.h"
 #include "math/math_util.h"
 #include "gui/gui.h"
 #include "gui/image.h"
-#include "hotbar.h"
-#include "items.h"
+#include "gui/hotbar.h"
+#include "game/items.h"
 #include "data_structures/hash_map.h"
 
 // REMMEMBER TO AUTO BIND IN FUNCTIONS THAT ITS REQUIRED

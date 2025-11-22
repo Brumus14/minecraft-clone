@@ -1,7 +1,7 @@
 #ifndef THREAD_POOL_H
 #define THREAD_POOL_H
 
-#include "data_structures/queue.h"
+#include "../data_structures/queue.h"
 #include <pthread.h>
 #include <unistd.h>
 

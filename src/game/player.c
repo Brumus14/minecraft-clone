@@ -1,12 +1,12 @@
 #include "player.h"
 
 #include <stdlib.h>
-#include "math/math_util.h"
-#include "collision.h"
-#include "math/cuboid.h"
-#include "util/gl.h"
-#include "data_structures/linked_list.h"
-#include "data_structures/hash_map.h"
+#include "../math/math_util.h"
+#include "../physics/collision.h"
+#include "../math/cuboid.h"
+#include "../util/gl.h"
+#include "../data_structures/linked_list.h"
+#include "../data_structures/hash_map.h"
 
 void player_init(player *player, vector3d position, vector3d rotation,
                  double sensitivity, camera *camera) {

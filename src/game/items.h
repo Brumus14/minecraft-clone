@@ -1,7 +1,7 @@
 #ifndef ITEMS_H
 #define ITEMS_H
 
-#include "world/block.h"
+#include "../world/block.h"
 
 typedef enum item_type {
     ITEM_TYPE_EMPTY,

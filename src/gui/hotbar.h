@@ -1,10 +1,10 @@
 #ifndef HOTBAR_H
 #define HOTBAR_H
 
-#include "gui/gui.h"
-#include "gui/image.h"
-#include "tilemap.h"
-#include "items.h"
+#include "gui.h"
+#include "image.h"
+#include "../graphics/tilemap.h"
+#include "../game/items.h"
 
 typedef struct hotbar {
     item_type items[9];

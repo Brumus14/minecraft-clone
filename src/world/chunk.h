@@ -4,7 +4,7 @@
 #include "block.h"
 #include "../math/vector3.h"
 #include "../graphics/graphics.h"
-#include "../tilemap.h"
+#include "../graphics/tilemap.h"
 #include <pthread.h>
 #include <stdatomic.h>
 

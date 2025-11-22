@@ -1,8 +1,8 @@
 #ifndef TILEMAP_H
 #define TILEMAP_H
 
-#include "graphics/texture.h"
-#include "math/rectangle.h"
+#include "../graphics/texture.h"
+#include "../math/rectangle.h"
 
 typedef struct tilemap {
     texture texture;

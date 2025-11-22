@@ -1,7 +1,7 @@
 #include "thread_pool.h"
 
-#include "data_structures/queue.h"
-#include "data_structures/safe_queue.h"
+#include "../data_structures/queue.h"
+#include "../data_structures/safe_queue.h"
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>

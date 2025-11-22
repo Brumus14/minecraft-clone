@@ -4,7 +4,7 @@
 #include "chunk.h"
 #include "../data_structures/linked_list.h"
 #include "../data_structures/hash_map.h"
-#include "../thread_pool.h"
+#include "../util/thread_pool.h"
 
 #define WORLD_WORKER_COUNT 12
 #define CHUNKS_BUCKET_COUNT 1000
