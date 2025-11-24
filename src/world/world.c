@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include "../math/math_util.h"
 #include "../util/stopwatch.h"
+#include "chunk.h"
 #include "block.h"
 #include "worker.h"
 
@@ -123,8 +124,8 @@ block_type world_get_block(world *world, vector3d position) {
                                      mod(floor(position.z), CHUNK_SIZE_Z)};
 
     block_type block =
-        chunk->blocks[block_chunk_position.z][block_chunk_position.y]
-                     [block_chunk_position.x];
+        chunk_get_block(chunk, block_chunk_position.x, block_chunk_position.y,
+                        block_chunk_position.z);
     pthread_mutex_unlock(&chunk->lock);
 
     return block;
@@ -148,8 +149,8 @@ void world_set_block(world *world, block_type type, vector3d position) {
                                      mod(floor(position.y), CHUNK_SIZE_Y),
                                      mod(floor(position.z), CHUNK_SIZE_Z)};
 
-    chunk->blocks[block_chunk_position.z][block_chunk_position.y]
-                 [block_chunk_position.x] = type;
+    chunk_set_block(chunk, block_chunk_position.x, block_chunk_position.y,
+                    block_chunk_position.z, type);
     chunk_update_mesh(chunk);
     pthread_mutex_unlock(&chunk->lock);
 

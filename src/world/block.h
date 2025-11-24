@@ -28,4 +28,10 @@ typedef struct block_texture {
 
 block_texture block_type_to_texture(block_type type);
 
+typedef struct block {
+    block_type type;
+    // orientation
+    // light level
+} block;
+
 #endif

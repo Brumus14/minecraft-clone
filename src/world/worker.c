@@ -59,7 +59,7 @@ void *worker_generate_chunk(void *arg) {
     atomic_fetch_add(&chunk->in_use, 1);
 
     worker_generate_chunk_terrain(arg);
-    worker_generate_chunk_mesh(chunk);
+    // worker_generate_chunk_mesh(chunk);
     atomic_store(&chunk->visible, true);
 
     atomic_fetch_sub(&chunk->in_use, 1);

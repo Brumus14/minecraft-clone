@@ -12,7 +12,7 @@ void player_init(player *player, vector3d position, vector3d rotation,
                  double sensitivity, camera *camera) {
     player->position = position;
     player->rotation = rotation;
-    player->speed = DEFAULT_SPEED;
+    player->speed = DEFAULT_SPEED * 100;
     player->acceleration = player->speed * 8;
     player->velocity = VECTOR3D_ZERO;
     player->sensitivity = sensitivity;

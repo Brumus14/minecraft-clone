@@ -30,7 +30,7 @@ typedef struct chunk {
     atomic_int in_use;
     pthread_mutex_t lock;
     vector3i position;
-    block_type blocks[CHUNK_SIZE_Z][CHUNK_SIZE_Y][CHUNK_SIZE_X];
+    block_type blocks[CHUNK_SIZE_Z * CHUNK_SIZE_Y * CHUNK_SIZE_X];
     tilemap *tilemap;
     float *vertices;
     unsigned int *indices;
@@ -78,5 +78,7 @@ void chunk_destroy(chunk *chunk);
 void chunk_update_mesh(chunk *chunk);
 void chunk_update_buffers(chunk *chunk);
 void chunk_draw(chunk *chunk);
+block_type chunk_get_block(chunk*chunk,unsigned long x, unsigned long y, unsigned long z);
+void chunk_set_block(chunk*chunk, unsigned long x, unsigned long y, unsigned long z, block_type type);
 
 #endif

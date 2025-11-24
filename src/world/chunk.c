@@ -1,49 +1,56 @@
 #include "chunk.h"
 
 #include "string.h"
+#include <threads.h>
 
 // Should these lock mutex
 bool is_block_face_active(chunk *chunk, int x, int y, int z, block_face face) {
     // XRAY MODE
-    // if (chunk->blocks[z][y][x] == BLOCK_TYPE_COAL) {
+    // if (chunk_get_block(chunk, z, y, x) == BLOCK_TYPE_COAL) {
     //     switch (face) {
     //     case BLOCK_FACE_FRONT:
     //         return !(z < CHUNK_SIZE_Z - 1 &&
-    //                  chunk->blocks[z + 1][y][x] == BLOCK_TYPE_COAL);
+    //                  chunk_get_block(chunk, z + 1, y, x) == BLOCK_TYPE_COAL);
     //     case BLOCK_FACE_TOP:
     //         return !(y < CHUNK_SIZE_Y - 1 &&
-    //                  chunk->blocks[z][y + 1][x] == BLOCK_TYPE_COAL);
+    //                  chunk_get_block(chunk, z, y + 1, x) == BLOCK_TYPE_COAL);
     //     case BLOCK_FACE_RIGHT:
     //         return !(x < CHUNK_SIZE_X - 1 &&
-    //                  chunk->blocks[z][y][x + 1] == BLOCK_TYPE_COAL);
+    //                  chunk_get_block(chunk, z, y, x + 1) == BLOCK_TYPE_COAL);
     //     case BLOCK_FACE_BOTTOM:
-    //         return !(y > 0 && chunk->blocks[z][y - 1][x] == BLOCK_TYPE_COAL);
+    //         return !(y > 0 && chunk_get_block(chunk, z, y - 1, x) ==
+    //         BLOCK_TYPE_COAL);
     //     case BLOCK_FACE_LEFT:
-    //         return !(x > 0 && chunk->blocks[z][y][x - 1] == BLOCK_TYPE_COAL);
+    //         return !(x > 0 && chunk_get_block(chunk, z, y, x - 1) ==
+    //         BLOCK_TYPE_COAL);
     //     case BLOCK_FACE_BACK:
-    //         return !(z > 0 && chunk->blocks[z - 1][y][x] == BLOCK_TYPE_COAL);
+    //         return !(z > 0 && chunk_get_block(chunk, z - 1, y, x) ==
+    //         BLOCK_TYPE_COAL);
     //     }
     // }
     //
-    // if (chunk->blocks[z][y][x] == BLOCK_TYPE_DIAMOND) {
+    // if (chunk_get_block(chunk, z, y, x) == BLOCK_TYPE_DIAMOND) {
     //     switch (face) {
     //     case BLOCK_FACE_FRONT:
     //         return !(z < CHUNK_SIZE_Z - 1 &&
-    //                  chunk->blocks[z + 1][y][x] == BLOCK_TYPE_DIAMOND);
+    //                  chunk_get_block(chunk, z + 1, y, x) ==
+    //                  BLOCK_TYPE_DIAMOND);
     //     case BLOCK_FACE_TOP:
     //         return !(y < CHUNK_SIZE_Y - 1 &&
-    //                  chunk->blocks[z][y + 1][x] == BLOCK_TYPE_DIAMOND);
+    //                  chunk_get_block(chunk, z, y + 1, x) ==
+    //                  BLOCK_TYPE_DIAMOND);
     //     case BLOCK_FACE_RIGHT:
     //         return !(x < CHUNK_SIZE_X - 1 &&
-    //                  chunk->blocks[z][y][x + 1] == BLOCK_TYPE_DIAMOND);
+    //                  chunk_get_block(chunk, z, y, x + 1) ==
+    //                  BLOCK_TYPE_DIAMOND);
     //     case BLOCK_FACE_BOTTOM:
-    //         return !(y > 0 && chunk->blocks[z][y - 1][x] ==
+    //         return !(y > 0 && chunk_get_block(chunk, z, y - 1, x) ==
     //         BLOCK_TYPE_DIAMOND);
     //     case BLOCK_FACE_LEFT:
-    //         return !(x > 0 && chunk->blocks[z][y][x - 1] ==
+    //         return !(x > 0 && chunk_get_block(chunk, z, y, x - 1) ==
     //         BLOCK_TYPE_DIAMOND);
     //     case BLOCK_FACE_BACK:
-    //         return !(z > 0 && chunk->blocks[z - 1][y][x] ==
+    //         return !(z > 0 && chunk_get_block(chunk, z - 1, y, x) ==
     //         BLOCK_TYPE_DIAMOND);
     //     }
     // }
@@ -51,19 +58,22 @@ bool is_block_face_active(chunk *chunk, int x, int y, int z, block_face face) {
     switch (face) {
     case BLOCK_FACE_FRONT:
         return !(z < CHUNK_SIZE_Z - 1 &&
-                 chunk->blocks[z + 1][y][x] != BLOCK_TYPE_EMPTY);
+                 chunk_get_block(chunk, x, y, z + 1) != BLOCK_TYPE_EMPTY);
     case BLOCK_FACE_TOP:
         return !(y < CHUNK_SIZE_Y - 1 &&
-                 chunk->blocks[z][y + 1][x] != BLOCK_TYPE_EMPTY);
+                 chunk_get_block(chunk, x, y + 1, z) != BLOCK_TYPE_EMPTY);
     case BLOCK_FACE_RIGHT:
         return !(x < CHUNK_SIZE_X - 1 &&
-                 chunk->blocks[z][y][x + 1] != BLOCK_TYPE_EMPTY);
+                 chunk_get_block(chunk, x + 1, y, z) != BLOCK_TYPE_EMPTY);
     case BLOCK_FACE_BOTTOM:
-        return !(y > 0 && chunk->blocks[z][y - 1][x] != BLOCK_TYPE_EMPTY);
+        return !(y > 0 &&
+                 chunk_get_block(chunk, x, y - 1, z) != BLOCK_TYPE_EMPTY);
     case BLOCK_FACE_LEFT:
-        return !(x > 0 && chunk->blocks[z][y][x - 1] != BLOCK_TYPE_EMPTY);
+        return !(x > 0 &&
+                 chunk_get_block(chunk, x - 1, y, z) != BLOCK_TYPE_EMPTY);
     case BLOCK_FACE_BACK:
-        return !(z > 0 && chunk->blocks[z - 1][y][x] != BLOCK_TYPE_EMPTY);
+        return !(z > 0 &&
+                 chunk_get_block(chunk, x, y, z - 1) != BLOCK_TYPE_EMPTY);
     }
 
     return false;
@@ -100,7 +110,7 @@ void chunk_update_mesh(chunk *chunk) {
     for (int z = 0; z < CHUNK_SIZE_Z; z++) {
         for (int y = 0; y < CHUNK_SIZE_Y; y++) {
             for (int x = 0; x < CHUNK_SIZE_X; x++) {
-                if (chunk->blocks[z][y][x] != BLOCK_TYPE_EMPTY) {
+                if (chunk_get_block(chunk, x, y, z) != BLOCK_TYPE_EMPTY) {
                     for (int i = 0; i < 6; i++) {
                         if (is_block_face_active(chunk, x, y, z, i)) {
                             chunk->face_count++;
@@ -122,7 +132,7 @@ void chunk_update_mesh(chunk *chunk) {
     for (int z = 0; z < CHUNK_SIZE_Z; z++) {
         for (int y = 0; y < CHUNK_SIZE_Y; y++) {
             for (int x = 0; x < CHUNK_SIZE_X; x++) {
-                if (chunk->blocks[z][y][x] == BLOCK_TYPE_EMPTY) {
+                if (chunk_get_block(chunk, x, y, z) == BLOCK_TYPE_EMPTY) {
                     continue;
                 }
 
@@ -157,7 +167,7 @@ void chunk_update_mesh(chunk *chunk) {
 
                     rectangle texture_rectangle = tilemap_get_tile_rectangle(
                         chunk->tilemap,
-                        block_type_to_texture(chunk->blocks[z][y][x])
+                        block_type_to_texture(chunk_get_block(chunk, x, y, z))
                             .face_texture_indices[f]);
 
                     int vertex_1_index = face_index;
@@ -249,4 +259,16 @@ void chunk_draw(chunk *chunk) {
 
     renderer_draw_elements(DRAW_MODE_TRIANGLES, index_count,
                            INDEX_TYPE_UNSIGNED_INT);
+}
+
+inline block_type chunk_get_block(chunk *chunk, unsigned long x,
+                                  unsigned long y, unsigned long z) {
+    return chunk
+        ->blocks[x + y * CHUNK_SIZE_X + z * (CHUNK_SIZE_X * CHUNK_SIZE_Y)];
+}
+
+inline void chunk_set_block(chunk *chunk, unsigned long x, unsigned long y,
+                            unsigned long z, block_type type) {
+    chunk->blocks[x + y * CHUNK_SIZE_X + z * (CHUNK_SIZE_X * CHUNK_SIZE_Y)] =
+        type;
 }
