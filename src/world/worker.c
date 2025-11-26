@@ -5,8 +5,10 @@
 #include <stdatomic.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 // TODO: Check if the chunk has been unloaded if so then cancel
+// Doesn't free arg
 void *worker_generate_chunk_terrain(void *arg) {
     worker_generate_chunk_terrain_args *args = arg;
     chunk *chunk = args->chunk;
@@ -55,14 +57,19 @@ void *worker_generate_chunk(void *arg) {
     worker_generate_chunk_args *args = arg;
     chunk *chunk = args->chunk;
     float seed = args->seed;
+    thread_pool *workers = args->workers;
 
     atomic_fetch_add(&chunk->in_use, 1);
 
-    worker_generate_chunk_terrain(arg);
-    // worker_generate_chunk_mesh(chunk);
-    atomic_store(&chunk->visible, true);
+    worker_generate_chunk_terrain_args terrain_args = {chunk, seed};
+
+    worker_generate_chunk_terrain(&terrain_args);
+    atomic_store(&chunk->visible, true); // TODO: Move somewhere else
 
     atomic_fetch_sub(&chunk->in_use, 1);
+
+    // thread_pool_schedule(workers, worker_generate_chunk_mesh, chunk);
+    free(arg);
 
     return NULL;
 }

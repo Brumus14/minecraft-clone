@@ -28,7 +28,7 @@ void *thread_pool_thread_main(void *arg) {
         // if (task != NULL) {
         // Execute the task
         task->function(task->argument);
-        free(task->argument);
+        // free(task->argument);
         free(task);
         // }
     }

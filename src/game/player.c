@@ -12,7 +12,7 @@ void player_init(player *player, vector3d position, vector3d rotation,
                  double sensitivity, camera *camera) {
     player->position = position;
     player->rotation = rotation;
-    player->speed = DEFAULT_SPEED * 100;
+    player->speed = DEFAULT_SPEED;
     player->acceleration = player->speed * 8;
     player->velocity = VECTOR3D_ZERO;
     player->sensitivity = sensitivity;
@@ -206,28 +206,6 @@ void player_manage_chunks(player *player, world *world) {
         &unloaded_chunk_count};
     hash_map_for_each(&world->chunks, player_manage_chunks_chunk, &context);
 
-    // for (int i = 0; i < linked_list_length(&world->chunk_positions);
-    //      i++) { // TODO: Hash map iteration
-    //     vector3i *chunk_position = linked_list_get(&world->chunk_positions,
-    //     i); chunk *chunk = hash_map_get(&world->chunks, chunk_position);
-    //
-    //     if (chunk == NULL) {
-    //         continue;
-    //     }
-    //
-    //     // chunk *chunk = linked_list_get(&world->chunk_positions, i);
-    //
-    //     if (chunk->position.x < player_chunk.x - render_distance ||
-    //         chunk->position.x > player_chunk.x + render_distance ||
-    //         chunk->position.y < player_chunk.y - render_distance ||
-    //         chunk->position.y > player_chunk.y + render_distance ||
-    //         chunk->position.z < player_chunk.z - render_distance ||
-    //         chunk->position.z > player_chunk.z + render_distance) {
-    //         unloaded_chunks[unloaded_chunk_count] = chunk->position;
-    //         unloaded_chunk_count++;
-    //     }
-    // }
-
     for (int i = 0; i < unloaded_chunk_count; i++) {
         world_unload_chunk(world, unloaded_chunks[i]);
     }
@@ -411,7 +389,7 @@ void player_place_block(player *player, world *world, block_type type) {
     cuboid_init(&new_block_cubiod, block_position.x, block_position.y,
                 block_position.z, 1, 1, 1);
 
-    // use glm aabb
+    // TODO: use glm aabb
     if (!collision_aabb_3d(player_cuboid, new_block_cubiod)) {
         world_set_block(world, type, block_position);
     }

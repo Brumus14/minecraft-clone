@@ -7,7 +7,7 @@
 #include "../util/thread_pool.h"
 
 #define WORLD_WORKER_COUNT 12
-#define CHUNKS_BUCKET_COUNT 1000
+#define CHUNKS_BUCKET_COUNT 1024
 
 typedef struct world {
     // Use hashmap

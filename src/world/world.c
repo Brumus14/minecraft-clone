@@ -11,12 +11,14 @@
 #include "worker.h"
 
 unsigned int chunk_hasher(void *key) {
-    vector3i position = *(vector3i *)key;
-    return position.x;
+    vector3i *position = key;
+    unsigned int hx = position->x * 0x9E3779B185EBCA87;
+    unsigned int hy = position->y * 0xC2B2AE3D27D4EB4F;
+    unsigned int hz = position->z * 0x165667B19E3779F9;
+    return hx ^ hy ^ hz;
 }
 
 void world_init(world *world) {
-    // linked_list_init(&world->chunks);
     hash_map_init(&world->chunks, CHUNKS_BUCKET_COUNT, sizeof(vector3i),
                   sizeof(chunk), chunk_hasher);
 
@@ -54,6 +56,7 @@ void world_load_chunk(world *world, vector3i position) {
         malloc(sizeof(worker_generate_chunk_args));
     args->chunk = new_chunk;
     args->seed = world->seed;
+    args->workers = &world->workers;
 
     thread_pool_schedule(&world->workers, worker_generate_chunk, args);
 }
@@ -71,16 +74,18 @@ void world_unload_chunk(world *world, vector3i position) {
     atomic_store(&chunk->unloaded, true);
 }
 
-void world_draw_chunk(void *key, void *value, void *context) {
+void world_draw_chunk(void *key, void *value, void *workers) {
     vector3i *chunk_position = key;
     // pthread_rwlock_rdlock(&world->chunks_lock);
     chunk *chunk = value;
     // pthread_rwlock_unlock(&world->chunks_lock);
 
-    // if (chunk == NULL) {
-    //     return;
-    // }
+    // TODO: Move to list maybe
+    if (atomic_load(&chunk->state) == CHUNK_STATE_NEEDS_MESH) {
+        thread_pool_schedule(workers, worker_generate_chunk_mesh, chunk);
+    }
 
+    // TODO: Move to like update or something
     if (atomic_load(&chunk->state) == CHUNK_STATE_NEEDS_BUFFERS) {
         pthread_mutex_lock(&chunk->lock);
         chunk_update_buffers(chunk);
@@ -99,7 +104,7 @@ void world_draw_chunk(void *key, void *value, void *context) {
 void world_draw(world *world) {
     texture_bind(&world->tilemap.texture);
 
-    hash_map_for_each(&world->chunks, world_draw_chunk, NULL);
+    hash_map_for_each(&world->chunks, world_draw_chunk, &world->workers);
 }
 
 // use mipmapping

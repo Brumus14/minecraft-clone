@@ -3,6 +3,8 @@
 
 #include "chunk.h"
 
+#include "../util/thread_pool.h"
+
 typedef struct worker_generate_chunk_terrain_args {
     chunk *chunk;
     float seed;
@@ -11,6 +13,7 @@ typedef struct worker_generate_chunk_terrain_args {
 typedef struct worker_generate_chunk_args {
     chunk *chunk;
     float seed;
+    thread_pool *workers;
 } worker_generate_chunk_args;
 
 void *worker_generate_chunk_terrain(void *arg);

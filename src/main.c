@@ -65,11 +65,6 @@ int main() {
     player_init(&player, (vector3d){8.0, 4.0, 8.0}, VECTOR3D_ZERO, 0.05,
                 &camera);
 
-    // world_load_chunk(&world, (vector3i){0, 0, 0});
-    // world_load_chunk(&world, (vector3i){1, 0, 0});
-    // world_load_chunk(&world, (vector3i){0, 1, 0});
-    // world_load_chunk(&world, (vector3i){1, 1, 0});
-
     while (!window_should_close(&window)) {
         renderer_clear_buffers();
 
@@ -90,7 +85,7 @@ int main() {
                                        2}); // only run when window size changed
         hotbar_update_gui(&hotbar);
 
-        printf("%f\n", 1.0 / window_get_delta_time(&window));
+        // printf("%f\n", 1.0 / window_get_delta_time(&window));
 
         if (keyboard_key_just_down(&window.keyboard, KEYCODE_LEFT_CONTROL)) {
             player.sprinting = !player.sprinting;
