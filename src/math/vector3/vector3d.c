@@ -120,3 +120,7 @@ bool vector3d_equal(vector3d v1, vector3d v2) {
         return false;
     }
 }
+
+vector3i vector3d_to_vector3i(vector3d vector) {
+    return (vector3i){floor(vector.x), floor(vector.y), floor(vector.z)};
+}

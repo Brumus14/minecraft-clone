@@ -6,7 +6,7 @@
 
 // use frustum culling
 void generate_perspective_matrix(camera *camera) {
-    if (camera == NULL) {
+    if (!camera) {
         fprintf(stderr, "generate_perspective_matrix: camera is null\n");
         return;
     }
@@ -17,7 +17,7 @@ void generate_perspective_matrix(camera *camera) {
 }
 
 void generate_view_matrix(camera *camera) {
-    if (camera == NULL) {
+    if (!camera) {
         fprintf(stderr, "generate_view_matrix: camera is null\n");
         return;
     }
@@ -37,7 +37,7 @@ void generate_view_matrix(camera *camera) {
 void camera_init(camera *camera, vector3d position, vector3d rotation,
                  double fov, double aspect_ratio, double near_plane,
                  double far_plane) {
-    if (camera == NULL) {
+    if (!camera) {
         fprintf(stderr, "camera_init: camera is null\n");
         return;
     }
@@ -66,7 +66,7 @@ void camera_set_position(camera *camera, vector3d position) {
 
 // Relative to rotation
 void camera_move(camera *camera, vector3d movement_delta) {
-    if (camera == NULL) {
+    if (!camera) {
         fprintf(stderr, "camera_translate: camera is null\n");
         return;
     }
@@ -101,7 +101,7 @@ void camera_move(camera *camera, vector3d movement_delta) {
 }
 
 void camera_update_matrix_uniforms(camera *camera) {
-    if (camera == NULL) {
+    if (!camera) {
         fprintf(stderr, "camera_update_matrix_uniforms: camera is null\n");
         return;
     }
@@ -137,7 +137,7 @@ void camera_update_matrix_uniforms(camera *camera) {
 }
 
 void camera_set_aspect_ratio(camera *camera, double aspect_ratio) {
-    if (camera == NULL) {
+    if (!camera) {
         fprintf(stderr, "camera_set_aspect_ratio: camera is null\n");
         return;
     }
@@ -148,7 +148,7 @@ void camera_set_aspect_ratio(camera *camera, double aspect_ratio) {
 }
 
 void camera_set_rotation(camera *camera, vector3d rotation) {
-    if (camera == NULL) {
+    if (!camera) {
         fprintf(stderr, "camera_set_rotation: camera is null\n");
         return;
     }
@@ -159,7 +159,7 @@ void camera_set_rotation(camera *camera, vector3d rotation) {
 }
 
 void camera_set_fov(camera *camera, double fov) {
-    if (camera == NULL) {
+    if (!camera) {
         fprintf(stderr, "camera_set_rotation: camera is null\n");
         return;
     }
@@ -170,7 +170,7 @@ void camera_set_fov(camera *camera, double fov) {
 }
 
 void camera_rotate(camera *camera, vector3d rotation_delta) {
-    if (camera == NULL) {
+    if (!camera) {
         fprintf(stderr, "camera_rotate: camera is null\n");
         return;
     }

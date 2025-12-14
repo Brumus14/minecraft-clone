@@ -25,7 +25,7 @@ void *thread_pool_thread_main(void *arg) {
         thread_pool_task *task = queue_dequeue(tasks);
         pthread_mutex_unlock(tasks_lock);
 
-        // if (task != NULL) {
+        // if (task) {
         // Execute the task
         task->function(task->argument);
         // free(task->argument);

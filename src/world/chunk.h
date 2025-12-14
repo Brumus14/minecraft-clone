@@ -72,15 +72,20 @@ static const float FACE_NORMALS[6][3] = {
     {-1, 0,  0 },
     {0,  0,  -1},
 };
+// clang-format on
 
 static const int INDEX_ORDER[6] = {0, 1, 2, 0, 2, 3};
 
 void chunk_init(chunk *chunk, vector3i position, tilemap *tilemap);
 void chunk_destroy(chunk *chunk);
-void chunk_update_mesh(chunk *chunk);
+// void chunk_update_mesh(chunk *chunk);
 void chunk_update_buffers(chunk *chunk);
 void chunk_draw(chunk *chunk);
-block_type chunk_get_block(chunk*chunk,unsigned long x, unsigned long y, unsigned long z);
-void chunk_set_block(chunk*chunk, unsigned long x, unsigned long y, unsigned long z, block_type type);
+// Position be pointer?
+void chunk_generate_mesh(chunk *chunk);
+block_type chunk_get_block(chunk *chunk, vector3i position);
+block_type chunk_get_block_safe(chunk *chunk, vector3i position);
+void chunk_set_block(chunk *chunk, vector3i position, block_type type);
+void chunk_set_block_safe(chunk *chunk, vector3i position, block_type type);
 
 #endif

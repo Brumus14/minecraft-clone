@@ -1,5 +1,6 @@
 #include "world.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <pthread.h>
@@ -32,9 +33,7 @@ void world_init(world *world) {
 
 void world_load_chunk(world *world, vector3i position) {
     // Check not already loaded
-    // pthread_rwlock_rdlock(&world->chunks_lock);
-    bool loaded = hash_map_get(&world->chunks, &position) != NULL;
-    // pthread_rwlock_unlock(&world->chunks_lock);
+    bool loaded = hash_map_get(&world->chunks, &position);
 
     if (loaded) {
         return;
@@ -47,10 +46,8 @@ void world_load_chunk(world *world, vector3i position) {
     chunk_init(new_chunk, position, &world->tilemap);
     atomic_store(&new_chunk->visible, false);
 
-    // pthread_rwlock_wrlock(&world->chunks_lock);
     chunk *old_value = hash_map_put(&world->chunks, &position, new_chunk);
     free(old_value);
-    // pthread_rwlock_unlock(&world->chunks_lock);
 
     worker_generate_chunk_args *args =
         malloc(sizeof(worker_generate_chunk_args));
@@ -64,30 +61,70 @@ void world_load_chunk(world *world, vector3i position) {
 // remove chunks from chunks to generate if have moved out of render distance
 // before generated
 void world_unload_chunk(world *world, vector3i position) {
-    // pthread_rwlock_wrlock(&world->chunks_lock);
-    // chunk *chunk = hash_map_get(&world->chunks, &position);
-    // pthread_mutex_lock(&chunk->lock);
-    // pthread_rwlock_unlock(&world->chunks_lock);
-
     chunk *chunk = hash_map_remove(&world->chunks, &position);
     atomic_store(&chunk->visible, false);
     atomic_store(&chunk->unloaded, true);
 }
 
-void world_draw_chunk(void *key, void *value, void *workers) {
-    vector3i *chunk_position = key;
-    // pthread_rwlock_rdlock(&world->chunks_lock);
+typedef struct world_draw_chunk_args {
+    world *world;
+    thread_pool *workers;
+} world_draw_chunk_args;
+
+void world_draw_chunk(void *key, void *value, void *arg) {
+    // TODO: Surely this parsing every time is inefficient
+    vector3i *position = key;
     chunk *chunk = value;
-    // pthread_rwlock_unlock(&world->chunks_lock);
+
+    world_draw_chunk_args *args = arg;
+    world *world = args->world;
+    thread_pool *workers = args->workers;
+
+    // TODO: Clean this up and maybe optimise
+    bool neighbor_terrain_generated = true;
+
+    // clang-format off
+    static const vector3i neighbor_offsets[6] = {
+        { 1,  0,  0},
+        {-1,  0,  0},
+        { 0,  1,  0},
+        { 0, -1,  0},
+        { 0,  0,  1},
+        { 0,  0, -1},
+    };
+    // clang-format on
+
+    // for (int i = 0; i < 6; i++) {
+    //     vector3i neighbor_position = {
+    //         position->x + neighbor_offsets[i].x,
+    //         position->y + neighbor_offsets[i].y,
+    //         position->z + neighbor_offsets[i].z,
+    //     };
+    //
+    //     struct chunk *neighbor =
+    //         hash_map_get(&world->chunks, &neighbor_position);
+    //
+    //     if (neighbor && neighbor->state <= CHUNK_STATE_GENERATING_TERRAIN) {
+    //         neighbor_terrain_generated = false;
+    //     }
+    // }
 
     // TODO: Move to list maybe
-    if (atomic_load(&chunk->state) == CHUNK_STATE_NEEDS_MESH) {
-        thread_pool_schedule(workers, worker_generate_chunk_mesh, chunk);
+    chunk_state chunk_state_needs_mesh = CHUNK_STATE_NEEDS_MESH;
+
+    if (atomic_compare_exchange_strong(&chunk->state, &chunk_state_needs_mesh,
+                                       CHUNK_STATE_QUEUED_MESH)) {
+        worker_generate_chunk_mesh_args *args =
+            malloc(sizeof(worker_generate_chunk_mesh_args));
+        args->chunk = chunk;
+        args->world = world;
+
+        thread_pool_schedule(workers, worker_generate_chunk_mesh, args);
     }
 
     // TODO: Move to like update or something
     if (atomic_load(&chunk->state) == CHUNK_STATE_NEEDS_BUFFERS) {
-        pthread_mutex_lock(&chunk->lock);
+        pthread_mutex_lock(&chunk->lock); // TODO: Is this necessary?
         chunk_update_buffers(chunk);
         pthread_mutex_unlock(&chunk->lock);
 
@@ -104,60 +141,93 @@ void world_draw_chunk(void *key, void *value, void *workers) {
 void world_draw(world *world) {
     texture_bind(&world->tilemap.texture);
 
-    hash_map_for_each(&world->chunks, world_draw_chunk, &world->workers);
+    world_draw_chunk_args args = {world, &world->workers};
+    // TODO: Maybe dont use foreach instead access internal data for better
+    // performance
+    hash_map_for_each(&world->chunks, world_draw_chunk, &args);
 }
 
-// use mipmapping
-// TODO: Should this be vector3i?
-block_type world_get_block(world *world, vector3d position) {
+block_type world_get_block(world *world, vector3i position) {
     // rename to chunks loaded
-    vector3i chunk_position = {floor(position.x / CHUNK_SIZE_X),
-                               floor(position.y / CHUNK_SIZE_Y),
-                               floor(position.z / CHUNK_SIZE_Z)};
+    vector3i chunk_position = {position.x / CHUNK_SIZE_X,
+                               position.y / CHUNK_SIZE_Y,
+                               position.z / CHUNK_SIZE_Z};
 
-    // pthread_rwlock_rdlock(&world->chunks_lock);
     chunk *chunk = hash_map_get(&world->chunks, &chunk_position);
-    // pthread_rwlock_unlock(&world->chunks_lock);
 
-    if (chunk == NULL) {
+    if (!chunk) {
         return BLOCK_TYPE_EMPTY;
     }
 
-    pthread_mutex_lock(&chunk->lock);
-    vector3i block_chunk_position = {mod(floor(position.x), CHUNK_SIZE_X),
-                                     mod(floor(position.y), CHUNK_SIZE_Y),
-                                     mod(floor(position.z), CHUNK_SIZE_Z)};
+    vector3i block_chunk_position = {mod(position.x, CHUNK_SIZE_X),
+                                     mod(position.y, CHUNK_SIZE_Y),
+                                     mod(position.z, CHUNK_SIZE_Z)};
 
-    block_type block =
-        chunk_get_block(chunk, block_chunk_position.x, block_chunk_position.y,
-                        block_chunk_position.z);
-    pthread_mutex_unlock(&chunk->lock);
+    block_type block = chunk_get_block(chunk, block_chunk_position);
 
     return block;
 }
 
-void world_set_block(world *world, block_type type, vector3d position) {
-    vector3i chunk_position = {floor(position.x / CHUNK_SIZE_X),
-                               floor(position.y / CHUNK_SIZE_Y),
-                               floor(position.z / CHUNK_SIZE_Z)};
+// use mipmapping
+block_type world_get_block_safe(world *world, vector3i position) {
+    // rename to chunks loaded
+    vector3i chunk_position = {position.x / CHUNK_SIZE_X,
+                               position.y / CHUNK_SIZE_Y,
+                               position.z / CHUNK_SIZE_Z};
 
-    // pthread_rwlock_rdlock(&world->chunks_lock);
     chunk *chunk = hash_map_get(&world->chunks, &chunk_position);
-    // pthread_rwlock_unlock(&world->chunks_lock);
 
-    if (chunk == NULL) {
+    if (!chunk) {
+        return BLOCK_TYPE_EMPTY;
+    }
+
+    vector3i block_chunk_position = {mod(position.x, CHUNK_SIZE_X),
+                                     mod(position.y, CHUNK_SIZE_Y),
+                                     mod(position.z, CHUNK_SIZE_Z)};
+
+    block_type block = chunk_get_block_safe(chunk, block_chunk_position);
+
+    return block;
+}
+
+void world_set_block(world *world, block_type type, vector3i position) {
+    vector3i chunk_position = {position.x / CHUNK_SIZE_X,
+                               position.y / CHUNK_SIZE_Y,
+                               position.z / CHUNK_SIZE_Z};
+
+    chunk *chunk = hash_map_get(&world->chunks, &chunk_position);
+
+    if (!chunk) {
         return;
     }
 
-    pthread_mutex_lock(&chunk->lock);
-    vector3i block_chunk_position = {mod(floor(position.x), CHUNK_SIZE_X),
-                                     mod(floor(position.y), CHUNK_SIZE_Y),
-                                     mod(floor(position.z), CHUNK_SIZE_Z)};
+    vector3i block_chunk_position = {mod(position.x, CHUNK_SIZE_X),
+                                     mod(position.y, CHUNK_SIZE_Y),
+                                     mod(position.z, CHUNK_SIZE_Z)};
 
-    chunk_set_block(chunk, block_chunk_position.x, block_chunk_position.y,
-                    block_chunk_position.z, type);
-    chunk_update_mesh(chunk);
-    pthread_mutex_unlock(&chunk->lock);
+    chunk_set_block(chunk, block_chunk_position, type);
+    chunk_generate_mesh(chunk);
+
+    atomic_store(&chunk->state, CHUNK_STATE_NEEDS_BUFFERS);
+}
+
+void world_set_block_safe(world *world, block_type type, vector3i position) {
+    vector3i chunk_position = {position.x / CHUNK_SIZE_X,
+                               position.y / CHUNK_SIZE_Y,
+                               position.z / CHUNK_SIZE_Z};
+
+    chunk *chunk = hash_map_get(&world->chunks, &chunk_position);
+
+    if (!chunk) {
+        return;
+    }
+
+    vector3i block_chunk_position = {mod(position.x, CHUNK_SIZE_X),
+                                     mod(position.y, CHUNK_SIZE_Y),
+                                     mod(position.z, CHUNK_SIZE_Z)};
+
+    chunk_set_block_safe(chunk, block_chunk_position, type);
+    chunk_generate_mesh(chunk);
 
     atomic_store(&chunk->state, CHUNK_STATE_NEEDS_BUFFERS);
 }

@@ -37,7 +37,7 @@ void *spmc_queue_dequeue(spmc_queue *queue) {
     pthread_mutex_lock(&queue->head_mutex);
     spmc_queue_node *node = queue->head->next;
 
-    if (node == NULL) {
+    if (!node) {
         pthread_mutex_unlock(&queue->head_mutex);
         return NULL;
     }
@@ -53,5 +53,5 @@ void *spmc_queue_dequeue(spmc_queue *queue) {
 }
 
 bool spmc_queue_is_empty(spmc_queue *queue) {
-    return queue->head->next == NULL;
+    return !queue->head->next;
 }

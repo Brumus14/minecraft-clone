@@ -1,5 +1,6 @@
 #include "player.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include "../math/math_util.h"
 #include "../physics/collision.h"
@@ -28,8 +29,9 @@ bool valid_position(world *world, vector3d position) {
                     continue;
                 }
 
-                if (world_get_block(
-                        world, vector3d_add(position, (vector3d){x, y, z})) ==
+                if (world_get_block(world,
+                                    vector3d_to_vector3i(vector3d_add(
+                                        position, (vector3d){x, y, z}))) ==
                     BLOCK_TYPE_EMPTY) {
                     continue;
                 }
@@ -169,7 +171,7 @@ void player_manage_chunks_chunk(void *key, void *value, void *context) {
     vector3i **unloaded_chunks = c->unloaded_chunks;
     int *unloaded_chunk_count = c->unloaded_chunk_count;
 
-    // if (chunk == NULL) {
+    // if (!chunk) {
     //     return;
     // }
 
@@ -191,7 +193,7 @@ void player_manage_chunks(player *player, world *world) {
     //     return;
     // }
 
-    int render_distance = 4; // move to a variable
+    int render_distance = 2; // move to a variable
     vector3i player_chunk;
     player_chunk.x = floor(player->position.x / CHUNK_SIZE_X);
     player_chunk.y = floor(player->position.y / CHUNK_SIZE_Y);
@@ -213,9 +215,9 @@ void player_manage_chunks(player *player, world *world) {
     for (int z = -render_distance; z <= render_distance; z++) {
         for (int y = -render_distance; y <= render_distance; y++) {
             for (int x = -render_distance; x <= render_distance; x++) {
-                world_load_chunk(world, (vector3i){player_chunk.x + x,
-                                                   player_chunk.y + y,
-                                                   player_chunk.z + z});
+                // world_load_chunk(world, (vector3i){player_chunk.x + x,
+                //                                    player_chunk.y + y,
+                //                                    player_chunk.z + z});
             }
         }
     }
@@ -225,13 +227,13 @@ void player_manage_chunks(player *player, world *world) {
 bool player_get_target_block(player *player, world *world,
                              vector3d *position_dest, block_face *face) {
     float max_ray_length = 5; // move to variable
-
     vector3d ray_origin = player->camera->position;
 
-    if (world_get_block(world, ray_origin) != BLOCK_TYPE_EMPTY) {
+    if (world_get_block(world, vector3d_to_vector3i(ray_origin)) !=
+        BLOCK_TYPE_EMPTY) {
         *position_dest = ray_origin;
 
-        if (face != NULL) {
+        if (face) {
             *face = -1; // this is bit sus
         }
 
@@ -315,12 +317,12 @@ bool player_get_target_block(player *player, world *world,
         vector3d position =
             (vector3d){voxel_position.x, voxel_position.y, voxel_position.z};
 
-        if (world_get_block(world, position)) {
+        if (world_get_block(world, vector3d_to_vector3i(position))) {
             hit = true;
 
             *position_dest = position;
 
-            if (face != NULL) {
+            if (face) {
                 *face = current_face;
             }
 
@@ -335,7 +337,8 @@ void player_set_target_block(player *player, world *world, block_type type) {
     vector3d target_block;
 
     if (player_get_target_block(player, world, &target_block, NULL)) {
-        world_set_block(world, type, target_block);
+        vector3i p = vector3d_to_vector3i(target_block);
+        world_set_block(world, type, vector3d_to_vector3i(target_block));
     }
 }
 
@@ -391,7 +394,7 @@ void player_place_block(player *player, world *world, block_type type) {
 
     // TODO: use glm aabb
     if (!collision_aabb_3d(player_cuboid, new_block_cubiod)) {
-        world_set_block(world, type, block_position);
+        world_set_block(world, type, vector3d_to_vector3i(block_position));
     }
 }
 

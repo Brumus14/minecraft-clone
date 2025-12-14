@@ -21,7 +21,7 @@ void linked_list_insert_beginning(linked_list *list, void *data) {
 
     new_node->next = list->head;
 
-    if (list->head != NULL) {
+    if (list->head) {
         list->head->previous = new_node;
     } else {
         list->tail = new_node;
@@ -36,7 +36,7 @@ void linked_list_insert_end(linked_list *list, void *data) {
 
     new_node->previous = list->tail;
 
-    if (list->tail != NULL) {
+    if (list->tail) {
         list->tail->next = new_node;
     } else {
         list->head = new_node;
@@ -67,7 +67,7 @@ void linked_list_insert(linked_list *list, void *data, int index) {
             node = node->next;
         }
 
-        if (node == NULL) {
+        if (!node) {
             linked_list_insert_end(list, data);
             return;
         }
@@ -80,14 +80,14 @@ void linked_list_insert(linked_list *list, void *data, int index) {
 }
 
 void *linked_list_remove_beginning(linked_list *list) {
-    if (list->head == NULL) {
+    if (!list->head) {
         return NULL;
     }
 
     list_node *removed_node = list->head;
     list->head = list->head->next;
 
-    if (list->head != NULL) {
+    if (list->head) {
         list->head->previous = NULL;
     } else {
         list->tail = NULL;
@@ -101,14 +101,14 @@ void *linked_list_remove_beginning(linked_list *list) {
 }
 
 void *linked_list_remove_end(linked_list *list) {
-    if (list->head == NULL) {
+    if (!list->head) {
         return NULL;
     }
 
     list_node *removed_node = list->tail;
     list->tail = list->tail->previous;
 
-    if (list->tail != NULL) {
+    if (list->tail) {
         list->tail->next = NULL;
     } else {
         list->head = NULL;
@@ -153,7 +153,7 @@ void *linked_list_remove(linked_list *list, int index) {
 void linked_list_destroy(linked_list *list) {
     list_node *node = list->head;
 
-    while (node != NULL) {
+    while (node) {
         list_node *next_node = node->next;
         free(node);
         node = next_node;
@@ -167,7 +167,7 @@ unsigned int linked_list_length(linked_list *list) {
     int length = 0;
     list_node *current_node = list->head;
 
-    while (current_node != NULL) {
+    while (current_node) {
         length++;
         current_node = current_node->next;
     }
@@ -190,7 +190,7 @@ void *linked_list_get(linked_list *list, int index) {
 }
 
 bool linked_list_is_empty(linked_list *list) {
-    return (list->head == NULL);
+    return !list->head;
 }
 
 unsigned int linked_list_find(linked_list *list, void *data) {

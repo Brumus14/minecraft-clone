@@ -27,6 +27,7 @@ typedef struct hash_map {
 
 // TODO: Maybe restructure ownership so takes pointer and returns when
 // overwritten or removed for user to free
+// TODO: Dynamic bucket count that auto increases / decreases
 void hash_map_init(hash_map *map, int bucket_count, unsigned long key_size,
                    unsigned long value_size,
                    hash_map_hash_function hash_function);

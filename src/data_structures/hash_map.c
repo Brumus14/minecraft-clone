@@ -35,7 +35,7 @@ void hash_map_destroy(hash_map *map) {
     for (int i = 0; i < map->bucket_count; i++) {
         hash_map_node *current_node = map->buckets[i];
 
-        while (current_node != NULL) {
+        while (current_node) {
             hash_map_node *next_node = current_node->next;
             hash_map_node_destroy(current_node);
             free(current_node);
@@ -57,7 +57,7 @@ void *hash_map_put(hash_map *map, void *key, void *value) {
     int index = map->hash_function(owned_key) % map->bucket_count;
     hash_map_node *bucket_head = map->buckets[index];
 
-    if (bucket_head == NULL) {
+    if (!bucket_head) {
         hash_map_node *new_node = malloc(sizeof(hash_map_node));
         hash_map_node_init(new_node, owned_key, value);
         map->buckets[index] = new_node;
@@ -66,7 +66,7 @@ void *hash_map_put(hash_map *map, void *key, void *value) {
 
     hash_map_node *current_node = bucket_head;
 
-    while (current_node != NULL) {
+    while (current_node) {
         if (memcmp(current_node->key, owned_key, map->key_size) == 0) {
             hash_map_node *next_node = current_node->next;
             void *old_value = hash_map_node_destroy(current_node);
@@ -75,7 +75,7 @@ void *hash_map_put(hash_map *map, void *key, void *value) {
             return old_value;
         }
 
-        if (current_node->next == NULL) {
+        if (!current_node->next) {
             hash_map_node *new_node = malloc(sizeof(hash_map_node));
             hash_map_node_init(new_node, owned_key, value);
             new_node->next = NULL;
@@ -94,7 +94,7 @@ void *hash_map_get(hash_map *map, void *key) {
 
     hash_map_node *current_node = map->buckets[index];
 
-    while (current_node != NULL) {
+    while (current_node) {
         if (memcmp(current_node->key, key, map->key_size) == 0) {
             return current_node->value;
         }
@@ -111,14 +111,14 @@ void *hash_map_remove(hash_map *map, void *key) {
     hash_map_node *current_node = map->buckets[index];
     hash_map_node *previous_node = NULL;
 
-    while (current_node != NULL) {
+    while (current_node) {
         hash_map_node *next_node = current_node->next;
 
         if (memcmp(current_node->key, key, map->key_size) == 0) {
             void *value = hash_map_node_destroy(current_node);
             free(current_node);
 
-            if (previous_node != NULL) {
+            if (previous_node) {
                 previous_node->next = next_node;
             } else {
                 map->buckets[index] = next_node;
@@ -139,7 +139,7 @@ void hash_map_for_each(hash_map *map, hash_map_for_each_function function,
     for (int i = 0; i < map->bucket_count; i++) {
         hash_map_node *current_node = map->buckets[i];
 
-        while (current_node != NULL) {
+        while (current_node) {
             function(current_node->key, current_node->value, context);
             current_node = current_node->next;
         }

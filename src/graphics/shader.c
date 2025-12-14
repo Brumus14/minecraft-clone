@@ -13,7 +13,7 @@ GLenum to_shader_type_gl(shader_type type) {
 }
 
 void shader_init(shader *shader, shader_type type) {
-    if (shader == NULL) {
+    if (!shader) {
         fprintf(stderr, "shader_init: shader is null\n");
         return;
     }
@@ -24,7 +24,7 @@ void shader_init(shader *shader, shader_type type) {
 }
 
 void shader_source(shader *shader, char *source) {
-    if (shader == NULL) {
+    if (!shader) {
         fprintf(stderr, "shader_source: shader is null\n");
         return;
     }
@@ -34,7 +34,7 @@ void shader_source(shader *shader, char *source) {
 }
 
 void shader_compile(shader *shader) {
-    if (shader == NULL) {
+    if (!shader) {
         fprintf(stderr, "shader_compile: shader is null\n");
         return;
     }
@@ -57,7 +57,7 @@ void shader_compile(shader *shader) {
 }
 
 void shader_delete(shader *shader) {
-    if (shader == NULL) {
+    if (!shader) {
         fprintf(stderr, "shader_delete: shader is null\n");
         return;
     }

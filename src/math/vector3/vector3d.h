@@ -2,6 +2,7 @@
 #define VECTOR3D_H
 
 #include "cglm/cglm.h"
+#include "vector3i.h"
 
 #define EPSILON 1e-6
 
@@ -11,10 +12,7 @@ typedef struct vector3d {
     double z;
 } vector3d;
 
-#define VECTOR3D_ZERO                                                          \
-    (vector3d) {                                                               \
-        0.0, 0.0, 0.0                                                          \
-    }
+#define VECTOR3D_ZERO (vector3d){0.0, 0.0, 0.0}
 
 void vector3d_init(vector3d *vector, double x, double y, double z);
 double vector3d_magnitude(vector3d vector);
@@ -33,5 +31,6 @@ vector3d vector3d_cross_product(vector3d v1, vector3d v2);
 void vector3d_dot_product_to(vector3d v1, vector3d v2, vector3d *dest);
 vector3d vector3d_dot_product(vector3d v1, vector3d v2);
 bool vector3d_equal(vector3d v1, vector3d v2);
+vector3i vector3d_to_vector3i(vector3d vector);
 
 #endif

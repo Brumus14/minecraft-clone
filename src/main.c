@@ -3,13 +3,7 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include "util/thread_pool.h"
-#include "util/io.h"
-#include "graphics/graphics.h"
 #include "world/block.h"
-#include "world/chunk.h"
-#include "graphics/tilemap.h"
 #include "game/player.h"
 #include "world/world.h"
 #include "math/math_util.h"
@@ -17,11 +11,9 @@
 #include "gui/image.h"
 #include "gui/hotbar.h"
 #include "game/items.h"
-#include "data_structures/hash_map.h"
 
 // REMMEMBER TO AUTO BIND IN FUNCTIONS THAT ITS REQUIRED
 // make arguments const
-// make camera prepare draw function
 
 int main() {
     window window;
@@ -58,6 +50,9 @@ int main() {
 
     world world;
     world_init(&world);
+
+    world_load_chunk(&world, (vector3i){0, 0, 0});
+    world_load_chunk(&world, (vector3i){0, -1, 0});
 
     // 21474836.0
     // 2147483.0

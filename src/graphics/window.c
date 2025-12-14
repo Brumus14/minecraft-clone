@@ -102,7 +102,7 @@ void glfw_scroll_callback(GLFWwindow *glfw_window, double xoffset,
                           double yoffset) {
     window *window_pointer = (window *)glfwGetWindowUserPointer(glfw_window);
 
-    /*if (window_pointer->scroll_callback != NULL) {*/
+    /*if (window_pointer->scroll_callback) {*/
     /*    window_pointer->scroll_callback(window_pointer, xoffset, yoffset);*/
     /*}*/
 
