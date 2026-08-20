@@ -9,7 +9,6 @@
 #include "../util/stopwatch.h"
 #include "../gui/hotbar.h"
 
-// #define DEFAULT_SPEED 10.92
 #define WALKING_SPEED 4
 #define SPRINTING_SPEED 6
 #define FLYING_SPEED 20
@@ -22,6 +21,7 @@
 #define DEFAULT_FOV 90
 #define SPRINTING_FOV 100
 #define FOV_ACCELERATION 10
+#define TERMINAL_VELOCITY_Y 45
 
 #define RENDER_DISTANCE 8
 

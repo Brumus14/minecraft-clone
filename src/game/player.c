@@ -324,6 +324,9 @@ void player_update_movement(struct player *player, struct window *window,
                               delta_time;
     }
 
+    player->velocity.y =
+        clamp(player->velocity.y, -TERMINAL_VELOCITY_Y, TERMINAL_VELOCITY_Y);
+
     player->velocity.z +=
         acceleration * (target_velocity.z - player->velocity.z) * delta_time;
 
@@ -331,7 +334,8 @@ void player_update_movement(struct player *player, struct window *window,
          keyboard_key_just_down(&window->keyboard, KEYCODE_SPACE)) ||
         (player->on_ground &&
          keyboard_key_down(&window->keyboard, KEYCODE_SPACE) &&
-         stopwatch_elapsed(&player->on_ground_timer) >= 0.05)) {
+         stopwatch_elapsed(&player->on_ground_timer) >=
+             0.05)) { // last jump timer instead
         player->velocity.y = JUMP_VELOCITY;
     }
 
@@ -352,6 +356,8 @@ void player_update(struct player *player, struct window *window,
                                        FOV_ACCELERATION *
                                            (target_fov - window->camera->fov) *
                                            window->delta_time);
+
+    vec3d_print(player->velocity);
 
     if (mouse_button_just_down(&window->mouse, MOUSE_BUTTON_LEFT)) {
         window_capture_cursor(window);

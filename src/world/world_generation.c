@@ -27,12 +27,23 @@ world_generation_chunk_terrain(struct vec3i chunk_position, int seed) {
                CHUNK_SIZE_Z);
 
     fnl_state height_noise = fnlCreateState();
-    height_noise.noise_type = FNL_NOISE_PERLIN;
+    height_noise.noise_type = FNL_NOISE_CELLULAR;
     height_noise.seed = seed;
-    height_noise.frequency = 0.1;
-    height_noise.octaves = 10;
+    height_noise.frequency = 0.05;
+    height_noise.octaves = 8;
     height_noise.lacunarity = 8;
     height_noise.gain = 0.8;
+    height_noise.cellular_return_type = FNL_CELLULAR_RETURN_TYPE_DISTANCE2SUB;
+    height_noise.domain_warp_type = FNL_DOMAIN_WARP_OPENSIMPLEX2_REDUCED;
+    height_noise.domain_warp_amp = 700;
+
+    fnl_state mountain_noise = fnlCreateState();
+    mountain_noise.noise_type = FNL_NOISE_PERLIN;
+    mountain_noise.seed = seed + 1;
+    mountain_noise.frequency = 0.01;
+    mountain_noise.octaves = 1;
+    mountain_noise.lacunarity = 2;
+    mountain_noise.gain = 0.5;
 
     struct vec3i chunk_block_position;
     vec3i_init(&chunk_block_position, chunk_position.x * CHUNK_SIZE_X,
@@ -46,7 +57,14 @@ world_generation_chunk_terrain(struct vec3i chunk_position, int seed) {
             int position_x = chunk_block_position.x + x;
 
             float height_value =
-                fnlGetNoise2D(&height_noise, position_x, position_z) * 16;
+                fnlGetNoise2D(&height_noise, position_x, position_z) * 32;
+
+            float mountain_value =
+                pow(1 - fabsf(fnlGetNoise2D(&mountain_noise, position_x,
+                                            position_z)),
+                    2) *
+                64;
+            // height_value = mountain_value;
 
             for (int y = 0; y < CHUNK_SIZE_Y; y++) {
                 int position_y = chunk_block_position.y + y;
