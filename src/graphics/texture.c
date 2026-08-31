@@ -10,7 +10,7 @@ GLenum to_gl_filter(enum texture_filter filter) {
     case TEXTURE_FILTER_NEAREST:
         return GL_NEAREST;
     default:
-        fprintf(stderr, "struct texture filter not recognised\n");
+        fprintf(stderr, "texture filter not recognised\n");
         return GL_NEAREST;
     }
 }
@@ -22,7 +22,7 @@ GLenum to_gl_wrap(enum texture_wrap wrap) {
     case TEXTURE_WRAP_REPEAT:
         return GL_REPEAT;
     default:
-        fprintf(stderr, "struct texture wrap not recognised\n");
+        fprintf(stderr, "texture wrap not recognised\n");
         return GL_CLAMP_TO_BORDER;
     }
 }

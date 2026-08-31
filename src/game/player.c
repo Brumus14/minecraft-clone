@@ -25,6 +25,9 @@ void player_init(struct player *player, struct vec3d position,
 
     // Initially manage chunks
     player->manage_chunks = true;
+
+    stopwatch_start(&player->on_ground_timer);
+    stopwatch_start(&player->last_jump_timer);
 }
 
 // Rename function
@@ -304,39 +307,50 @@ void player_update_movement(struct player *player, struct window *window,
     vec3d_add_to(target_velocity, vec3d_scalar_multiply(up, input.y),
                  &target_velocity);
 
-    float speed =
-        player->flying
-            ? (player->sprinting ? FLYING_SPRINTING_SPEED : FLYING_SPEED)
-            : (player->sprinting ? SPRINTING_SPEED : WALKING_SPEED);
-    vec3d_scalar_multiply_to(target_velocity, speed, &target_velocity);
-
-    float acceleration =
-        player->on_ground ? GROUND_ACCELERATION : AIR_ACCELERATION;
-
-    player->velocity.x +=
-        acceleration * (target_velocity.x - player->velocity.x) * delta_time;
-
     if (!player->flying) {
+        float speed = player->sprinting ? SPRINTING_SPEED : WALKING_SPEED;
+        vec3d_scalar_multiply_to(target_velocity, speed, &target_velocity);
+
+        float acceleration =
+            player->on_ground ? GROUND_ACCELERATION : AIR_ACCELERATION;
+
+        player->velocity.x += acceleration *
+                              (target_velocity.x - player->velocity.x) *
+                              delta_time;
+
+        player->velocity.z += acceleration *
+                              (target_velocity.z - player->velocity.z) *
+                              delta_time;
+
         player->velocity.y -= GRAVITY_ACCELERATION * delta_time;
+
+        player->velocity.y = clamp(player->velocity.y, -TERMINAL_VELOCITY_Y,
+                                   TERMINAL_VELOCITY_Y);
+
+        if ((player->on_ground &&
+             keyboard_key_just_down(&window->keyboard, KEYCODE_SPACE)) ||
+            (player->on_ground &&
+             keyboard_key_down(&window->keyboard, KEYCODE_SPACE) &&
+             stopwatch_elapsed(&player->last_jump_timer) >= JUMP_COOLDOWN)) {
+            player->velocity.y = JUMP_VELOCITY;
+
+            stopwatch_start(&player->last_jump_timer);
+        }
     } else {
+        float speed = player->sprinting ? FLYING_SPRINTING_SPEED : FLYING_SPEED;
+        vec3d_scalar_multiply_to(target_velocity, speed, &target_velocity);
+
+        player->velocity.x += AIR_ACCELERATION *
+                              (target_velocity.x - player->velocity.x) *
+                              delta_time;
+
         player->velocity.y += AIR_ACCELERATION *
                               (target_velocity.y - player->velocity.y) *
                               delta_time;
-    }
 
-    player->velocity.y =
-        clamp(player->velocity.y, -TERMINAL_VELOCITY_Y, TERMINAL_VELOCITY_Y);
-
-    player->velocity.z +=
-        acceleration * (target_velocity.z - player->velocity.z) * delta_time;
-
-    if ((player->on_ground &&
-         keyboard_key_just_down(&window->keyboard, KEYCODE_SPACE)) ||
-        (player->on_ground &&
-         keyboard_key_down(&window->keyboard, KEYCODE_SPACE) &&
-         stopwatch_elapsed(&player->on_ground_timer) >=
-             0.05)) { // last jump timer instead
-        player->velocity.y = JUMP_VELOCITY;
+        player->velocity.z += AIR_ACCELERATION *
+                              (target_velocity.z - player->velocity.z) *
+                              delta_time;
     }
 
     update_movement(player, delta_time, world);
@@ -356,8 +370,6 @@ void player_update(struct player *player, struct window *window,
                                        FOV_ACCELERATION *
                                            (target_fov - window->camera->fov) *
                                            window->delta_time);
-
-    vec3d_print(player->velocity);
 
     if (mouse_button_just_down(&window->mouse, MOUSE_BUTTON_LEFT)) {
         window_capture_cursor(window);

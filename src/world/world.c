@@ -45,6 +45,10 @@ void world_init(struct world *world) {
     tilemap_init(&world->tilemap, "res/textures/atlas.png",
                  TEXTURE_FILTER_NEAREST, 16, 16, 1, 2);
 
+    // MINECRAFT TEXTURES
+    // tilemap_init(&world->tilemap, "res/textures/minecraft.png",
+    //              TEXTURE_FILTER_NEAREST, 16, 16, 0, 0);
+
     world->seed = random_int();
 
     thread_pool_init(&world->workers, WORLD_WORKER_COUNT);

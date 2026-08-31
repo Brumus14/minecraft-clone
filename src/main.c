@@ -55,7 +55,7 @@ int main() {
 
         main_gui_update(&main_gui);
 
-        printf("%f\n", 1.0 / window_get_delta_time(&window));
+        // printf("%f\n", 1.0 / window_get_delta_time(&window));
 
         static bool wireframe = false;
         if (keyboard_key_just_down(&window.keyboard, KEYCODE_P)) {

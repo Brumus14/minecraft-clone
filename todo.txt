@@ -1,20 +1,19 @@
+    Low render distance (1,2) causes flashing on chunk modificiation
 Better window callback system such as for updating gui on resize
-When flying just above ground moves faster than should do
 Stop polling chunks and use queues instead
 Skip trying to render empty chunks maybe?
-Upscale noise so have to sample less
-When world load chunk add to queue and load x per update to avoid fps spike
+    Upscale noise so have to sample less
+    When world load chunk add to queue and load x per update to avoid fps spike
 Player manage chunks causes lagging
-Anti-aliasing
+    Anti-aliasing causes gaps, voxel coordinates aren't exactly equal
 Framerate drops when loading new chunks
-Falling fast can clip into block
+Moving fast causes clipping into blocks
 Better textures
 Update task priorities when moving
-Render distance 0 edit terrain chunk and mesh always visible
-Improve collision for fast moving
+    Render distance 0 edit terrain chunk and mesh always visible
 Neighbor loading stuff should be reviewed
 Closing window doesn't clean up memory properly
-*When two workers simultaneously generating mesh, both modify vertices and indices
+    When two workers simultaneously generating mesh, both modify vertices and indices
 With large chunk size loading new chunks still lags
 Chunking is bottleneck not rendering
 Support block transparency, e.g. leaves

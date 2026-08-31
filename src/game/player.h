@@ -23,7 +23,9 @@
 #define FOV_ACCELERATION 10
 #define TERMINAL_VELOCITY_Y 45
 
-#define RENDER_DISTANCE 8
+#define JUMP_COOLDOWN 0.4
+
+#define RENDER_DISTANCE 2
 
 #define COLLISION_BOX_X 0.6
 #define COLLISION_BOX_Y 1.8
@@ -44,6 +46,7 @@ struct player {
     bool on_ground;
     bool manage_chunks;
     struct stopwatch on_ground_timer;
+    struct stopwatch last_jump_timer;
 };
 
 void player_init(struct player *player, struct vec3d position,

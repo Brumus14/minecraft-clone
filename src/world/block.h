@@ -41,6 +41,18 @@ static const struct block_data block_data[] = {
     [BLOCK_TYPE_LEAF] = {{9, 9, 9, 9, 9, 9}, false, true},
 };
 
+// MINECRAFT TEXTURES
+// static const struct block_data block_data[] = {
+//     [BLOCK_TYPE_EMPTY] = {{-1, -1, -1, -1, -1, -1}, false, false},
+//     [BLOCK_TYPE_GRASS] = {{3, 3, 50, 2, 3, 3}, true, true},
+//     [BLOCK_TYPE_DIRT] = {{50, 50, 50, 50, 50, 50}, true, true},
+//     [BLOCK_TYPE_STONE] = {{19, 19, 19, 19, 19, 19}, true, true},
+//     [BLOCK_TYPE_COAL] = {{129, 129, 129, 129, 129, 129}, true, true},
+//     [BLOCK_TYPE_LOG] = {{99, 99, 100, 100, 99, 99}, true, true},
+//     [BLOCK_TYPE_DIAMOND] = {{131, 131, 131, 131, 131, 131}, true, true},
+//     [BLOCK_TYPE_LEAF] = {{157, 157, 157, 157, 157, 157}, false, true},
+// };
+
 unsigned int block_get_face_tile_index(enum block_type type,
                                        enum direction face);
 bool block_is_solid(enum block_type type);
